@@ -27,10 +27,8 @@
                     ];
                     shellHook = ''
                         export PS1="minide> "
-                        rm -rf .build/
-                        mkdir .build/
-                        alias debug="cmake -B.build -DCMAKE_BUILD_TYPE=Debug -GNinja && ninja -C .build && ./.build/minide"
-                        alias release="cmake -B.build -DCMAKE_BUILD_TYPE=Release -GNinja && ninja -C .build && ./.build/minide"
+                        alias debug="rm -rf .build/ && cmake -B.build -DCMAKE_BUILD_TYPE=Debug -GNinja && ninja -C .build && ./.build/minide"
+                        alias release="rm -rf .build/ && cmake -B.build -DCMAKE_BUILD_TYPE=Release -GNinja && ninja -C .build && ./.build/minide"
                         alias ide="nix run github:ayham-1/ide"
                     '';
             };

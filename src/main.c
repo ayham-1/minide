@@ -5,8 +5,10 @@
 #include <GLFW/glfw3.h>
 #include <GL/glew.h>
 
+#include "logger.h"
+
 static void error_callback(int error, const char* description) {
-    fprintf(stderr, "Error: %s\n", description);
+    log_error("Error: %s\n", description);
 }
  
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -16,6 +18,12 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
  
 int main(int argc, char* argv[]) {
     printf("minide started\n");
+
+    #ifndef NDEBUG
+        logger_init(DEBUG, "/tmp/minide.log", true);
+    #else
+        logger_init(INFO, "/tmp/minide.log", true);
+    #endif
 
     GLFWwindow* window;
     glfwSetErrorCallback(error_callback);
@@ -36,10 +44,10 @@ int main(int argc, char* argv[]) {
 
     GLenum err = glewInit();
     if(GLEW_OK != err) {
-        fprintf(stderr, "GLEW: %s\n", glewGetErrorString(err));
+        log_error("GLEW: %s", glewGetErrorString(err));
         return -1;
     } else {
-        fprintf(stdout, "GLEW: version %s\n", glewGetString(GLEW_VERSION));
+        log_info("GLEW: version %s", glewGetString(GLEW_VERSION));
     }
 
     while (!glfwWindowShouldClose(window)) {
@@ -49,8 +57,9 @@ int main(int argc, char* argv[]) {
         glfwPollEvents();
     }
  
+    log_info("closing minide...");
+    logger_cleanup();
     glfwDestroyWindow(window);
- 
     glfwTerminate();
     exit(EXIT_SUCCESS);
     return 0;
