@@ -100,10 +100,8 @@ void logger_log(logger_level_t const level, char const *const file,
         case DEBUG:
         case INFO:
         case WARNING:
-            fp = stdout;
-            break;
         case ERROR:
-            fp = stderr;
+            fp = stdout; // logging by ">" or "|" (for some weird reason, idk)
     };
 
     get_datetime(fp);

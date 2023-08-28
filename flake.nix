@@ -19,6 +19,7 @@
                         clang
                         cmake
                         ninja
+                        gdb
                     ];
 
                     buildInputs = with pkgs; [
@@ -27,8 +28,9 @@
                     ];
                     shellHook = ''
                         export PS1="minide> "
-                        alias debug="rm -rf .build/ && cmake -B.build -DCMAKE_BUILD_TYPE=Debug -GNinja && ninja -C .build && ./.build/minide"
-                        alias release="rm -rf .build/ && cmake -B.build -DCMAKE_BUILD_TYPE=Release -GNinja && ninja -C .build && ./.build/minide"
+                        alias debug="./scripts/debug.sh"
+                        alias release="./scripts/release.sh"
+                        alias test="./scripts/test.sh"
                         alias ide="nix run github:ayham-1/ide"
                     '';
             };

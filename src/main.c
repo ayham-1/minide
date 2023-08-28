@@ -6,6 +6,7 @@
 #include <GL/glew.h>
 
 #include "logger.h"
+#include "u8string.h"
 
 static void error_callback(int error, const char* description) {
     log_error("Error: %s\n", description);

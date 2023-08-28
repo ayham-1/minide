@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25.3)
 
+option(BUILD_TESTS "Build test programs" OFF)
+
 project(
     minide
     VERSION 0.0.1
@@ -10,21 +12,41 @@ project(
 find_package(glfw3 3.3.8 REQUIRED)
 find_package(glew REQUIRED)
 
-add_executable(
-    minide
-
+set(SOURCES
+    src/u8string.c
     src/logger.c
-    
-    src/main.c
 )
-target_compile_options(minide PRIVATE -Wall -Wextra -Wpedantic)
 
+add_library(
+    min
+    STATIC
+    ${SOURCES}
+)
 target_link_libraries(
-    minide
+    min
     PRIVATE
     glfw
     ${GLEW_LIBRARIES}
 )
+set_property(TARGET min PROPERTY C_STANDARD 23)
+target_compile_options(min PRIVATE -Wall -Wextra -Wpedantic)
 
-set_property(TARGET minide PROPERTY CXX_STANDARD 23)
+add_executable(
+    minide
+    src/main.c
+)
+target_link_libraries(
+    minide
+    PRIVATE
+    min
+    glfw
+    ${GLEW_LIBRARIES}
+)
+set_property(TARGET minide PROPERTY C_STANDARD 23)
+target_compile_options(minide PRIVATE -Wall -Wextra -Wpedantic)
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif (BUILD_TESTS)
+
 install(TARGETS minide)
