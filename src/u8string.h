@@ -23,13 +23,13 @@ typedef struct {
 } string_t;
 
 string_t* u8str_create(size_t size);
+string_t* u8str_resize(string_t* old_str, size_t new_size);
 void u8str_cleanup(string_t *str);
 
 size_t u8str_get_bytes_needed_for(wbyte_t c);
 size_t u8str_get_wbyte_seq(byte_t* ptr, wbyte_t* u);
 size_t u8str_clen(string_t* str);
 
-bool u8str_cmp(string_t* s1, string_t* s2);
 
 /*
  * 0xC0 = 11000000

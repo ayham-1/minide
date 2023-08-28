@@ -1,27 +1,38 @@
 #include "u8string.h"
 
 #include <stdlib.h>
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 
 string_t* u8str_create(size_t size) {
-    string_t* ret = malloc(sizeof(size_t)  // size
-                           + sizeof(size_t) // clen
-                           + size); // bytes
+    string_t* ret = malloc(sizeof(size_t)       // size
+                           + sizeof(size_t)     // clen
+                           + size);             // bytes
     ret->size = size;
     ret->clen = 0;
 
     return ret;
 }
 
-void u8str_cleanup(string_t *str) {
-    free(str);
+string_t* u8str_resize(string_t *old_str, size_t new_size) {
+    assert(new_size > old_str-> size);
+
+    string_t* new_str = malloc(sizeof(size_t)       // size
+                               + sizeof(size_t)     // clen
+                               + new_size);         // bytes
+
+    memcpy(new_str, old_str, old_str->size);
+    new_str->size = new_size;
+    new_str->clen = old_str->clen;
+
+    u8str_cleanup(old_str);
+    
+    return new_str;
 }
 
-bool u8str_cmp(string_t* s1, string_t* s2) {
-    if (s1->size != s2-> size) return false;
-
-    return true;
+void u8str_cleanup(string_t *str) {
+    free(str);
 }
 
 size_t u8str_get_bytes_needed_for(wbyte_t c) {
