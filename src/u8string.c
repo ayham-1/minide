@@ -108,3 +108,19 @@ size_t u8str_clen(string_t* str) {
     }
     return clen;
 }
+
+bool u8str_is_seq_valid(wbyte_t c) {
+    byte_t* arr = ((byte_t*) &c);
+    size_t seq_len = u8str_get_bytes_needed_for(arr[3]) ;
+
+    /* check first byte */
+    if (seq_len <= 1) false;
+
+    /* check sequence bits */
+    if (!IS_CONT_BYTE(arr[2])) return false;
+    if (seq_len >= 3 && !IS_CONT_BYTE(arr[1])) return false;
+    if (seq_len == 4 && !IS_CONT_BYTE(arr[0])) return false;
+
+    return true;
+}
+
