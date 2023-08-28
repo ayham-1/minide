@@ -11,4 +11,6 @@ typedef struct {
 path_t* path_create(size_t size);
 void path_cleanup(path_t* p);
 
+void path_sanitize(path_t* p);
+
 #endif

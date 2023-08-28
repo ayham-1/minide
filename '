@@ -90,10 +90,22 @@ size_t u8str_clen(string_t* str) {
     size_t clen = 0;
 
     byte_t* ptr = str->bytes;
-    while (u8str_inc(str, &ptr)) clen++;
+    size_t traversed_size = 0;
 
-    clen++; // u8str_inc does not increment past last character
-
+    size_t bytes_traversed = 0;
+    while (bytes_traversed <= str->size) {
+        if (u8str_get_bytes_needed_for(MAKE_BYTE_WBYTE(*ptr)) != 1) {
+            wbyte_t u;
+            size_t u_len = u8str_get_wbyte_seq(ptr, &u);
+            ptr += u_len;
+            bytes_traversed += u_len;
+        }
+        else {
+            ptr++;
+            bytes_traversed++;
+        };
+        clen++;
+    }
     return clen;
 }
 
@@ -112,37 +124,17 @@ bool u8str_is_seq_valid(wbyte_t c) {
     return true;
 }
 
-bool u8str_inc(string_t* s, byte_t** ptr) {
-    assert(s->bytes <= *ptr);
-    assert(*ptr <= s->bytes + s->size);
+byt_t u8str_inc(string_t* s, byte_t* ptr) {
+    assert(s->bytes <= ptr && s->bytes + s->size > ptr);
 
-    if (*ptr + 1 >= s->bytes + s->size) return false;
-
-    size_t seq_len = u8str_get_bytes_needed_for(MAKE_BYTE_WBYTE(**ptr));
+    size_t seq_len = u8str_get_bytes_needed_for(MAKE_BYTE_WBYTE(*ptr));
 
     // refuse to increment outside of allocated memory 
-    if (*ptr + seq_len > s->bytes + s->size) return false;
+    if (ptr + seq_len >= s->bytes + s->size) return false;
 
-    if (*ptr + seq_len == s->bytes) return true;
-
-    if (seq_len == 0) (*ptr)--;
-    else (*ptr) += seq_len;
-
-    return true;
+    return *ptr;
 }
 
-bool u8str_dec(string_t* s, byte_t** ptr) {
-    assert(s->bytes <= *ptr);
-    assert(*ptr <= s->bytes + s->size);
-
-    // refuse to decrement outside of allocated memory 
-    if (*ptr == s->bytes) return false;
-
-    if (IS_CONT_BYTE(**ptr)) {
-        while (*ptr >= s->bytes && IS_CONT_BYTE(**ptr)) *ptr -= 1;
-        *ptr -= 1;
-    } else (*ptr)--;
-
+bool u8str_dec(string_t* s, byte_t* ptr) {
     return true;
-
 }

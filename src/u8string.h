@@ -2,7 +2,6 @@
  * Simple UTF-8 implementation for minide.
  * Does not automatically verify UTF-8 rules.
  * Does not check if memory is enough when reading UTF-8 sequences.
- * Little-endian support only.
  * */
 #ifndef U8_STRING_H
 #define U8_STRING_H
@@ -32,6 +31,9 @@ size_t u8str_clen(string_t* str);
 
 bool u8str_is_seq_valid(wbyte_t c);
 
+bool u8str_inc(string_t* s, byte_t** ptr);
+bool u8str_dec(string_t* s, byte_t** ptr);
+
 #define U8_4_BYTE_MASK 0b11110000
 #define U8_3_BYTE_MASK 0b11100000
 #define U8_2_BYTE_MASK 0b11000000
@@ -43,6 +45,6 @@ bool u8str_is_seq_valid(wbyte_t c);
 #define COMBINE_BYTES_TO_WBYTE(a, b, c, d) (d | (c << 8) | (b << 16) | (a << 24))
 
 #define IS_CONT_BYTE(b) ((b & U8_CONT_BYTE_MASK) == U8_CONT_BYTE_MASK) \
-                     && ((~b & 0b01000000) == 0b01000000)
+                     && (((~b) & 0b01000000) == 0b01000000)
 
 #endif

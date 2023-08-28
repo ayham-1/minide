@@ -11,11 +11,17 @@
 int main(int argc, char *argv[]) {
     string_t* ustr = u8str_create(HELLO_BYTES_NUM);
 
-    assert(u8str_get_bytes_needed_for(MAKE_BYTE_WBYTE(0xF0)) == 4);
-
     memcpy(ustr->bytes, HELLO, HELLO_BYTES_NUM);
 
-    assert(u8str_clen(ustr) == HELLO_LEN);
+    size_t incs = 0;
+
+    byte_t* ptr = ustr->bytes;
+    while (u8str_inc(ustr, &ptr)) incs++;
+    printf("%i", (int)incs);
+
+    // '- 1' -> must not increment past last character
+    assert(incs == HELLO_LEN - 1);
+    assert(*ptr == 0b11110000);
 
     return 0;
 }
