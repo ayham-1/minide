@@ -114,16 +114,15 @@ bool u8str_is_seq_valid(wbyte_t c) {
 
 bool u8str_inc(string_t* s, byte_t** ptr) {
     assert(s->bytes <= *ptr);
-    assert(*ptr <= s->bytes + s->size);
+    assert(*ptr <= s->bytes + s->size - 1);
 
-    if (*ptr + 1 >= s->bytes + s->size) return false;
+    // refuse to increment outside of allocated memory 
+    if (*ptr + 1 == s->bytes + s->size) return false;
 
     size_t seq_len = u8str_get_bytes_needed_for(MAKE_BYTE_WBYTE(**ptr));
 
     // refuse to increment outside of allocated memory 
-    if (*ptr + seq_len > s->bytes + s->size) return false;
-
-    if (*ptr + seq_len == s->bytes) return true;
+    if (*ptr + seq_len > s->bytes + s->size - 1) return false;
 
     if (seq_len == 0) (*ptr)--;
     else (*ptr) += seq_len;
@@ -133,7 +132,7 @@ bool u8str_inc(string_t* s, byte_t** ptr) {
 
 bool u8str_dec(string_t* s, byte_t** ptr) {
     assert(s->bytes <= *ptr);
-    assert(*ptr <= s->bytes + s->size);
+    assert(*ptr <= s->bytes + s->size - 1);
 
     // refuse to decrement outside of allocated memory 
     if (*ptr == s->bytes) return false;
@@ -144,5 +143,4 @@ bool u8str_dec(string_t* s, byte_t** ptr) {
     } else (*ptr)--;
 
     return true;
-
 }

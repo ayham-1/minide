@@ -5,7 +5,7 @@
 #include "../src/u8string.h"
 
 #define HELLO "HELLO 👋 WORLD 🌏"
-#define HELLO_BYTES_NUM 21
+#define HELLO_BYTES_NUM sizeof(HELLO) - 1 // ignore \0
 #define HELLO_LEN 15
 
 int main(int argc, char *argv[]) {
