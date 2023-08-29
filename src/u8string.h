@@ -14,6 +14,7 @@
 
 typedef uint32_t wbyte_t;
 typedef uint8_t byte_t;
+typedef byte_t* u8cptr_t; // pointer with knowledge of UTF-8
 
 typedef struct {
     size_t size;

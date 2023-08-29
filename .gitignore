@@ -55,4 +55,5 @@ dkms.conf
 .ccls-cache
 
 # cmake
-.build
+.build/
+Testing/

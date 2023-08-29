@@ -13,4 +13,6 @@ void path_cleanup(path_t* p);
 
 void path_sanitize(path_t* p);
 
+bool path_traverse(path_t* p);
+
 #endif

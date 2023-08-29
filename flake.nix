@@ -20,6 +20,7 @@
                         cmake
                         ninja
                         gdb
+                        valgrind
                     ];
 
                     buildInputs = with pkgs; [
