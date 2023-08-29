@@ -17,5 +17,6 @@ int main(int argc, char *argv[]) {
 
     assert(u8str_clen(ustr) == HELLO_LEN);
 
+    u8str_cleanup(ustr);
     return 0;
 }

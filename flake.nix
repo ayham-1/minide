@@ -21,6 +21,9 @@
                         ninja
                         gdb
                         valgrind
+                        man
+                        man-pages
+                        man-pages-posix
                     ];
 
                     buildInputs = with pkgs; [
@@ -28,7 +31,8 @@
                         glew
                     ];
                     shellHook = ''
-                        export PS1="minide> "
+                        #export PS1="minide> "
+                        export PS1='[\#][$?] \[\e[2m\]\t \[\e[0;1;3m\]minide\[\e[0m\]> '
                         alias debug="./scripts/debug.sh"
                         alias release="./scripts/release.sh"
                         alias test="./scripts/test.sh"

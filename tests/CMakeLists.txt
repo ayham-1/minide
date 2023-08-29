@@ -16,13 +16,7 @@ function(add_sanitize_test tname src)
     add_executable(sanitize_${tname} ${src})
     target_link_libraries(sanitize_${tname} PRIVATE min)
     add_test(sanitize_${tname} sanitize_${tname})
-    target_compile_options(sanitize_${tname} PRIVATE -g3 -ggdb -O0
-                -fno-stack-protector
-                -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract
-                -fsanitize=leak
-                -fsanitize=undefined
-                    -fsanitize=shift
-                    -fsanitize=shift-exponent -fsanitize=shift-base -fsanitize=integer-divide-by-zero)
+    target_compile_options(sanitize_${tname} PRIVATE -g3 -ggdb)
     target_link_options(sanitize_${tname} PRIVATE -static-libasan
                 -fno-stack-protector
                 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract

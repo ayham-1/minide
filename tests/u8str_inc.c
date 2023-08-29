@@ -15,13 +15,13 @@ int main(int argc, char *argv[]) {
 
     size_t incs = 0;
 
-    byte_t* ptr = ustr->bytes;
+    u8cptr_t ptr = ustr->bytes;
     while (u8str_inc(ustr, &ptr)) incs++;
-    printf("%i", (int)incs);
 
     // '- 1' -> must not increment past last character
     assert(incs == HELLO_LEN - 1);
     assert(*ptr == 0b11110000);
 
+    u8str_cleanup(ustr);
     return 0;
 }

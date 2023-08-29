@@ -89,7 +89,7 @@ size_t u8str_clen(string_t* str) {
     if (str->clen != 0) return str->clen;
     size_t clen = 0;
 
-    byte_t* ptr = str->bytes;
+    u8cptr_t ptr = str->bytes;
     while (u8str_inc(str, &ptr)) clen++;
 
     clen++; // u8str_inc does not increment past last character
@@ -112,7 +112,7 @@ bool u8str_is_seq_valid(wbyte_t c) {
     return true;
 }
 
-bool u8str_inc(string_t* s, byte_t** ptr) {
+bool u8str_inc(string_t* s, u8cptr_t* ptr) {
     assert(s->bytes <= *ptr);
     assert(*ptr <= s->bytes + s->size - 1);
 
@@ -130,7 +130,7 @@ bool u8str_inc(string_t* s, byte_t** ptr) {
     return true;
 }
 
-bool u8str_dec(string_t* s, byte_t** ptr) {
+bool u8str_dec(string_t* s, u8cptr_t* ptr) {
     assert(s->bytes <= *ptr);
     assert(*ptr <= s->bytes + s->size - 1);
 

@@ -32,8 +32,8 @@ size_t u8str_clen(string_t* str);
 
 bool u8str_is_seq_valid(wbyte_t c);
 
-bool u8str_inc(string_t* s, byte_t** ptr);
-bool u8str_dec(string_t* s, byte_t** ptr);
+bool u8str_inc(string_t* s, u8cptr_t* ptr);
+bool u8str_dec(string_t* s, u8cptr_t* ptr);
 
 #define U8_4_BYTE_MASK 0b11110000
 #define U8_3_BYTE_MASK 0b11100000
