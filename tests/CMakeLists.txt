@@ -46,4 +46,4 @@ gen_test(u8str_inc)
 gen_test(u8str_dec)
 
 # path testing
-#gen_test(path_expand)
+gen_test(path_expand)

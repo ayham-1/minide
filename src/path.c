@@ -8,26 +8,28 @@
 #include <limits.h>
 
 void path_create(path_t* p, size_t size) {
-    p->fullPath = u8str_create(size);
+    u8str_create(&p->fullPath, size);
 }
 
 void path_cleanup(path_t* p) {
-    u8str_cleanup(p->fullPath);
+    u8str_cleanup(&p->fullPath);
 }
 
 bool path_expand(path_t* p) {
 #ifdef __linux__
-    byte_t* new_path = (byte_t*)realpath((char*)p->fullPath->bytes, NULL);
+    byte_t* new_path = (byte_t*)realpath((char*)p->fullPath.bytes, NULL);
     if (new_path == NULL) {
-        log_error("path: %s, couldn't be expanded by system, error: %s", p->fullPath->bytes, strerror(errno));
+        log_error("path: %s, couldn't be expanded by system. error: %s", p->fullPath.bytes, strerror(errno));
+        return false;
     } else {
-        u8str_cleanup(p->fullPath);
+        u8str_cleanup(&p->fullPath);
         byte_t* ptr = new_path;
         while (*ptr != '\0') ptr++;
-        p->fullPath = u8str_create(ptr - new_path);
-        memcpy(new_path, p->fullPath->bytes, ptr - new_path); // maybe this can be done easier 
+        u8str_create(&p->fullPath, ptr - new_path);
+        memcpy(new_path, p->fullPath.bytes, ptr - new_path); // maybe this can be done easier 
+        free(new_path); // man 3 realpath says PATH_MAX is allocated on return, cpy and free
+        return true;
     }
-    return true;
 #else
     log_warn("HAHA, you don't get files!!!!");
     return false;

@@ -9,7 +9,7 @@
 #include "u8string.h"
 
 typedef struct {
-    string_t* fullPath;
+    string_t fullPath;
 } path_t;
 
 void path_create(path_t* p, size_t size);

@@ -15,7 +15,7 @@ find_package(glew REQUIRED)
 set(SOURCES
     src/logger.c
     src/u8string.c
-    #src/path.c
+    src/path.c
 )
 
 add_library(
