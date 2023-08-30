@@ -1,17 +1,21 @@
+/*
+ * Basic cross-platform all path-related things.
+ * Assumes logger.h is initialized.
+ * */
 #ifndef PATH_H
 #define PATH_H
 
+#include "logger.h"
 #include "u8string.h"
 
 typedef struct {
     string_t* fullPath;
 } path_t;
 
-path_t* path_create(size_t size);
+void path_create(path_t* p, size_t size);
 void path_cleanup(path_t* p);
 
-void path_sanitize(path_t* p);
-void path_expand(path_t* p);
+bool path_expand(path_t* p);
 
 bool path_traverse(path_t* p);
 

@@ -19,12 +19,11 @@ typedef byte_t* u8cptr_t; // pointer with knowledge of UTF-8
 typedef struct {
     size_t size;
     size_t clen;
-    byte_t bytes[];
+    byte_t* bytes;
 } string_t;
 
-string_t* u8str_create(size_t size);
-string_t* u8str_resize(string_t* old_str, size_t new_size);
-void u8str_cleanup(string_t *str);
+void u8str_create(string_t* p, size_t size);
+void u8str_cleanup(string_t* p);
 
 size_t u8str_get_bytes_needed_for(wbyte_t c);
 size_t u8str_get_wbyte_seq(byte_t* ptr, wbyte_t* u);

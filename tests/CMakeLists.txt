@@ -44,3 +44,6 @@ gen_test(u8str_get_wbyte_seq)
 gen_test(u8str_clen)
 gen_test(u8str_inc)
 gen_test(u8str_dec)
+
+# path testing
+#gen_test(path_expand)

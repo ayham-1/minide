@@ -13,8 +13,9 @@ find_package(glfw3 3.3.8 REQUIRED)
 find_package(glew REQUIRED)
 
 set(SOURCES
-    src/u8string.c
     src/logger.c
+    src/u8string.c
+    #src/path.c
 )
 
 add_library(
