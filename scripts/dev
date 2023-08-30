@@ -1,0 +1,16 @@
+#!/bin/sh
+tmux new-session -s minide   -n code -d
+tmux source .tmux.conf
+
+tmux new-window  -t minide:2 -n run
+tmux new-window  -t minide:3 -n files
+tmux new-window  -t minide:4 -n git
+
+tmux send-keys -t 'code' 'nix develop' Enter
+tmux send-keys -t 'code' 'ide' Enter
+tmux send-keys -t 'run' 'test' Enter
+tmux send-keys -t 'files' 'man tmux' Enter
+tmux send-keys -t 'git' 'git log' Enter
+
+tmux select-window -t minide:1
+tmux -2 attach-session -t minide

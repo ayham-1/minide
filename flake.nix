@@ -29,6 +29,8 @@
                     buildInputs = with pkgs; [
                         glfw
                         glew
+                        freetype
+                        cglm
                     ];
                     shellHook = ''
                         #export PS1="minide> "

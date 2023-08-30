@@ -11,9 +11,12 @@ project(
 
 find_package(glfw3 3.3.8 REQUIRED)
 find_package(glew REQUIRED)
+find_package(cglm REQUIRED)
+find_package(Freetype REQUIRED)
 
 set(SOURCES
     src/logger.c
+    src/text_renderer.c
     src/u8string.c
     src/path.c
 )
@@ -27,6 +30,8 @@ target_link_libraries(
     min
     PRIVATE
     glfw
+    cglm
+    freetype
     ${GLEW_LIBRARIES}
 )
 set_property(TARGET min PROPERTY C_STANDARD 23)
