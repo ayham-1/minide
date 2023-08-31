@@ -11,17 +11,19 @@
 #include <cglm/cglm.h>   /* for inline */
 #include <cglm/call.h>   /* for library call (this also includes cglm.h) */
 
-
 #include "logger.h"
 #include "u8string.h"
+
+#define SCR_WIDTH 600
+#define SCR_HEIGHT 800
 
 const char* vertexShader = "\
 #version 330 core\n\
 layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>\n\
 out vec2 TexCoords; \n\
-//uniform mat4 projection; \n\
+uniform mat4 projection; \n\
 void main() { \n\
-gl_Position = vec4(vertex.xy, 0.0, 1.0); \n\
+gl_Position = projection * vec4(vertex.xy, 0.0, 1.0); \n\
 TexCoords = vertex.zw; \n}";
 
 const char* fragmentShader = "\
@@ -61,7 +63,7 @@ int main(int argc, char* argv[]) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
  
-    window = glfwCreateWindow(640, 480, "minide", NULL, NULL);
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "minide", NULL, NULL);
     if (!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -115,7 +117,11 @@ int main(int argc, char* argv[]) {
         glGetProgramInfoLog(glslID, 512, NULL, infoLog);
         log_error("glsl: program link failed. error: %s", infoLog);
     }
+
+    mat4 projection;
+    glm_ortho(0.0f, SCR_WIDTH, 0.0f, SCR_HEIGHT, 0.0, 1.0, projection);
     glUseProgram(glslID);
+    glUniformMatrix4fv(glGetUniformLocation(glslID, "projection"), 1, GL_FALSE, (float*)projection);
 
     FT_Library  library;
     if(FT_Init_FreeType(&library)) {
@@ -128,13 +134,14 @@ int main(int argc, char* argv[]) {
         return -1;
     }
     log_info("freetype: loaded %i glyphs. YEEEPEE!", (int)face->num_glyphs);
-    FT_Set_Pixel_Sizes(face, 0, 48);
-    if (FT_Load_Char(face, 'X', FT_LOAD_RENDER)) {
+    FT_Set_Pixel_Sizes(face, 0, 24);
+    if (FT_Load_Char(face, 0x088B, FT_LOAD_RENDER)) {
         log_error("freetype: failed to load glyph");
         return -1;
     }
 
     // generate texture
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -168,20 +175,17 @@ int main(int argc, char* argv[]) {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
-    glUniform3f(glGetUniformLocation(glslID, "textColor"), 0.5, 0.4, 0.3);
+    glUniform3f(glGetUniformLocation(glslID, "textColor"), 1.0, 1.0, 1.0);
     glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(VAO);
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    float xpos = 50 + face->glyph->bitmap_left;
-    float ypos = 50;
+    float xpos = 50;
+    float ypos = 50 - face->glyph->bitmap.rows + face->glyph->bitmap_top;
 
     float w = face->glyph->bitmap.width;
     float h = face->glyph->bitmap.rows;
 
-    // update VBO for each character
     float vertices[6][4] = {
         { xpos,     ypos + h,   0.0f, 0.0f },            
         { xpos,     ypos,       0.0f, 1.0f },
@@ -194,8 +198,8 @@ int main(int argc, char* argv[]) {
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
 
     while (!glfwWindowShouldClose(window)) {
-        //glClear(GL_COLOR_BUFFER_BIT);
-        //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glfwSwapBuffers(window);
         glfwPollEvents();

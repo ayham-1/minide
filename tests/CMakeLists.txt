@@ -32,7 +32,7 @@ function(gen_test name)
 
     add_test(NAME test_${name}
              COMMAND $<TARGET_FILE:test_${name}>)
-    set_property(TARGET test_${name} PROPERTY CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g3 -ggdb -O0 -fno-stack-protector -frecord-gcc-switches")
+    set_property(TARGET test_${name} PROPERTY CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g3 -ggdb -fno-stack-protector -frecord-gcc-switches")
 
     add_memcheck_test(test_${name})
     add_sanitize_test(test_${name} ${name}.c)
@@ -44,6 +44,8 @@ gen_test(u8str_get_wbyte_seq)
 gen_test(u8str_clen)
 gen_test(u8str_inc)
 gen_test(u8str_dec)
+gen_test(u8str_from_code_point)
+gen_test(u8str_is_utf8_valid)
 
 # path testing
 gen_test(path_expand)
