@@ -13,6 +13,7 @@
 
 #include "logger.h"
 #include "u8string.h"
+#include "glyph_cache.h"
 
 #define SCR_WIDTH 600
 #define SCR_HEIGHT 800
@@ -123,84 +124,77 @@ int main(int argc, char* argv[]) {
     glUseProgram(glslID);
     glUniformMatrix4fv(glGetUniformLocation(glslID, "projection"), 1, GL_FALSE, (float*)projection);
 
-    FT_Library  library;
-    if(FT_Init_FreeType(&library)) {
-        log_error("Freetype: failed library initialization.");
-        return -1;
-    }
-    FT_Face     face;      /* handle to face object */
-    if (FT_New_Face(library, "assets/unifont.ttf", 0, &face)) {
-        log_error("Freetype: failed loading assets/unifont.ttf.");
-        return -1;
-    }
-    log_info("freetype: loaded %i glyphs. YEEEPEE!", (int)face->num_glyphs);
-    FT_Set_Pixel_Sizes(face, 0, 24);
-    if (FT_Load_Char(face, 0x088B, FT_LOAD_RENDER)) {
-        log_error("freetype: failed to load glyph");
-        return -1;
-    }
-
-    // generate texture
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RED,
-        face->glyph->bitmap.width,
-        face->glyph->bitmap.rows,
-        0,
-        GL_RED,
-        GL_UNSIGNED_BYTE,
-        face->glyph->bitmap.buffer
-    );
-    // set texture options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    unsigned int VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glUniform3f(glGetUniformLocation(glslID, "textColor"), 1.0, 1.0, 1.0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    float xpos = 50;
-    float ypos = 50 - face->glyph->bitmap.rows + face->glyph->bitmap_top;
-
-    float w = face->glyph->bitmap.width;
-    float h = face->glyph->bitmap.rows;
-
-    float vertices[6][4] = {
-        { xpos,     ypos + h,   0.0f, 0.0f },            
-        { xpos,     ypos,       0.0f, 1.0f },
-        { xpos + w, ypos,       1.0f, 1.0f },
-
-        { xpos,     ypos + h,   0.0f, 0.0f },
-        { xpos + w, ypos,       1.0f, 1.0f },
-        { xpos + w, ypos + h,   1.0f, 0.0f }           
-    };
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+    path_t font;
+    #define FONT "assets/unifont.ttf"
+    path_create(&font, sizeof(FONT)+1);
+    memcpy(font.fullPath.bytes, FONT, sizeof(FONT));
+    gc_create(font, 500, 24, true);
+    
+//    // generate texture
+//    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//    unsigned int texture;
+//    glGenTextures(1, &texture);
+//    glBindTexture(GL_TEXTURE_2D, texture);
+//    glTexImage2D(
+//        GL_TEXTURE_2D,
+//        0,
+//        GL_RED,
+//        face->glyph->bitmap.width,
+//        face->glyph->bitmap.rows,
+//        0,
+//        GL_RED,
+//        GL_UNSIGNED_BYTE,
+//        face->glyph->bitmap.buffer
+//    );
+//    // set texture options
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//
+//    unsigned int VAO, VBO;
+//    glGenVertexArrays(1, &VAO);
+//    glGenBuffers(1, &VBO);
+//    glBindVertexArray(VAO);
+//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+//    glEnableVertexAttribArray(0);
+//    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+//    glBindBuffer(GL_ARRAY_BUFFER, 0);
+//
+//    glUniform3f(glGetUniformLocation(glslID, "textColor"), 1.0, 1.0, 1.0);
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, texture);
+//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//    float xpos = 50;
+//    float ypos = 50 - face->glyph->bitmap.rows + face->glyph->bitmap_top;
+//
+//    float w = face->glyph->bitmap.width;
+//    float h = face->glyph->bitmap.rows;
+//
+//    float vertices[6][4] = {
+//        { xpos,     ypos + h,   0.0f, 0.0f },            
+//        { xpos,     ypos,       0.0f, 1.0f },
+//        { xpos + w, ypos,       1.0f, 1.0f },
+//
+//        { xpos,     ypos + h,   0.0f, 0.0f },
+//        { xpos + w, ypos,       1.0f, 1.0f },
+//        { xpos + w, ypos + h,   1.0f, 0.0f }           
+//    };
+//    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+//
+    //
+    //FT_Done_Face(face);
+    //FT_Done_FreeType(library);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        //glDrawArrays(GL_TRIANGLES, 0, 6);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -209,8 +203,6 @@ int main(int argc, char* argv[]) {
     logger_cleanup();
     glfwDestroyWindow(window);
     glfwTerminate();
-    FT_Done_Face(face);
-    FT_Done_FreeType(library);
     exit(EXIT_SUCCESS);
     return 0;
 }

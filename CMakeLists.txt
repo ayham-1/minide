@@ -19,6 +19,10 @@ set(SOURCES
     src/text_renderer.c
     src/u8string.c
     src/path.c
+
+    src/types/circular_buffer.c
+
+    src/glyph_cache.c
 )
 
 add_library(
