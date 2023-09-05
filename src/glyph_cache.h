@@ -24,6 +24,8 @@ typedef struct {
     /* Freetype */
     FT_Library ft_library;
     FT_Face ft_face;
+
+    /* cache hash table */
 } glyph_cache;
 
 static glyph_cache g_glyph_cache;

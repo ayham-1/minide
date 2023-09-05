@@ -9,15 +9,16 @@ add_compile_options(-frecord-gcc-switches)
 find_program(MEMORYCHECK_COMMAND valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
 function(add_memcheck_test tname)
-    add_test(memcheck_${tname} ${MEMORYCHECK_COMMAND} ./${tname} ${MEMORYCHECK_COMMAND_OPTIONS})
+    add_test(memcheck_${tname} ${MEMORYCHECK_COMMAND} ./${tname} ${MEMORYCHECK_COMMAND_OPTIONS}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIRECTORY})
 endfunction(add_memcheck_test)
 
 function(add_sanitize_test tname src)
     add_executable(sanitize_${tname} ${src})
     target_link_libraries(sanitize_${tname} PRIVATE min)
-    add_test(sanitize_${tname} sanitize_${tname})
+    add_test(sanitize_${tname} sanitize_${tname} WORKING_DIRECTORY ${CMAKE_SOURCE_DIRECTORY})
     target_compile_options(sanitize_${tname} PRIVATE -g3 -ggdb)
-    target_link_options(sanitize_${tname} PRIVATE -static-libasan
+    target_link_options(sanitize_${tname} PRIVATE -static-libasan -O0
                 -fno-stack-protector
                 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract
                 -fsanitize=leak
@@ -32,7 +33,7 @@ function(gen_test name)
 
     add_test(NAME test_${name}
              COMMAND $<TARGET_FILE:test_${name}>)
-    set_property(TARGET test_${name} PROPERTY CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g3 -ggdb -fno-stack-protector -frecord-gcc-switches")
+    set_property(TARGET test_${name} PROPERTY CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g3 -ggdb -fno-stack-protector -frecord-gcc-switches")
 
     add_memcheck_test(test_${name})
     add_sanitize_test(test_${name} ${name}.c)
@@ -49,3 +50,7 @@ gen_test(u8str_is_utf8_valid)
 
 # path testing
 gen_test(path_expand)
+
+# hash table testing
+gen_test(hash_table_insert_collision)
+gen_test(hash_table_insert_unifont)

@@ -21,6 +21,7 @@ set(SOURCES
     src/path.c
 
     src/types/circular_buffer.c
+    src/types/hash_table.c
 
     src/glyph_cache.c
 )

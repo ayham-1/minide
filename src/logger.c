@@ -27,7 +27,7 @@ int logger_init(logger_level_t const level, char const *const filename,
       return -1;
     }
   } else {
-    g_logger->fp = stderr;
+    g_logger->fp = NULL;
   }
 
   log_info("logger started");
@@ -81,16 +81,18 @@ void logger_log(logger_level_t const level, char const *const file,
         return;
     }
 
-    // file logger
-    get_datetime(g_logger->fp);
-    g_logger->std_file->fprintf(g_logger->fp, "%-10s", log_level_strings[level]);
-    g_logger->std_file->fprintf(g_logger->fp, "%s: %lu: ", file, line);
     va_list argp;
-    va_start(argp, fmt);
-    g_logger->std_file->vfprintf(g_logger->fp, fmt, argp);
-    va_end(argp);
-    g_logger->std_file->fprintf(g_logger->fp, "\n");
-    fflush(g_logger->fp);
+    // file logger
+    if (g_logger->fp != NULL) {
+        get_datetime(g_logger->fp);
+        g_logger->std_file->fprintf(g_logger->fp, "%-10s", log_level_strings[level]);
+        g_logger->std_file->fprintf(g_logger->fp, "%s: %lu: ", file, line);
+        va_start(argp, fmt);
+        g_logger->std_file->vfprintf(g_logger->fp, fmt, argp);
+        va_end(argp);
+        g_logger->std_file->fprintf(g_logger->fp, "\n");
+        fflush(g_logger->fp);
+    }
 
     // console output
     FILE* fp = NULL;
