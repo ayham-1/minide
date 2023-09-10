@@ -54,6 +54,6 @@ bool hash_table_get(const hash_table_t* const table,
                     hash_table_entry_t** out);
 
 bool hash_table_remove(hash_table_t* table,
-                       uint8_t *key);
+                       const uint8_t* const key);
 
 #endif

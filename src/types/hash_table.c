@@ -107,4 +107,22 @@ bool hash_table_get(const hash_table_t* const table,
 }
 
 bool hash_table_remove(hash_table_t* table,
-                       uint8_t *key);
+                       const uint8_t* const key) {
+    uint64_t hash_value = table->hashFunc(key);
+    uint64_t index = hash_value % (table->capacity - 1);
+
+    if (table->buckets[index] == NULL)  return false;
+
+    hash_table_entry_t* curr_entry = table->buckets[index];
+    while (curr_entry->next != NULL && !table->eqlFunc(curr_entry->key, key))
+        curr_entry = curr_entry->next;
+
+    if (!table->eqlFunc(curr_entry->key, key)) return false;
+
+    curr_entry->prev->next = curr_entry->next;
+    curr_entry->next->prev = curr_entry->prev;
+
+    table->entryCleanupFunc(curr_entry);
+
+    return true;
+}
