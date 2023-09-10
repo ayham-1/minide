@@ -4,14 +4,6 @@
 #include <string.h>
 #include <assert.h>
 
-struct hash_table_entry_t {
-    hash_table_entry_t* prev;
-    hash_table_entry_t* next;
-
-    uint8_t* key;
-    uint8_t* data;
-};
-
 bool hash_table_create(hash_table_t* table,
                        size_t capacity, size_t bucketDepth,
                        bool enforceBucketDepth,
@@ -59,14 +51,13 @@ void hash_table_cleanup(hash_table_t* table) {
         }
     }
 
-    printf("Hello world");
     free(table->buckets);
 }
 
 bool hash_table_insert(hash_table_t* table, 
                        uint8_t *key, uint8_t* data) {
     uint64_t hash_value = table->hashFunc(key);
-    uint64_t index = hash_value % table->capacity;
+    uint64_t index = hash_value % (table->capacity - 1);
 
     if (table->buckets[index] != 0) {
         table->collisions++;

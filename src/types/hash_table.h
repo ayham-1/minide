@@ -10,6 +10,15 @@
 typedef uint64_t (*hash_function)(uint8_t* key);
 
 typedef struct hash_table_entry_t hash_table_entry_t;
+
+struct hash_table_entry_t {
+    hash_table_entry_t* prev;
+    hash_table_entry_t* next;
+
+    uint8_t* key;
+    uint8_t* data;
+};
+
 typedef bool (*hash_table_entry_cleanup)(hash_table_entry_t* entry);
 
 typedef struct {

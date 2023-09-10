@@ -3,8 +3,9 @@ tmux new-session -s minide   -n code -d
 tmux source .tmux.conf
 
 tmux new-window  -t minide:2 -n run
-tmux new-window  -t minide:3 -n files
-tmux new-window  -t minide:4 -n git
+tmux new-window  -t minide:3 -n gdb
+tmux new-window  -t minide:4 -n files
+tmux new-window  -t minide:5 -n git
 
 tmux send-keys -t 'code' 'nix develop' Enter
 tmux send-keys -t 'code' 'ide' Enter

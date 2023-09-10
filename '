@@ -1,5 +1,0 @@
-rm -rf .build/ 
-cmake -B.build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -GNinja  &&
-ninja -C .build -d stats -j 8 &&
-ctest --test-dir .build/tests --output-on-failure -j 8 -R $1
-cd ..
