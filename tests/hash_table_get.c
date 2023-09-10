@@ -6,15 +6,14 @@
 #include "../src/logger.h"
 
 uint64_t hash(const uint8_t* const key) {
-    return 1;
+    return 1; // force hash collision
 }
 
 bool cleanup(hash_table_entry_t* entry) {
     return true;
 }
 
-bool eql_entry(const uint8_t* const key1,
-               const uint8_t* const key2) {
+bool eql(const uint8_t* const key1, const uint8_t* const key2) {
     return *key1 == *key2;
 }
 
@@ -22,7 +21,7 @@ int main(int argc, char *argv[]) {
     logger_init(DEBUG, "", false);
 
     hash_table_t table;
-    hash_table_create(&table, 100, 5, false, hash, eql_entry, cleanup);
+    hash_table_create(&table, 100, 5, false, hash, eql, cleanup);
 
     log_info("hash collisions: %i", table.collisions);
 
@@ -32,12 +31,19 @@ int main(int argc, char *argv[]) {
 
     log_info("hash collisions: %i", table.collisions);
 
-    uint8_t key2 = 'B';
-    uint8_t data2 = 'A';
-    hash_table_insert(&table, &key2, &data2);
+    hash_table_entry_t* entry = NULL;
+    assert(hash_table_get(&table, &key, &entry));
+    assert(entry->key == &key);
+    assert(entry->data == &data);
 
-    log_info("hash collisions: %i", table.collisions);
-    assert(table.collisions == 1);
+    assert(!hash_table_get(&table, &data, &entry));
+    key = 'B';
+    data = 'C';
+    hash_table_insert(&table, &key, &data);
+    entry = NULL;
+    assert(hash_table_get(&table, &key, &entry));
+    assert(entry->key == &key);
+    assert(entry->data == &data);
 
     hash_table_cleanup(&table);
     logger_cleanup();

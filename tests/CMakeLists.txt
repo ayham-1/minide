@@ -54,3 +54,4 @@ gen_test(path_expand)
 # hash table testing
 gen_test(hash_table_insert_collision)
 gen_test(hash_table_insert_unifont)
+gen_test(hash_table_get)

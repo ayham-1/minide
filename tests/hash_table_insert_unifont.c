@@ -12,7 +12,7 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
-uint64_t hash(uint8_t* key) {
+uint64_t hash(const uint8_t* const key) {
     // djb2
     // https://web.archive.org/web/20230906035458/http://www.cse.yorku.ca/~oz/hash.html
     uint64_t hash = 5381;
@@ -25,6 +25,14 @@ uint64_t hash(uint8_t* key) {
 
 bool cleanup(hash_table_entry_t* entry) {
     free(entry->key);
+    return true;
+}
+
+bool eql_func(const uint8_t* const key1, const uint8_t* const key2) {
+    if (*key1 != *key2) return false;
+    if (*(key1 + 1) != *(key2 + 1)) return false;
+    if (*(key1 + 2) != *(key2 + 2)) return false;
+    if (*(key1 + 3) != *(key2 + 3)) return false;
     return true;
 }
 
@@ -49,7 +57,7 @@ int main(int argc, char *argv[]) {
     FT_Select_Charmap(face, FT_ENCODING_UNICODE);
 
     hash_table_t table;
-    hash_table_create(&table, 2 * face->num_glyphs, 0, false, hash, cleanup);
+    hash_table_create(&table, 2 * face->num_glyphs, 0, false, hash, eql_func, cleanup);
     
     FT_ULong charcode;
     FT_UInt  gid;
@@ -60,7 +68,7 @@ int main(int argc, char *argv[]) {
         log_debug("codepoint: %llu gid: %u", (unsigned long long)charcode, gid);
         charcode = FT_Get_Next_Char(face, charcode, &gid);
         FT_ULong* c = malloc(sizeof(FT_ULong));
-        *c = gid;
+        *c = charcode;
         hash_table_insert(&table, (uint8_t*)c, (uint8_t*)c);
     }
 

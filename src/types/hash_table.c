@@ -8,8 +8,10 @@ bool hash_table_create(hash_table_t* table,
                        size_t capacity, size_t bucketDepth,
                        bool enforceBucketDepth,
                        hash_function hashFunc,
+                       eql_function eqlFunc,
                        hash_table_entry_cleanup entryCleanupFunc) {
     table->hashFunc = hashFunc;
+    table->eqlFunc = eqlFunc;
     table->entryCleanupFunc = entryCleanupFunc;
 
     table->capacity = capacity;
@@ -54,8 +56,9 @@ void hash_table_cleanup(hash_table_t* table) {
     free(table->buckets);
 }
 
-bool hash_table_insert(hash_table_t* table, 
-                       uint8_t *key, uint8_t* data) {
+bool hash_table_insert(hash_table_t* const table, 
+                       uint8_t* const key,
+                       uint8_t* const data) {
     uint64_t hash_value = table->hashFunc(key);
     uint64_t index = hash_value % (table->capacity - 1);
 
@@ -71,20 +74,35 @@ bool hash_table_insert(hash_table_t* table,
         final_entry->prev = NULL;
         final_entry->next = NULL;
     } else { // collision
-        hash_table_entry_t* deepest_bucket_entry = 
-            table->buckets[index];
-        while(deepest_bucket_entry->next != NULL)
-            deepest_bucket_entry = deepest_bucket_entry->next;
-
-        deepest_bucket_entry->next = malloc(sizeof(hash_table_entry_t));
-        final_entry = deepest_bucket_entry->next;
-        final_entry->prev = deepest_bucket_entry;
-        final_entry->next = NULL;
+        hash_table_entry_t* new_entry = malloc(sizeof(hash_table_entry_t));
+        final_entry = new_entry;
+        final_entry->prev = NULL;
+        final_entry->next = table->buckets[index];
+        table->buckets[index]->prev = final_entry;
     }
 
     final_entry->key = key;
     final_entry->data = data;
+    table->buckets[index] = final_entry;
 
+    return true;
+}
+
+bool hash_table_get(const hash_table_t* const table,
+                    const uint8_t* key, 
+                    hash_table_entry_t** out) {
+    uint64_t hash_value = table->hashFunc(key);
+    uint64_t index = hash_value % (table->capacity - 1);
+
+    if (table->buckets[index] == NULL)  return false;
+
+    hash_table_entry_t* curr_entry = table->buckets[index];
+    while (curr_entry->next != NULL && !table->eqlFunc(curr_entry->key, key))
+        curr_entry = curr_entry->next;
+
+    if (!table->eqlFunc(curr_entry->key, key)) return false;
+
+    *out = curr_entry;
     return true;
 }
 
