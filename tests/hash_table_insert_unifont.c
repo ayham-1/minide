@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     FT_Select_Charmap(face, FT_ENCODING_UNICODE);
 
     hash_table_t table;
-    hash_table_create(&table, 2 * face->num_glyphs, 0, false, hash, eql_func, cleanup);
+    hash_table_create(&table, 2 * face->num_glyphs, hash, eql_func, cleanup);
     
     FT_ULong charcode;
     FT_UInt  gid;

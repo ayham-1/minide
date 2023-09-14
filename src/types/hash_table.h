@@ -29,7 +29,6 @@ typedef struct {
     hash_table_entry_cleanup entryCleanupFunc;
 
     size_t capacity;
-    size_t bucketDepth;
     bool enforceBucketDepth;
 
     hash_table_entry_t** buckets;
@@ -38,8 +37,7 @@ typedef struct {
 } hash_table_t;
 
 bool hash_table_create(hash_table_t* const table,
-                       size_t capacity, size_t bucketDepth,
-                       bool enforceBucketDepth,
+                       size_t capacity,
                        hash_function hashFunc,
                        eql_function eqlFunc,
                        hash_table_entry_cleanup entryCleanupFunc);

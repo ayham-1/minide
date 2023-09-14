@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     logger_init(DEBUG, "", false);
 
     hash_table_t table;
-    hash_table_create(&table, 100, 5, false, hash, eql, cleanup);
+    hash_table_create(&table, 100, hash, eql, cleanup);
 
     log_info("hash collisions: %i", table.collisions);
 

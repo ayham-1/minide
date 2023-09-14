@@ -5,8 +5,7 @@
 #include <assert.h>
 
 bool hash_table_create(hash_table_t* table,
-                       size_t capacity, size_t bucketDepth,
-                       bool enforceBucketDepth,
+                       size_t capacity,
                        hash_function hashFunc,
                        eql_function eqlFunc,
                        hash_table_entry_cleanup entryCleanupFunc) {
@@ -15,8 +14,6 @@ bool hash_table_create(hash_table_t* table,
     table->entryCleanupFunc = entryCleanupFunc;
 
     table->capacity = capacity;
-    table->bucketDepth = bucketDepth;
-    table->enforceBucketDepth = enforceBucketDepth;
 
     table->buckets = malloc(capacity * 
                             sizeof(hash_table_entry_t*));
@@ -24,8 +21,7 @@ bool hash_table_create(hash_table_t* table,
            capacity * sizeof(hash_table_entry_t*));
     table->collisions = 0;
 
-    log_info("initialized new hash table with dimensions of %ix%i, depth enforcable: %i",
-             table->capacity, table->bucketDepth, table->enforceBucketDepth);
+    log_info("initialized new hash table with %i buckets", table->capacity);
     log_info("new hash table current size is %i bytes", 
              capacity * sizeof(hash_table_entry_t*));
 
@@ -40,8 +36,8 @@ void hash_table_cleanup(hash_table_t* table) {
         hash_table_entry_t* start_entry = curr_entry;
 
         while(curr_entry != NULL) {
-            // TODO(ayham): gracefully tell user of issue.
-            assert(table->entryCleanupFunc(curr_entry));
+            if (!table->entryCleanupFunc(curr_entry))
+                log_error("failed cleanup of curr_entry, memory leaks could occur!");
             curr_entry = curr_entry->next;
         }
 

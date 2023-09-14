@@ -125,10 +125,10 @@ int main(int argc, char* argv[]) {
     glUniformMatrix4fv(glGetUniformLocation(glslID, "projection"), 1, GL_FALSE, (float*)projection);
 
     path_t font;
-    #define FONT "assets/unifont.ttf"
+    #define FONT "assets/FreeSans.ttf"
     path_create(&font, sizeof(FONT)+1);
     memcpy(font.fullPath.bytes, FONT, sizeof(FONT));
-    gc_create(font, 500, 24, true);
+    gc_init(font, 500, 24, true);
     
 //    // generate texture
 //    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
