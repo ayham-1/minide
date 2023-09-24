@@ -23,6 +23,7 @@ set(SOURCES
     src/types/circular_buffer.c
     src/types/hash_table.c
 
+    src/glyph_atlas.c
     src/glyph_cache.c
 )
 

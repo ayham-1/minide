@@ -21,6 +21,7 @@
                         ninja
                         gdb
                         valgrind
+                        renderdoc
                         man
                         man-pages
                         man-pages-posix

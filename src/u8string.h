@@ -12,10 +12,8 @@
 #include <stdbool.h>
 #include <wchar.h>
 
-#define WCHAR_BITS 32
-
 typedef uint8_t byte_t;
-typedef uint32_t wbyte_t;
+typedef uint32_t u8encode;
 typedef byte_t* u8cptr_t; // pointer with knowledge of UTF-8
 
 typedef struct {
@@ -27,11 +25,11 @@ typedef struct {
 void u8str_create(string_t* p, size_t size);
 void u8str_cleanup(string_t* p);
 
-size_t u8str_get_bytes_needed_for(wbyte_t c);
-size_t u8str_get_wbyte_seq(byte_t* ptr, wbyte_t* u);
+size_t u8str_get_bytes_needed_for(u8encode c);
+size_t u8str_get_encode_seq(byte_t* ptr, u8encode* out);
 size_t u8str_clen(string_t* str);
 
-bool u8str_is_utf8_valid(wbyte_t c);
+bool u8str_is_utf8_valid(u8encode c);
 
 bool u8str_inc(string_t* s, u8cptr_t* ptr);
 bool u8str_dec(string_t* s, u8cptr_t* ptr);
@@ -39,7 +37,7 @@ bool u8str_dec(string_t* s, u8cptr_t* ptr);
 /* parses U+0000..U+10FFFF 
  * required to be null-terminated
  * */
-wbyte_t u8str_from_code_point(byte_t c[9]);
+u8encode u8str_from_code_point(byte_t c[9]);
 
 #define U8_4_BYTE_MASK 0b11110000
 #define U8_3_BYTE_MASK 0b11100000

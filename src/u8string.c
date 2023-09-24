@@ -17,7 +17,7 @@ void u8str_cleanup(string_t* p) {
 }
 
 
-size_t u8str_get_bytes_needed_for(wbyte_t c) {
+size_t u8str_get_bytes_needed_for(u8encode c) {
     byte_t first = ((byte_t*) &c)[3];
     if ((~first & U8_1_BYTE_MASK) == U8_1_BYTE_MASK) return 1;
 
@@ -28,33 +28,33 @@ size_t u8str_get_bytes_needed_for(wbyte_t c) {
     return 0; // invalid utf-8 start byte
 }
 
-size_t u8str_get_wbyte_seq(byte_t* ptr, wbyte_t *u) {
+size_t u8str_get_encode_seq(byte_t* ptr, u8encode* out) {
     byte_t* src_ptr = ptr; // copy pointer
 
     size_t bytes_num = u8str_get_bytes_needed_for(MAKE_BYTE_WBYTE(*ptr));
     if (bytes_num == 4) {
-        *u = COMBINE_BYTES_TO_WBYTE(
+        *out = COMBINE_BYTES_TO_WBYTE(
             src_ptr[0],
             src_ptr[1],
             src_ptr[2],
             src_ptr[3]
         );
     } else if (bytes_num == 3) {
-        *u = COMBINE_BYTES_TO_WBYTE(
+        *out = COMBINE_BYTES_TO_WBYTE(
             src_ptr[0],
-            src_ptr[1],
+           src_ptr[1],
             src_ptr[2],
             0x0
         );
     } else if (bytes_num == 2) {
-        *u = COMBINE_BYTES_TO_WBYTE(
+        *out = COMBINE_BYTES_TO_WBYTE(
             src_ptr[0],
             src_ptr[1],
             0x0,
             0x0
         );
     } else if (bytes_num == 1) {
-        *u = COMBINE_BYTES_TO_WBYTE(
+        *out = COMBINE_BYTES_TO_WBYTE(
             src_ptr[0],
             0x0,
             0x0,
@@ -79,7 +79,7 @@ size_t u8str_clen(string_t* str) {
     return clen;
 }
 
-bool u8str_is_utf8_valid(wbyte_t c) {
+bool u8str_is_utf8_valid(u8encode c) {
     /* null still considered as string terminator 
      * NOTE(ayham): (pls don't depend on it tho) */
     if (c == 0x0) return true;
@@ -199,12 +199,12 @@ bool u8str_dec(string_t* s, u8cptr_t* ptr) {
     return true;
 }
 
-wbyte_t u8str_from_code_point(byte_t c[9]) {
+u8encode u8str_from_code_point(byte_t c[9]) {
     if (strlen((char*)c) < 6) return 0x0;
     if (!(c[0] == 'U' && c[1] == '+')) return 0x0;
 
     const char* cptr = (char*)&c[2];
-    wbyte_t rawByte = strtoull(cptr, NULL, 16);
+    u8encode rawByte = strtoull(cptr, NULL, 16);
 
     byte_t a[4] = {0};
     short rawOffs[4] = { 18, 12, 6, 0 };

@@ -18,7 +18,6 @@ int main(int argc, char *argv[]) {
 
     gc_init(p, 512, 24, true);
 
-
     path_cleanup(&p);
     gc_cleanup();
     logger_cleanup();
