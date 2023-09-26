@@ -16,10 +16,11 @@ int main(int argc, char *argv[]) {
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-    gc_init(p, 512, 24, true);
+    glyph_cache cache;
+    glyph_cache_init(&cache, GL_TEXTURE0, p, 512, 24, true);
 
     path_cleanup(&p);
-    gc_cleanup();
+    glyph_cache_cleanup(&cache);
     logger_cleanup();
     return 0;
 }

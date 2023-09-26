@@ -13,25 +13,59 @@
 #include "types/hash_table.h"
 
 typedef struct {
+    // https://learnopengl.com/img/in-practice/glyph.png
+    uint16_t advance_x;
+    uint16_t advance_y;
+
+    uint16_t bearing_x;
+    uint16_t bearing_y;
+
+    float texture_x;
+    float texture_y;
+
+    FT_BitmapGlyph bglyph;
+} glyph_info;
+
+typedef struct {
     /* Freetype */
     FT_Library ft_library;
     FT_Face ft_face;
 
     /* cache hash table */
     hash_table_t table; // charcode, FT_Glyph
-    u8encode* table_keys;
-    size_t last_key_offset; 
-    FT_Glyph* table_data;
-    size_t last_data_offset; 
+    size_t capacity;
+    size_t fullness;
+    u8encode* keys;
+    glyph_info* data;
+
+    /* gpu atlas */
+    GLuint atexID;
+    GLuint atexOBJ;
+
+    size_t awidth, aheight;
+    size_t alast_offset_x, alast_offset_y;
+    size_t alast_row_height;
 } glyph_cache;
 
-static glyph_cache g_glyph_cache;
+bool glyph_cache_init(glyph_cache* cache, 
+                      GLuint textureID,
+                      path_t fontPath, size_t capacity,
+                      size_t pixelSize,
+                      bool cacheEnglishTypeface);
+void glyph_cache_cleanup(glyph_cache* cache);
 
-bool gc_init(path_t fontPath, size_t capacity,
-               size_t pixelSize,
-               bool cacheEnglishTypeface);
-void gc_cleanup();
+glyph_info* glyph_cache_append(glyph_cache* cache, 
+                   u8encode encodeID);
 
-FT_Glyph* gc_cache(u8encode encodeID);
+uint64_t __glyph_cache_table_hash(const uint8_t *const key);
+bool __glyph_cache_table_entry_cleanup(hash_table_entry_t *entry);
+bool __glyph_cache_table_eql_func(const uint8_t *const key1, const uint8_t *const key2);
+
+void __glyph_cache_atlas_build(glyph_cache* cache);
+void __glyph_cache_atlas_refill_gpu(glyph_cache* cache);
+void __glyph_cache_atlas_append(glyph_cache* cache, 
+                                glyph_info* info);
+
+#define ATLAS_MAX_WIDTH 1024
 
 #endif

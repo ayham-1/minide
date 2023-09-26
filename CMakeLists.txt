@@ -16,15 +16,15 @@ find_package(Freetype REQUIRED)
 
 set(SOURCES
     src/logger.c
-    src/text_renderer.c
     src/u8string.c
     src/path.c
 
     src/types/circular_buffer.c
     src/types/hash_table.c
 
-    src/glyph_atlas.c
     src/glyph_cache.c
+
+    #src/text_renderer.c
 )
 
 add_library(
