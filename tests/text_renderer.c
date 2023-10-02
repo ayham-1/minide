@@ -2,44 +2,37 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../src/types/hash_table.h"
+#include "../src/path.h"
 #include "../src/logger.h"
+#include "../src/text_renderer.h"
 
-uint64_t hash(const uint8_t* const key) {
-    return 1;
+#define PATH "assets/FreeSans.ttf"
+#define PATH_BYTES_NUM sizeof(PATH)
+
+#include "../src/gl_wrapper.h"
+
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
+int SCR_TARGET_FPS = 1;
+const char* SCR_TITLE = "test_text_renderer";
+bool GL_WRAPPER_DO_CLOSE = false;
+
+path_t p;
+text_renderer_t renderer;
+
+void gl_wrapper_init() {
+    path_create(&p, PATH_BYTES_NUM);
+    memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
+
+    text_renderer_init(&renderer, p, SCR_WIDTH, SCR_HEIGHT, 24);
 }
 
-bool cleanup(hash_table_entry_t* entry) {
-    return true;
+void gl_wrapper_render() {
+    text_renderer_line(&renderer, (byte_t*) "!\0", 100, 100, 12);
+    //GL_WRAPPER_DO_CLOSE = true;
 }
 
-bool eql_entry(const uint8_t* const key1,
-               const uint8_t* const key2) {
-    return *key1 == *key2;
-}
-
-int main(int argc, char *argv[]) {
-    logger_init(DEBUG, "", false);
-
-    hash_table_t table;
-    hash_table_create(&table, 100, hash, eql_entry, cleanup);
-
-    log_info("hash collisions: %i", table.collisions);
-
-    uint8_t key = 'A';
-    uint8_t data = 'B';
-    hash_table_insert(&table, &key, &data);
-
-    log_info("hash collisions: %i", table.collisions);
-
-    uint8_t key2 = 'B';
-    uint8_t data2 = 'A';
-    hash_table_insert(&table, &key2, &data2);
-
-    log_info("hash collisions: %i", table.collisions);
-    assert(table.collisions == 1);
-
-    hash_table_cleanup(&table);
-    logger_cleanup();
-    return 0;
+void gl_wrapper_clean() {
+    path_cleanup(&p);
+    text_renderer_cleanup(&renderer);
 }

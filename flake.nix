@@ -31,6 +31,7 @@
                         glfw
                         glew
                         freetype
+                        harfbuzz
                         cglm
                     ];
                     shellHook = ''

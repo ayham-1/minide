@@ -42,7 +42,7 @@ bool glyph_cache_init(glyph_cache* cache,
                       __glyph_cache_table_entry_cleanup);
 
     cache->keys = malloc(cache->capacity * sizeof(u8encode));
-    cache->data = malloc(cache->capacity * sizeof(FT_Glyph));
+    cache->data = malloc(cache->capacity * sizeof(glyph_info));
     cache->fullness = 0;
 
     if (cacheEnglishTypeface)
@@ -66,37 +66,59 @@ void glyph_cache_cleanup(glyph_cache* cache) {
     free(cache->data);
 }
 
-glyph_info* glyph_cache_append(glyph_cache* cache, u8encode charID) {
+glyph_info* glyph_cache_retrieve(glyph_cache* cache, 
+                                 uint32_t glyphid) {
+    hash_table_entry_t* entry = NULL;
+
+    glyph_info* info = NULL;
+    log_info("retrieving glyphid %i", glyphid);
+
+    if (!hash_table_get(&cache->table, 
+                   (uint8_t*) &glyphid,
+                   &entry)) {
+        info = glyph_cache_append(cache, glyphid);
+        log_warn("glyphid was not in cache %li", glyphid);
+    }
+    else {
+        info = (glyph_info*) entry->data;
+    }
+
+    if (info == NULL) {
+        log_error("unable to cache glyphid %li", glyphid);
+    }
+
+    return info;
+}
+
+glyph_info* glyph_cache_append(glyph_cache* cache, 
+                               uint32_t glyphid) {
     if (cache->fullness >= cache->table.capacity) {
         cache->keys = realloc(cache->keys, 2 * cache->table.capacity * sizeof(u8encode));
-        cache->data = realloc(cache->data, 2 * cache->table.capacity * sizeof(FT_Glyph));
+        cache->data = realloc(cache->data, 2 * cache->table.capacity * sizeof(glyph_info));
         cache->table.capacity *= 2;
     }
 
     glyph_info* info = &cache->data[cache->fullness];
-    cache->keys[cache->fullness] = charID;
+    cache->keys[cache->fullness] = glyphid;
 
-    if (FT_Load_Glyph(cache->ft_face, charID, FT_LOAD_DEFAULT)) {
-        log_error("unable to load glyph with charID 0x%21X, %i", charID, charID);
+    if (FT_Load_Glyph(cache->ft_face, cache->keys[cache->fullness], FT_LOAD_RENDER)) {
+        log_error("unable to load glyph with glyphid %li", glyphid);
         return NULL;
     }
 
     FT_Glyph tglyph;
     if (FT_Get_Glyph(cache->ft_face->glyph, &tglyph)) {
-        log_error("unable to get glyph with charID 0x%21X, %i", charID, charID);
+        log_error("unable to get glyph with glyphid %li", glyphid);
         return NULL;
     }
 
     // ensure bitmap is present
     if ((tglyph->format != FT_GLYPH_FORMAT_BITMAP)
         && FT_Glyph_To_Bitmap(&tglyph, FT_RENDER_MODE_NORMAL, 0, 1)) {
-        log_error("unable to get glyph's bitmap of charcode 0x%21X", charID);
+        log_error("unable to get glyph's bitmap of glyphid %li", glyphid);
     }
 
     info->bglyph = (FT_BitmapGlyph) tglyph;
-
-    info->advance_x = tglyph->advance.x;
-    info->advance_y = tglyph->advance.y;
 
     info->bearing_x = cache->ft_face->glyph->bitmap_left;
     info->bearing_y = cache->ft_face->glyph->bitmap_top;
@@ -107,7 +129,7 @@ glyph_info* glyph_cache_append(glyph_cache* cache, u8encode charID) {
         (void *)&cache->data[cache->fullness]);
     cache->fullness++;
 
-    __glyph_cache_atlas_append(cache, info);
+//    __glyph_cache_atlas_append(cache, info);
 
     return info;
 }
@@ -117,10 +139,10 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
     cache->awidth = 0;
     cache->aheight = 0;
 
-    for (size_t i = 0; i < cache->capacity; i++) {
+    for (size_t i = 0; i < cache->fullness; i++) {
         glyph_info* info = &cache->data[i];
 
-        if (row_width + info->bglyph->bitmap.width >= ATLAS_MAX_WIDTH) {
+        if (row_width + info->bglyph->bitmap.width > ATLAS_MAX_WIDTH) {
             if (cache->awidth < row_width) cache->awidth = row_width;
             cache->aheight += row_height;
             row_width = 0;
@@ -151,12 +173,17 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
 }
 
 void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
-    /* assumes that the texture on the gpu is the appropriate size*/
+    /* assumes that the texture on the gpu is the appropriate size */
     unsigned int offset_x = 0, offset_y = 0;
     unsigned int row_width = 0, row_height = 0;
 
     for (size_t i = 0; i < cache->capacity; i++) {
         glyph_info* info = &cache->data[i];
+        if (info->bglyph == NULL) {
+            log_warn("refilling with NULL bglyph, charcode 0x%21x", cache->keys[i]);
+            continue;
+        }
+        log_info("0x%21x", cache->keys[i]);
 
         if (offset_x + info->bglyph->bitmap.width > ATLAS_MAX_WIDTH) {
             offset_y += row_height;

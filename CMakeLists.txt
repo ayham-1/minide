@@ -13,8 +13,10 @@ find_package(glfw3 3.3.8 REQUIRED)
 find_package(glew REQUIRED)
 find_package(cglm REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(harfbuzz REQUIRED)
 
 set(SOURCES
+    src/gl_wrapper.c
     src/logger.c
     src/u8string.c
     src/path.c
@@ -24,7 +26,8 @@ set(SOURCES
 
     src/glyph_cache.c
 
-    #src/text_renderer.c
+    src/shaders_util.c
+    src/text_renderer.c
 )
 
 add_library(
@@ -38,6 +41,7 @@ target_link_libraries(
     glfw
     cglm
     freetype
+    harfbuzz
     ${GLEW_LIBRARIES}
 )
 set_property(TARGET min PROPERTY C_STANDARD 23)

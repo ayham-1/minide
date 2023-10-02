@@ -14,6 +14,9 @@
 
 typedef struct {
     // https://learnopengl.com/img/in-practice/glyph.png
+    uint16_t advance_x;
+    uint16_t advance_y;
+
     float bearing_x;
     float bearing_y;
 
@@ -51,10 +54,9 @@ bool glyph_cache_init(glyph_cache* cache,
                       bool cacheEnglishTypeface);
 void glyph_cache_cleanup(glyph_cache* cache);
 
-glyph_info* glyph_cache_retrieve(glyph_cache* cache, 
-                                 uint32_t glyhid);
+glyph_info* glyph_cache_retrieve(glyph_cache* cache, u8encode encode);
 glyph_info* glyph_cache_append(glyph_cache* cache, 
-                               uint32_t glyphid);
+                   u8encode encodeID);
 
 uint64_t __glyph_cache_table_hash(const uint8_t *const key);
 bool __glyph_cache_table_entry_cleanup(hash_table_entry_t *entry);
