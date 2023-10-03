@@ -22,6 +22,8 @@
                         gdb
                         valgrind
                         renderdoc
+                        linuxKernel.packages.linux_5_10.perf
+
                         man
                         man-pages
                         man-pages-posix
@@ -40,6 +42,7 @@
                         alias debug="./scripts/debug.sh"
                         alias release="./scripts/release.sh"
                         alias test="./scripts/test.sh"
+                        alias perf_this="./scripts/perf_this.sh"
                         alias ide="nix run github:ayham-1/ide"
                     '';
             };
