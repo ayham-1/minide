@@ -4,8 +4,8 @@
 
 void text_renderer_init(text_renderer_t* renderer, path_t font,
                         size_t width, size_t height, size_t font_pixel_size) {
-    renderer->shaderProgram = shader_program_create("src/glsl/text.v.glsl", 
-                                                    "src/glsl/text.f.glsl");
+    renderer->shaderProgram = shader_program_create("glsl/text.v.glsl", 
+                                                    "glsl/text.f.glsl");
     renderer->attributeCoord = shader_get_attrib(renderer->shaderProgram, "coord");
     renderer->uniformTex = shader_get_uniform(renderer->shaderProgram, "tex");
     renderer->uniformColor = shader_get_uniform(renderer->shaderProgram, "textColor");
@@ -41,18 +41,16 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
     hb_blob_t* blob = hb_blob_create_from_file((char*) font.fullPath.bytes);
     renderer->hb_face = hb_face_create(blob, 0);
     renderer->hb_font = hb_ft_font_create(renderer->gcache.ft_face, NULL);
+    renderer->hb_buf =  hb_buffer_create();
+    assert(hb_buffer_allocation_successful(renderer->hb_buf));
 
-    //hb_font_set_scale(renderer->hb_font, 72 * renderer->font_pixel_size, 72 * renderer->font_pixel_size);
-
-    assert(blob);
-    assert(renderer->hb_face);
-    assert(renderer->hb_font);
     hb_blob_destroy(blob);
 }
 
 void text_renderer_cleanup(text_renderer_t* renderer) {
     hb_font_destroy(renderer->hb_font);
     hb_face_destroy(renderer->hb_face);
+    hb_buffer_destroy(renderer->hb_buf);
 
     glDeleteBuffers(1, &renderer->vbo);
     glDeleteBuffers(1, &renderer->ibo);
@@ -60,19 +58,17 @@ void text_renderer_cleanup(text_renderer_t* renderer) {
 
 void text_renderer_line(text_renderer_t* renderer,
                       byte_t* str,
-                      GLfloat origin_x, GLfloat origin_y,
-                      size_t pixel_size) {
-    hb_buffer_t* hb_buf =  hb_buffer_create();
-    assert(hb_buf);
-    hb_buffer_add_utf8(hb_buf, (char*) str, -1, 0, -1);
+                      GLfloat origin_x, GLfloat origin_y) {
+    hb_buffer_clear_contents(renderer->hb_buf);
+    hb_buffer_add_utf8(renderer->hb_buf, (char*) str, -1, 0, -1);
 
-    hb_buffer_guess_segment_properties(hb_buf);
+    hb_buffer_guess_segment_properties(renderer->hb_buf);
 
-    hb_shape(renderer->hb_font, hb_buf, NULL, 0);
+    hb_shape(renderer->hb_font, renderer->hb_buf, NULL, 0);
 
     unsigned int hb_glyph_count;
-    hb_glyph_info_t* hb_glyph_info = hb_buffer_get_glyph_infos(hb_buf, &hb_glyph_count);
-    hb_glyph_position_t* hb_glyph_pos = hb_buffer_get_glyph_positions(hb_buf, &hb_glyph_count);
+    hb_glyph_info_t* hb_glyph_info = hb_buffer_get_glyph_infos(renderer->hb_buf, &hb_glyph_count);
+    hb_glyph_position_t* hb_glyph_pos = hb_buffer_get_glyph_positions(renderer->hb_buf, &hb_glyph_count);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -109,8 +105,6 @@ void text_renderer_line(text_renderer_t* renderer,
 
         float ratio_w = (float) w / awidth;
         float ratio_h = (float) h / aheight;
-
-        //if (!w || !h) continue;
 
         // char quad ccw
         GLfloat x0 = origin_x + info->bearing_x;
@@ -151,8 +145,6 @@ void text_renderer_line(text_renderer_t* renderer,
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_STATIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, n);
-
-    hb_buffer_destroy(hb_buf);
 }
 
 void text_renderer_update_window_size(text_renderer_t* renderer, int width, int height) {

@@ -34,6 +34,7 @@ typedef struct {
 
     hb_face_t* hb_face;
     hb_font_t* hb_font;
+    hb_buffer_t* hb_buf;
     size_t font_pixel_size;
 } text_renderer_t;
 
@@ -43,8 +44,7 @@ void text_renderer_cleanup(text_renderer_t* renderer);
 
 void text_renderer_line(text_renderer_t* renderer,
                       byte_t* str,
-                      GLfloat x, GLfloat y,
-                      size_t pixel_size);
+                      GLfloat x, GLfloat y);
 
 void text_renderer_update_window_size(text_renderer_t* renderer, int width, int height);
 

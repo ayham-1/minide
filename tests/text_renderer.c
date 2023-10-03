@@ -13,33 +13,39 @@
 
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
-int SCR_TARGET_FPS = 0;
+int SCR_TARGET_FPS = 1;
 const char* SCR_TITLE = "test_text_renderer";
 bool GL_WRAPPER_DO_CLOSE = false;
 
 bool PRINT_FRAME_MS = false;
 bool RENDER_FRAME_MS = false;
 
+#define TEST_DATA "ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}\\|;:'\",.<>/?\0"
+
+char* str = NULL;
+
 path_t p;
 text_renderer_t renderer;
-
-const char* str = "ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}\\|;:'\",.<>/?\0";
 
 void gl_wrapper_init() {
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-    text_renderer_init(&renderer, p, SCR_WIDTH, SCR_HEIGHT, 12);
+    text_renderer_init(&renderer, p, SCR_WIDTH, SCR_HEIGHT, 14);
+
+    str = malloc(sizeof(TEST_DATA));
+    strcpy(str, TEST_DATA);
 }
 
 void gl_wrapper_render() {
-    text_renderer_line(&renderer, (byte_t*) str, 100, 100, 24);
-    //GL_WRAPPER_DO_CLOSE = true;
+    text_renderer_line(&renderer, (byte_t*) str, 100, 100);
+    GL_WRAPPER_DO_CLOSE = true;
 }
 
 void gl_wrapper_clean() {
     path_cleanup(&p);
     text_renderer_cleanup(&renderer);
+    free(str);
 }
 
 void glfw_size_callback(int width, int height) {

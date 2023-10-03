@@ -4,6 +4,8 @@ include(CTest)
 include(CMakeParseArguments)
 enable_testing()
 
+set(CTEST_OUTPUT_ON_FAILURE TRUE)
+
 add_compile_options(-frecord-gcc-switches)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
@@ -64,4 +66,4 @@ gen_test(hash_table_get YES YES)
 gen_test(glyph_cache YES NO)
 
 # text renderer
-gen_test(text_renderer NO NO)
+gen_test(text_renderer YES NO)
