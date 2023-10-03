@@ -173,7 +173,7 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
 void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
     /* assumes that the texture on the gpu is the appropriate size */
     unsigned int offset_x = 0, offset_y = 0;
-    unsigned int row_width = 0, row_height = 0;
+    unsigned int row_height = 0;
 
     for (size_t i = 0; i < cache->capacity; i++) {
         glyph_info* info = &cache->data[i];
@@ -247,6 +247,7 @@ uint64_t __glyph_cache_table_hash(const uint8_t *const key) {
 bool __glyph_cache_table_entry_cleanup(hash_table_entry_t *entry) {
     // we basically refer to `table_keys` and `table_data` for hash table entries,
     // those are cleaned when `gc_cleanup` is called
+    (void)entry;
     return true;
 }
 

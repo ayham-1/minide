@@ -110,7 +110,7 @@ bool u8str_is_utf8_valid(u8encode c) {
     for (int i = 0; i < 4; i++) {
         if (a[i] == 0xC0) return false;
         if (a[i] == 0xC1) return false;
-        if (0xF5 <= a[i] && a[i] <= 0xFF) return false;
+        if (0xF5 <= a[i] /* && a[i] <= 0xFF */) return false;
     }
 
     /* check appropriate ranges */
@@ -207,7 +207,6 @@ u8encode u8str_from_code_point(byte_t c[9]) {
     u8encode rawByte = strtoull(cptr, NULL, 16);
 
     byte_t a[4] = {0};
-    short rawOffs[4] = { 18, 12, 6, 0 };
     /*
      * U+4E3E
      * 1110xxxx 10xxxxxx 10xxxxxx

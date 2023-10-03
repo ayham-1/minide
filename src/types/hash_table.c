@@ -33,8 +33,6 @@ void hash_table_cleanup(hash_table_t* table) {
 
         hash_table_entry_t* curr_entry = table->buckets[i];
 
-        hash_table_entry_t* start_entry = curr_entry;
-
         while(curr_entry != NULL) {
             if (!table->entryCleanupFunc(curr_entry))
                 log_error("failed cleanup of curr_entry, memory leaks could occur!");

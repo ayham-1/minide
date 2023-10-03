@@ -3,6 +3,8 @@
 #include <unistd.h>
 
 int main(int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
     #ifndef NDEBUG
         logger_init(DEBUG, "/tmp/.log", true);
     #else
@@ -70,18 +72,24 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-static void __glfw_error_callback(int error, const char* description) {
-    log_error("GLFW Error Callback: \n\t%s\n", description);
+void __glfw_error_callback(int error, const char* description) {
+    log_error("GLFW Error Callback: \t\nname:\t%s\n\tdescription:\t%s", error, description);
 }
  
-static void __glfw_key_callback(GLFWwindow* window, 
+void __glfw_key_callback(GLFWwindow* window, 
                          int key, int scancode, int action, int mods) {
+    (void)window;
+    (void)mods;
+    (void)scancode;
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-static void __glfw_size_callback(GLFWwindow* window, 
+void __glfw_size_callback(GLFWwindow* window, 
                                  int width, int height) {
+    (void)window;
+
     SCR_WIDTH = width;
     SCR_HEIGHT = height;
 

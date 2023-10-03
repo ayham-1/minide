@@ -11,14 +11,6 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
     renderer->uniformColor = shader_get_uniform(renderer->shaderProgram, "textColor");
     renderer->uniformProjection = shader_get_uniform(renderer->shaderProgram, "projection");
 
-    if (renderer->attributeCoord == -1 
-        || renderer->uniformTex == -1 
-        || renderer->uniformColor == -1
-        || renderer->uniformProjection == -1) {
-        log_error("failed initializing");
-        return;
-    }
-
     glGenVertexArrays(1, &renderer->vao);
     glGenBuffers(1, &renderer->vbo);
     glBindVertexArray(renderer->vao);
