@@ -35,3 +35,6 @@ void gl_wrapper_clean() {
     path_cleanup(&p);
     glyph_cache_cleanup(&cache);
 }
+
+void glfw_size_callback(int width, int height) {
+}

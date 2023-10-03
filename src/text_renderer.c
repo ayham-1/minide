@@ -30,7 +30,7 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
 
     glGenBuffers(1, &renderer->ibo);
 
-    glyph_cache_init(&renderer->gcache, GL_TEXTURE0, font, 512, 24, true);
+    glyph_cache_init(&renderer->gcache, GL_TEXTURE0, font, 512, font_pixel_size, true);
 
     renderer->scr_width = width;
     renderer->scr_height = height;
@@ -40,9 +40,9 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
 
     hb_blob_t* blob = hb_blob_create_from_file((char*) font.fullPath.bytes);
     renderer->hb_face = hb_face_create(blob, 0);
-    renderer->hb_font = hb_font_create(renderer->hb_face);
+    renderer->hb_font = hb_ft_font_create(renderer->gcache.ft_face, NULL);
 
-    hb_font_set_scale(renderer->hb_font, 64 * renderer->font_pixel_size, 64 * renderer->font_pixel_size);
+    //hb_font_set_scale(renderer->hb_font, 72 * renderer->font_pixel_size, 72 * renderer->font_pixel_size);
 
     assert(blob);
     assert(renderer->hb_face);
@@ -60,7 +60,7 @@ void text_renderer_cleanup(text_renderer_t* renderer) {
 
 void text_renderer_line(text_renderer_t* renderer,
                       byte_t* str,
-                      int32_t origin_x, int32_t origin_y,
+                      GLfloat origin_x, GLfloat origin_y,
                       size_t pixel_size) {
     hb_buffer_t* hb_buf =  hb_buffer_create();
     assert(hb_buf);
@@ -110,33 +110,28 @@ void text_renderer_line(text_renderer_t* renderer,
         float ratio_w = (float) w / awidth;
         float ratio_h = (float) h / aheight;
 
-        if (!w || !h) continue;
+        //if (!w || !h) continue;
 
         // char quad ccw
-        int32_t x0 = origin_x + info->bearing_x;
-        int32_t y0 = origin_y + info->bearing_y;
-        float s0 = info->texture_x;
-        float t0 = info->texture_y;
+        GLfloat x0 = origin_x + info->bearing_x;
+        GLfloat y0 = origin_y + info->bearing_y;
+        GLfloat s0 = info->texture_x;
+        GLfloat t0 = info->texture_y;
 
-        int32_t x1 = x0;
-        int32_t y1 = y0 - h;
-        float s1 = s0;
-        float t1 = t0 + ratio_h;
+        GLfloat x1 = x0;
+        GLfloat y1 = y0 - h;
+        GLfloat s1 = s0;
+        GLfloat t1 = t0 + ratio_h;
         
-        int32_t x2 = x0 + w;
-        int32_t y2 = y1;
-        float s2 = s1 + ratio_w;
-        float t2 = t1;
+        GLfloat x2 = x0 + w;
+        GLfloat y2 = y1;
+        GLfloat s2 = s1 + ratio_w;
+        GLfloat t2 = t1;
         
-        int32_t x3 = x2;
-        int32_t y3 = y0;
-        float s3 = s2;
-        float t3 = t0;
-
-        log_info("x_advance: %i, y_advance: %i", 
-                 hb_pos.x_advance >> 6, hb_pos.y_advance >> 6);
-        log_info("x_offset: %i, y_offset: %i", 
-                info->bearing_x, info->bearing_y);
+        GLfloat x3 = x2;
+        GLfloat y3 = y0;
+        GLfloat s3 = s2;
+        GLfloat t3 = t0;
 
         coords[n++] = (point) {x0, y0, s0, t0};
         coords[n++] = (point) {x1, y1, s1, t1};
@@ -158,4 +153,11 @@ void text_renderer_line(text_renderer_t* renderer,
     glDrawArrays(GL_TRIANGLES, 0, n);
 
     hb_buffer_destroy(hb_buf);
+}
+
+void text_renderer_update_window_size(text_renderer_t* renderer, int width, int height) {
+    renderer->scr_width = width;
+    renderer->scr_height = height;
+
+    glm_ortho(0.0f, (float) width, 0.0f, (float) height, -1, 1, renderer->projection);
 }

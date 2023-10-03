@@ -48,7 +48,7 @@ bool glyph_cache_init(glyph_cache* cache,
     if (cacheEnglishTypeface)
         for (unsigned char i = 32; i <= 127; i++) {
             // TODO(ayham): more graceful error handling
-            assert(glyph_cache_append(cache, i) != NULL);
+            assert(glyph_cache_append(cache, FT_Get_Char_Index(cache->ft_face, i)) != NULL);
         }
 
     __glyph_cache_atlas_build(cache);
@@ -69,9 +69,7 @@ void glyph_cache_cleanup(glyph_cache* cache) {
 glyph_info* glyph_cache_retrieve(glyph_cache* cache, 
                                  uint32_t glyphid) {
     hash_table_entry_t* entry = NULL;
-
     glyph_info* info = NULL;
-    log_info("retrieving glyphid %i", glyphid);
 
     if (!hash_table_get(&cache->table, 
                    (uint8_t*) &glyphid,
@@ -183,7 +181,6 @@ void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
             log_warn("refilling with NULL bglyph, charcode 0x%21x", cache->keys[i]);
             continue;
         }
-        log_info("0x%21x", cache->keys[i]);
 
         if (offset_x + info->bglyph->bitmap.width > ATLAS_MAX_WIDTH) {
             offset_y += row_height;

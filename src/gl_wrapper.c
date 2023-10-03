@@ -23,7 +23,10 @@ int main(int argc, char* argv[]) {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
+
     glfwSetKeyCallback(window, __glfw_key_callback);
+    glfwSetWindowSizeCallback(window, __glfw_size_callback);
+
     glfwMakeContextCurrent(window);
 
     GLenum err = glewInit();
@@ -39,7 +42,7 @@ int main(int argc, char* argv[]) {
 
     double lastTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
-        while (glfwGetTime() < lastTime + 1.0 / SCR_TARGET_FPS) {
+        while (SCR_TARGET_FPS != 0 && glfwGetTime() < lastTime + 1.0 / SCR_TARGET_FPS) {
             sleep(glfwGetTime() - (lastTime + 1.0 / SCR_TARGET_FPS));
         }
         lastTime += 1.0 / SCR_TARGET_FPS;
@@ -71,4 +74,14 @@ static void __glfw_key_callback(GLFWwindow* window,
                          int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+static void __glfw_size_callback(GLFWwindow* window, 
+                                 int width, int height) {
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
+
+    glViewport(0, 0, width, height);
+
+    glfw_size_callback(width, height);
 }

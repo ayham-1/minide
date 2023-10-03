@@ -13,6 +13,7 @@
 
 #include <cglm/cglm.h>
 #include <harfbuzz/hb.h>
+#include <harfbuzz/hb-ft.h>
 
 typedef struct {
     glyph_cache gcache;
@@ -42,7 +43,9 @@ void text_renderer_cleanup(text_renderer_t* renderer);
 
 void text_renderer_line(text_renderer_t* renderer,
                       byte_t* str,
-                      int32_t x, int32_t y,
+                      GLfloat x, GLfloat y,
                       size_t pixel_size);
+
+void text_renderer_update_window_size(text_renderer_t* renderer, int width, int height);
 
 #endif
