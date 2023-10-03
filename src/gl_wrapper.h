@@ -13,6 +13,9 @@ extern int SCR_TARGET_FPS;
 extern const char* SCR_TITLE;
 extern bool GL_WRAPPER_DO_CLOSE;
 
+extern bool PRINT_FRAME_MS;
+extern bool RENDER_FRAME_MS;
+
 extern void gl_wrapper_init();
 extern void gl_wrapper_render();
 extern void gl_wrapper_clean();

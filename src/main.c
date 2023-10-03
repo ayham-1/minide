@@ -1,24 +1,24 @@
+#include <assert.h>
+#include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include "../src/path.h"
+#include "../src/logger.h"
+#include "../src/glyph_cache.h"
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <GL/glew.h>
+#define PATH "assets/FreeSans.ttf"
+#define PATH_BYTES_NUM sizeof(PATH)
 
-#include "logger.h"
-#include "u8string.h"
-#include "glyph_cache.h"
-
-#include "gl_wrapper.h"
+#include "../src/gl_wrapper.h"
 
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
-int SCR_TARGET_FPS = 30;
+int SCR_TARGET_FPS = 1;
 const char* SCR_TITLE = "minide";
 bool GL_WRAPPER_DO_CLOSE = false;
+
+bool PRINT_FRAME_MS = false;
+bool RENDER_FRAME_MS = false;
 
 void gl_wrapper_init() {
 }

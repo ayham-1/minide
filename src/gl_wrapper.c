@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
     glfwSetWindowSizeCallback(window, __glfw_size_callback);
 
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(0);
 
     GLenum err = glewInit();
     if(GLEW_OK != err) {
@@ -40,12 +41,8 @@ int main(int argc, char* argv[]) {
     gl_wrapper_init();
     log_info("ran gl_wrapper_init");
 
-    double lastTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
-        while (SCR_TARGET_FPS != 0 && glfwGetTime() < lastTime + 1.0 / SCR_TARGET_FPS) {
-            sleep(glfwGetTime() - (lastTime + 1.0 / SCR_TARGET_FPS));
-        }
-        lastTime += 1.0 / SCR_TARGET_FPS;
+        double startTime = glfwGetTime();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -53,6 +50,13 @@ int main(int argc, char* argv[]) {
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        while (SCR_TARGET_FPS && glfwGetTime() < startTime + 1.0 / SCR_TARGET_FPS) {
+            //sleep(glfwGetTime() - (lastTime + 1.0 / SCR_TARGET_FPS));
+        }
+
+        if (PRINT_FRAME_MS)
+            log_info("%f ms/frame", (glfwGetTime() - startTime) * 1000);
 
         if (GL_WRAPPER_DO_CLOSE) glfwSetWindowShouldClose(window, GLFW_TRUE);
     }

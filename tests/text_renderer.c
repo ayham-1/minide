@@ -17,6 +17,9 @@ int SCR_TARGET_FPS = 0;
 const char* SCR_TITLE = "test_text_renderer";
 bool GL_WRAPPER_DO_CLOSE = false;
 
+bool PRINT_FRAME_MS = false;
+bool RENDER_FRAME_MS = false;
+
 path_t p;
 text_renderer_t renderer;
 

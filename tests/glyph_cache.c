@@ -17,6 +17,9 @@ int SCR_TARGET_FPS = 1;
 const char* SCR_TITLE = "test_glyph_cache";
 bool GL_WRAPPER_DO_CLOSE = false;
 
+bool PRINT_FRAME_MS = false;
+bool RENDER_FRAME_MS = false;
+
 path_t p;
 glyph_cache cache;
 
