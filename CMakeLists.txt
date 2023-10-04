@@ -27,6 +27,8 @@ set(SOURCES
 
     src/shaders_util.c
     src/text_renderer.c
+
+    src/fps_counter.c
 )
 
 add_library(

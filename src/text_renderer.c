@@ -37,6 +37,8 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
     assert(hb_buffer_allocation_successful(renderer->hb_buf));
 
     hb_blob_destroy(blob);
+
+    log_info("created text renderer");
 }
 
 void text_renderer_cleanup(text_renderer_t* renderer) {

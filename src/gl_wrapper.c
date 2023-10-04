@@ -1,6 +1,10 @@
 #include "gl_wrapper.h"
 
+#include "fps_counter.h"
+
 #include <unistd.h>
+
+static size_t nbFrames = 0;
 
 int main(int argc, char* argv[]) {
     (void)argc;
@@ -43,24 +47,38 @@ int main(int argc, char* argv[]) {
     gl_wrapper_init();
     log_info("ran gl_wrapper_init");
 
+    if (RENDER_FRAME_MS)
+        fps_counter_init(SCR_WIDTH, SCR_HEIGHT);
+
+    double lastSecondTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
-        double startTime = glfwGetTime();
+        double frameStartTime = glfwGetTime();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         gl_wrapper_render();
 
+        if (RENDER_FRAME_MS)
+            fps_counter_render();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        while (SCR_TARGET_FPS && glfwGetTime() < startTime + 1.0 / SCR_TARGET_FPS) {
+        while (SCR_TARGET_FPS && glfwGetTime() < frameStartTime + 1.0 / SCR_TARGET_FPS) {
             //sleep(glfwGetTime() - (lastTime + 1.0 / SCR_TARGET_FPS));
         }
 
-        if (PRINT_FRAME_MS)
-            log_info("%f ms/frame", (glfwGetTime() - startTime) * 1000);
-
         if (GL_WRAPPER_DO_CLOSE) glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+        nbFrames++;
+        if (glfwGetTime() - lastSecondTime >= 1) {
+            if (PRINT_FRAME_MS)
+                log_info("fps: %d\t%f ms/frame", nbFrames, 1000.0f/nbFrames);
+            if (RENDER_FRAME_MS)
+                fps_counter_update(nbFrames);
+            nbFrames = 0;
+            lastSecondTime = glfwGetTime();
+        }
     }
 
     gl_wrapper_clean();

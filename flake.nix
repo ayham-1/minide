@@ -23,6 +23,8 @@
                         valgrind
                         renderdoc
                         linuxKernel.packages.linux_5_10.perf
+                        libsForQt5.kcachegrind
+                        graphviz
 
                         man
                         man-pages
@@ -43,6 +45,7 @@
                         alias release="./scripts/release.sh"
                         alias test="./scripts/test.sh"
                         alias perf_this="./scripts/perf_this.sh"
+                        alias profile_this="./scripts/profile_this.sh"
                         alias ide="nix run github:ayham-1/ide"
                     '';
             };

@@ -17,8 +17,8 @@ int SCR_TARGET_FPS = 1;
 const char* SCR_TITLE = "test_text_renderer";
 bool GL_WRAPPER_DO_CLOSE = false;
 
-bool PRINT_FRAME_MS = false;
-bool RENDER_FRAME_MS = false;
+bool PRINT_FRAME_MS = true;
+bool RENDER_FRAME_MS = true;
 
 #define TEST_DATA "ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}\\|;:'\",.<>/?\0"
 
