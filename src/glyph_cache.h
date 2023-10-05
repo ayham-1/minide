@@ -45,7 +45,6 @@ typedef struct {
 } glyph_cache;
 
 bool glyph_cache_init(glyph_cache* cache, 
-                      GLuint textureID,
                       path_t fontPath, size_t capacity,
                       size_t pixelSize,
                       bool cacheEnglishTypeface);

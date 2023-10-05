@@ -1,18 +1,18 @@
 #include "glyph_cache.h"
 
+#include "texture_lender.h"
+
 #include <assert.h>
 #include <unistd.h>
 #define _GNU_SOURCE
 #include <sys/mman.h>
 
 bool glyph_cache_init(glyph_cache* cache, 
-                      GLuint textureID,
                       path_t font, 
                       size_t capacity, 
                       size_t pixelSize,
                       bool cacheEnglishTypeface) {
     assert(cacheEnglishTypeface || capacity > 0);
-    cache->atexID = textureID;
 
     if (FT_Init_FreeType(&cache->ft_library)) {
         log_error("failed library initialization.");
@@ -54,6 +54,9 @@ bool glyph_cache_init(glyph_cache* cache,
     __glyph_cache_atlas_build(cache);
     __glyph_cache_atlas_refill_gpu(cache);
 
+    cache->atexID = texture_lender_request();
+    log_info("created new glyph_cache, atexID: %d", cache->atexID);
+
     return true;
 }
 
@@ -64,6 +67,8 @@ void glyph_cache_cleanup(glyph_cache* cache) {
     hash_table_cleanup((hash_table_t *const)&cache->table);
     free(cache->keys);
     free(cache->data);
+
+    texture_lender_return(cache->atexID);
 }
 
 glyph_info* glyph_cache_retrieve(glyph_cache* cache, 

@@ -17,6 +17,8 @@ find_package(harfbuzz REQUIRED)
 
 set(SOURCES
     src/gl_wrapper.c
+    src/texture_lender.c
+
     src/logger.c
     src/u8string.c
     src/path.c

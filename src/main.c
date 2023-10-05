@@ -11,6 +11,7 @@
 
 #include "../src/gl_wrapper.h"
 
+GLsizei MAX_TEXTURES_AVIALABLE = 10;
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
 int SCR_TARGET_FPS = 1;

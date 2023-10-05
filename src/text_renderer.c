@@ -1,5 +1,7 @@
 #include "text_renderer.h"
 
+#include "texture_lender.h"
+
 #include <assert.h>
 
 void text_renderer_init(text_renderer_t* renderer, path_t font,
@@ -22,7 +24,7 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
 
     glGenBuffers(1, &renderer->ibo);
 
-    glyph_cache_init(&renderer->gcache, GL_TEXTURE0, font, 512, font_pixel_size, true);
+    glyph_cache_init(&renderer->gcache, font, 512, font_pixel_size, true);
 
     renderer->scr_width = width;
     renderer->scr_height = height;
@@ -137,6 +139,8 @@ void text_renderer_line(text_renderer_t* renderer,
     glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->ibo);
 
+    glActiveTexture(renderer->gcache.atexID);
+    glBindTexture(GL_TEXTURE_2D, renderer->gcache.atexOBJ);
     glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_STATIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, n);
 }

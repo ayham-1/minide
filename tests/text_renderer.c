@@ -11,6 +11,7 @@
 
 #include "../src/gl_wrapper.h"
 
+GLsizei MAX_TEXTURES_AVIALABLE = 10;
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
 int SCR_TARGET_FPS = 1;
@@ -31,7 +32,7 @@ void gl_wrapper_init() {
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-    text_renderer_init(&renderer, p, SCR_WIDTH, SCR_HEIGHT, 14);
+    text_renderer_init(&renderer, p, SCR_WIDTH, SCR_HEIGHT, 35);
 
     str = malloc(sizeof(TEST_DATA));
     strcpy(str, TEST_DATA);

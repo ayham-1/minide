@@ -7,6 +7,7 @@
 
 #include "logger.h"
 
+extern GLsizei MAX_TEXTURES_AVIALABLE;
 extern int SCR_WIDTH;
 extern int SCR_HEIGHT;
 extern int SCR_TARGET_FPS;

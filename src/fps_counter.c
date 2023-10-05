@@ -15,7 +15,7 @@ void fps_counter_init(size_t width, size_t height) {
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
     
-    text_renderer_init(&renderer, p, width, height, 14);
+    text_renderer_init(&renderer, p, width, height, 12);
 }
 
 void fps_counter_render() {

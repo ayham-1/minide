@@ -1,6 +1,7 @@
 #include "gl_wrapper.h"
 
 #include "fps_counter.h"
+#include "texture_lender.h"
 
 #include <unistd.h>
 
@@ -43,9 +44,11 @@ int main(int argc, char* argv[]) {
     } else {
         log_info("GLEW: version %s", glewGetString(GLEW_VERSION));
     }
+    texture_lender_init(MAX_TEXTURES_AVIALABLE);
 
     gl_wrapper_init();
     log_info("ran gl_wrapper_init");
+
 
     if (RENDER_FRAME_MS)
         fps_counter_init(SCR_WIDTH, SCR_HEIGHT);
