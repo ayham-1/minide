@@ -25,7 +25,7 @@ GLuint texture_lender_request() {
         }
     }
 
-    assert(false);
+    return 0; /* uh oh stinky!!1 */
 }
 
 void texture_lender_return(GLuint texID) {

@@ -14,12 +14,12 @@
 GLsizei MAX_TEXTURES_AVIALABLE = 10;
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
-int SCR_TARGET_FPS = 1;
+int SCR_TARGET_FPS = 60;
 const char* SCR_TITLE = "minide";
 bool GL_WRAPPER_DO_CLOSE = false;
 
 bool PRINT_FRAME_MS = false;
-bool RENDER_FRAME_MS = false;
+bool RENDER_FRAME_MS = true;
 
 void gl_wrapper_init() {
 }

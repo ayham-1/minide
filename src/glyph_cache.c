@@ -10,9 +10,7 @@
 bool glyph_cache_init(glyph_cache* cache, 
                       path_t font, 
                       size_t capacity, 
-                      size_t pixelSize,
-                      bool cacheEnglishTypeface) {
-    assert(cacheEnglishTypeface || capacity > 0);
+                      size_t pixelSize) {
 
     if (FT_Init_FreeType(&cache->ft_library)) {
         log_error("failed library initialization.");
@@ -29,7 +27,7 @@ bool glyph_cache_init(glyph_cache* cache,
     log_info("font contains %i glyphs. YEEEPEE!",
              (int)cache->ft_face->num_glyphs);
 
-    if (cacheEnglishTypeface) {
+    if (cache->capacity < 96) {
         cache->capacity = 96;
     } else {
         cache->capacity = capacity;
@@ -45,11 +43,12 @@ bool glyph_cache_init(glyph_cache* cache,
     cache->data = malloc(cache->capacity * sizeof(glyph_info));
     cache->fullness = 0;
 
-    if (cacheEnglishTypeface)
-        for (unsigned char i = 32; i <= 127; i++) {
-            // TODO(ayham): more graceful error handling
-            assert(glyph_cache_append(cache, FT_Get_Char_Index(cache->ft_face, i)) != NULL);
-        }
+    for (unsigned char i = 32; i <= 127; i++) {
+        // TODO(ayham): more graceful error handling
+        glyph_info* res = glyph_cache_append(cache, FT_Get_Char_Index(cache->ft_face, i));
+        assert(res);
+        (void)res;
+    }
 
     __glyph_cache_atlas_build(cache);
     __glyph_cache_atlas_refill_gpu(cache);
@@ -100,11 +99,10 @@ glyph_info* glyph_cache_append(glyph_cache* cache,
         cache->data = realloc(cache->data, 2 * cache->table.capacity * sizeof(glyph_info));
         cache->table.capacity *= 2;
     }
-
     glyph_info* info = &cache->data[cache->fullness];
     cache->keys[cache->fullness] = glyphid;
 
-    if (FT_Load_Glyph(cache->ft_face, cache->keys[cache->fullness], FT_LOAD_RENDER)) {
+    if (FT_Load_Glyph(cache->ft_face, cache->keys[cache->fullness], FT_LOAD_DEFAULT | FT_LOAD_RENDER)) {
         log_error("unable to load glyph with glyphid %li", glyphid);
         return NULL;
     }

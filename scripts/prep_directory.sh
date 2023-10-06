@@ -1,2 +1,2 @@
-ln -s ../../src/glsl/ $1/glsl
-ln -s ../../assets/ $1/assets
+ln -s $1/src/glsl/ $2/glsl
+ln -s $1/assets/ $2/assets

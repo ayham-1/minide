@@ -46,8 +46,7 @@ typedef struct {
 
 bool glyph_cache_init(glyph_cache* cache, 
                       path_t fontPath, size_t capacity,
-                      size_t pixelSize,
-                      bool cacheEnglishTypeface);
+                      size_t pixelSize);
 void glyph_cache_cleanup(glyph_cache* cache);
 
 glyph_info* glyph_cache_retrieve(glyph_cache* cache, 
