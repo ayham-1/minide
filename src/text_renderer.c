@@ -35,7 +35,7 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
     hb_blob_t* blob = hb_blob_create_from_file((char*) font.fullPath.bytes);
     assert(blob);
     renderer->hb_face = hb_face_create(blob, 0);
-    renderer->hb_font = hb_font_create(renderer->hb_face);
+    renderer->hb_font = hb_ft_font_create(renderer->gcache.ft_face, NULL);
     renderer->hb_buf =  hb_buffer_create();
     assert(hb_buffer_allocation_successful(renderer->hb_buf));
 

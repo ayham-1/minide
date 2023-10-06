@@ -43,8 +43,10 @@ bool glyph_cache_init(glyph_cache* cache,
     cache->data = malloc(cache->capacity * sizeof(glyph_info));
     cache->fullness = 0;
 
+    glyph_info* notdef = glyph_cache_append(cache, 0);
+    assert(notdef);
+
     for (unsigned char i = 32; i <= 127; i++) {
-        // TODO(ayham): more graceful error handling
         glyph_info* res = glyph_cache_append(cache, FT_Get_Char_Index(cache->ft_face, i));
         assert(res);
         (void)res;
@@ -79,14 +81,18 @@ glyph_info* glyph_cache_retrieve(glyph_cache* cache,
                    (uint8_t*) &glyphid,
                    &entry)) {
         info = glyph_cache_append(cache, glyphid);
-        log_warn("glyphid was not in cache %li", glyphid);
+        log_warn("glyphid was not in cache %li, attempted to cache", glyphid);
     }
     else {
         info = (glyph_info*) entry->data;
     }
 
     if (info == NULL) {
+        glyph_info* info = glyph_cache_retrieve(cache, 0);
+        assert(info);
         log_error("unable to cache glyphid %li", glyphid);
+        log_warn("returning .notdef glyph");
+        return info;
     }
 
     return info;

@@ -28,7 +28,7 @@ void gl_wrapper_init() {
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-    glyph_cache_init(&cache, p, 512, 24, true);
+    glyph_cache_init(&cache, p, 512, 24);
 }
 
 void gl_wrapper_render() {
