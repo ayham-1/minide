@@ -29,7 +29,7 @@ typedef struct {
     FT_Face ft_face;
 
     /* cache hash table */
-    hash_table_t table; // uint32_t, glyph_info: font glyphid, info
+    hash_table_t table; // uint32_t, glyph_info | font's glyphid, info
     size_t capacity;
     size_t fullness;
     uint32_t* keys;
@@ -57,11 +57,13 @@ glyph_info* glyph_cache_append(glyph_cache* cache,
 uint64_t __glyph_cache_table_hash(const uint8_t *const key);
 bool __glyph_cache_table_entry_cleanup(hash_table_entry_t *entry);
 bool __glyph_cache_table_eql_func(const uint8_t *const key1, const uint8_t *const key2);
+void __glyph_cache_table_printer(const hash_table_entry_t* const entry);
 
 void __glyph_cache_atlas_build(glyph_cache* cache);
 void __glyph_cache_atlas_refill_gpu(glyph_cache* cache);
 void __glyph_cache_atlas_append(glyph_cache* cache, 
                                 glyph_info* info);
+
 
 #define ATLAS_MAX_WIDTH 1024
 

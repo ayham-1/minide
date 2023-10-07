@@ -9,7 +9,7 @@ set(CTEST_OUTPUT_ON_FAILURE TRUE)
 add_compile_options(-frecord-gcc-switches)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
-set(MEMORYCHECK_COMMAND_OPTIONS --trace-children=yes --track-origins=yes)
+set(MEMORYCHECK_COMMAND_OPTIONS )
 function(add_memcheck_test tname)
     add_test(memcheck_${tname} ${MEMORYCHECK_COMMAND} ${MEMORYCHECK_COMMAND_OPTIONS} ./${tname} )
 endfunction(add_memcheck_test)

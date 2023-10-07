@@ -1,11 +1,15 @@
 #include "glyph_cache.h"
 
+#include "aristotle.h"
 #include "texture_lender.h"
 
 #include <assert.h>
 #include <unistd.h>
 #define _GNU_SOURCE
 #include <sys/mman.h>
+
+#define KEY_TYPE uint32_t
+#define DATA_TYPE glyph_info
 
 bool glyph_cache_init(glyph_cache* cache, 
                       path_t font, 
@@ -27,8 +31,8 @@ bool glyph_cache_init(glyph_cache* cache,
     log_info("font contains %i glyphs. YEEEPEE!",
              (int)cache->ft_face->num_glyphs);
 
-    if (cache->capacity < 96) {
-        cache->capacity = 96;
+    if (cache->capacity < 97) {
+        cache->capacity = 97;
     } else {
         cache->capacity = capacity;
     }
@@ -39,15 +43,16 @@ bool glyph_cache_init(glyph_cache* cache,
                       __glyph_cache_table_eql_func,
                       __glyph_cache_table_entry_cleanup);
 
-    cache->keys = malloc(cache->capacity * sizeof(u8encode));
-    cache->data = malloc(cache->capacity * sizeof(glyph_info));
+    cache->keys = malloc(cache->capacity * sizeof(KEY_TYPE));
+    cache->data = malloc(cache->capacity * sizeof(DATA_TYPE));
     cache->fullness = 0;
 
-    glyph_info* notdef = glyph_cache_append(cache, 0);
+    DATA_TYPE* notdef = glyph_cache_append(cache, 0);
     assert(notdef);
 
+
     for (unsigned char i = 32; i <= 127; i++) {
-        glyph_info* res = glyph_cache_append(cache, FT_Get_Char_Index(cache->ft_face, i));
+        DATA_TYPE* res = glyph_cache_append(cache, FT_Get_Char_Index(cache->ft_face, i));
         assert(res);
         (void)res;
     }
@@ -58,6 +63,8 @@ bool glyph_cache_init(glyph_cache* cache,
     cache->atexID = texture_lender_request();
     log_info("created new glyph_cache, atexID: %d", cache->atexID);
 
+    //hash_table_debug(&cache->table, __glyph_cache_table_printer);
+    
     return true;
 }
 
@@ -72,23 +79,24 @@ void glyph_cache_cleanup(glyph_cache* cache) {
     texture_lender_return(cache->atexID);
 }
 
-glyph_info* glyph_cache_retrieve(glyph_cache* cache, 
-                                 uint32_t glyphid) {
+DATA_TYPE* glyph_cache_retrieve(glyph_cache* cache, 
+                                 KEY_TYPE glyphid) {
     hash_table_entry_t* entry = NULL;
-    glyph_info* info = NULL;
+    DATA_TYPE* info = NULL;
 
     if (!hash_table_get(&cache->table, 
                    (uint8_t*) &glyphid,
                    &entry)) {
         info = glyph_cache_append(cache, glyphid);
         log_warn("glyphid was not in cache %li, attempted to cache", glyphid);
+        __glyph_cache_atlas_append(cache, info);
     }
     else {
-        info = (glyph_info*) entry->data;
+        info = (DATA_TYPE*) entry->data;
     }
 
     if (info == NULL) {
-        glyph_info* info = glyph_cache_retrieve(cache, 0);
+        DATA_TYPE* info = glyph_cache_retrieve(cache, 0);
         assert(info);
         log_error("unable to cache glyphid %li", glyphid);
         log_warn("returning .notdef glyph");
@@ -98,14 +106,15 @@ glyph_info* glyph_cache_retrieve(glyph_cache* cache,
     return info;
 }
 
-glyph_info* glyph_cache_append(glyph_cache* cache, 
-                               uint32_t glyphid) {
+DATA_TYPE* glyph_cache_append(glyph_cache* cache, 
+                               KEY_TYPE glyphid) {
     if (cache->fullness >= cache->table.capacity) {
-        cache->keys = realloc(cache->keys, 2 * cache->table.capacity * sizeof(u8encode));
-        cache->data = realloc(cache->data, 2 * cache->table.capacity * sizeof(glyph_info));
+        cache->keys = realloc(cache->keys, 2 * cache->table.capacity * sizeof(KEY_TYPE));
+        cache->data = realloc(cache->data, 2 * cache->table.capacity * sizeof(DATA_TYPE));
         cache->table.capacity *= 2;
+        log_info("cache full, attempted realloc");
     }
-    glyph_info* info = &cache->data[cache->fullness];
+    DATA_TYPE* info = &cache->data[cache->fullness];
     cache->keys[cache->fullness] = glyphid;
 
     if (FT_Load_Glyph(cache->ft_face, cache->keys[cache->fullness], FT_LOAD_DEFAULT | FT_LOAD_RENDER)) {
@@ -136,8 +145,6 @@ glyph_info* glyph_cache_append(glyph_cache* cache,
         (void *)&cache->data[cache->fullness]);
     cache->fullness++;
 
-//    __glyph_cache_atlas_append(cache, info);
-
     return info;
 }
 
@@ -147,7 +154,7 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
     cache->aheight = 0;
 
     for (size_t i = 0; i < cache->fullness; i++) {
-        glyph_info* info = &cache->data[i];
+        DATA_TYPE* info = &cache->data[i];
 
         if (row_width + info->bglyph->bitmap.width > ATLAS_MAX_WIDTH) {
             if (cache->awidth < row_width) cache->awidth = row_width;
@@ -168,7 +175,7 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
     glBindTexture(GL_TEXTURE_2D, cache->atexOBJ);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 
-                 cache->awidth, cache->aheight, 
+                 cache->awidth, cache->aheight,
                  0, GL_RED, GL_UNSIGNED_BYTE, 0);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -185,7 +192,7 @@ void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
     unsigned int row_height = 0;
 
     for (size_t i = 0; i < cache->capacity; i++) {
-        glyph_info* info = &cache->data[i];
+        DATA_TYPE* info = &cache->data[i];
         if (info->bglyph == NULL) {
             log_warn("refilling with NULL bglyph, charcode 0x%21x", cache->keys[i]);
             continue;
@@ -217,7 +224,7 @@ void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
 }
 
 void __glyph_cache_atlas_append(glyph_cache* cache, 
-                                glyph_info* info) {
+                                DATA_TYPE* info) {
     // TODO(ayham): research if resizing texture can be done without refilling it.
     if (cache->alast_row_height < info->bglyph->bitmap.rows) {
         __glyph_cache_atlas_refill_gpu(cache);
@@ -237,6 +244,9 @@ void __glyph_cache_atlas_append(glyph_cache* cache,
                     GL_RED,
                     GL_UNSIGNED_BYTE,
                     info->bglyph->bitmap.buffer);
+
+    info->texture_x = cache->alast_offset_x / (float) cache->awidth;
+    info->texture_y = cache->alast_offset_y / (float) cache->aheight;
 
     cache->alast_offset_x += info->bglyph->bitmap.width;
     cache->alast_offset_y += info->bglyph->bitmap.rows;
@@ -261,13 +271,23 @@ bool __glyph_cache_table_entry_cleanup(hash_table_entry_t *entry) {
 }
 
 bool __glyph_cache_table_eql_func(const uint8_t *const key1, const uint8_t *const key2) {
-    if (*key1 != *key2)
-        return false;
-    if (*(key1 + 1) != *(key2 + 1))
-        return false;
-    if (*(key1 + 2) != *(key2 + 2))
-        return false;
-    if (*(key1 + 3) != *(key2 + 3))
-        return false;
-    return true;
+    KEY_TYPE key_1 = *(KEY_TYPE*) key1;
+    KEY_TYPE key_2 = *(KEY_TYPE*) key2;
+    return key_1 == key_2;
+}
+
+void __glyph_cache_table_printer(const hash_table_entry_t* const entry) {
+    KEY_TYPE glyphid = *(KEY_TYPE*) entry->key;
+    //DATA_TYPE info = *(DATA_TYPE*) entry->data;
+
+    log_debug("\tfont's glyphid: %li", glyphid);
+    //log_debug("\t DATA_TYPE:");
+
+    //log_debug("\t\t info.bearing_x: %f", info.bearing_x);
+    //log_debug("\t\t info.bearing_y: %f", info.bearing_y);
+    //log_debug("\t\t info.texture_x: %f", info.texture_x);
+    //log_debug("\t\t info.texture_y: %f", info.texture_y);
+
+    //log_debug("\t\t info.bglyph->bitmap.width: %i", info.bglyph->bitmap.width);
+    //log_debug("\t\t info.bglyph->bitmap.rows: %i", info.bglyph->bitmap.rows);
 }

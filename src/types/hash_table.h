@@ -29,7 +29,6 @@ typedef struct {
     hash_table_entry_cleanup entryCleanupFunc;
 
     size_t capacity;
-    bool enforceBucketDepth;
 
     hash_table_entry_t** buckets;
 
@@ -53,5 +52,11 @@ bool hash_table_get(const hash_table_t* const table,
 
 bool hash_table_remove(hash_table_t* table,
                        const uint8_t* const key);
+
+///// DEBUG
+
+typedef void (*hash_table_entry_printer)(const hash_table_entry_t* const entry);
+
+void hash_table_debug(hash_table_t* table, hash_table_entry_printer printer);
 
 #endif

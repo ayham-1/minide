@@ -120,3 +120,21 @@ bool hash_table_remove(hash_table_t* table,
 
     return true;
 }
+
+void hash_table_debug(hash_table_t* table, hash_table_entry_printer printer) {
+    log_debug("================================");
+    log_debug("printing hashtable of size %i", table->capacity * sizeof(hash_table_entry_t*));
+    log_debug("capacity: %i", table->capacity);
+    log_debug("collisions: %i", table->collisions);
+
+
+    size_t printed = 0;
+    for (size_t i = 0; i < table->capacity; i++) {
+        if (!table->buckets[i]) continue;
+        printed++;
+        printer(table->buckets[i]);
+    }
+
+    log_debug("entries printed: %i", printed);
+    log_debug("================================");
+}

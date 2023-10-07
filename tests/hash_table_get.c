@@ -49,3 +49,4 @@ int main(int argc, char *argv[]) {
     logger_cleanup();
     return 0;
 }
+

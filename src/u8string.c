@@ -16,7 +16,6 @@ void u8str_cleanup(string_t* p) {
     free(p->bytes);
 }
 
-
 size_t u8str_get_bytes_needed_for(u8encode c) {
     byte_t first = ((byte_t*) &c)[3];
     if ((~first & U8_1_BYTE_MASK) == U8_1_BYTE_MASK) return 1;
