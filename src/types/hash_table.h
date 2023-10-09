@@ -12,6 +12,7 @@ typedef bool (*eql_function)(const uint8_t* const key1,
                              const uint8_t* const key2);
 
 typedef struct hash_table_entry_t hash_table_entry_t;
+typedef hash_table_entry_t* hash_table_iter_t;
 
 struct hash_table_entry_t {
     hash_table_entry_t* prev;
@@ -49,8 +50,7 @@ bool hash_table_insert(hash_table_t* const table,
 bool hash_table_get(const hash_table_t* const table,
                     const uint8_t* const key, 
                     hash_table_entry_t** out);
-
-bool hash_table_remove(hash_table_t* table,
+bool hash_table_remove(hash_table_t* const table,
                        const uint8_t* const key);
 
 ///// DEBUG

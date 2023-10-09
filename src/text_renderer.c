@@ -61,6 +61,10 @@ void text_renderer_line(text_renderer_t* renderer,
 
     hb_buffer_guess_segment_properties(renderer->hb_buf);
 
+    //hb_buffer_set_direction(renderer->hb_buf, HB_DIRECTION_LTR);
+    //hb_buffer_set_script(renderer->hb_buf, HB_SCRIPT_LATIN);
+    //hb_buffer_set_language(renderer->hb_buf, hb_language_from_string("en", -1));
+
     hb_shape(renderer->hb_font, renderer->hb_buf, NULL, 0);
 
     unsigned int hb_glyph_count;
@@ -95,10 +99,10 @@ void text_renderer_line(text_renderer_t* renderer,
         assert(info != NULL);
 
         // NOTE: left-bottom origin
-        int32_t awidth = renderer->gcache.awidth;
-        int32_t aheight = renderer->gcache.aheight;
-        int32_t w = info->bglyph->bitmap.width;
-        int32_t h = info->bglyph->bitmap.rows;
+        uint32_t awidth = renderer->gcache.awidth;
+        uint32_t aheight = renderer->gcache.aheight;
+        uint32_t w = info->bglyph->bitmap.width;
+        uint32_t h = info->bglyph->bitmap.rows;
 
         float ratio_w = (float) w / awidth;
         float ratio_h = (float) h / aheight;
@@ -140,7 +144,7 @@ void text_renderer_line(text_renderer_t* renderer,
     glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->ibo);
 
-    glActiveTexture(renderer->gcache.atexID);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, renderer->gcache.atexOBJ);
     glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_STATIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, n);

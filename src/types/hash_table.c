@@ -100,7 +100,7 @@ bool hash_table_get(const hash_table_t* const table,
     return true;
 }
 
-bool hash_table_remove(hash_table_t* table,
+bool hash_table_remove(hash_table_t* const table,
                        const uint8_t* const key) {
     uint64_t hash_value = table->hashFunc(key);
     uint64_t index = hash_value % (table->capacity - 1);

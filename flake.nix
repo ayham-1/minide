@@ -25,6 +25,8 @@
                         linuxKernel.packages.linux_5_10.perf
                         libsForQt5.kcachegrind
                         graphviz
+                        massif-visualizer
+                        gede
 
                         man
                         man-pages

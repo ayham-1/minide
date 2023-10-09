@@ -4,6 +4,7 @@
 #include "texture_lender.h"
 
 #include <unistd.h>
+#include <GL/glew.h>
 
 static size_t nbFrames = 0;
 
@@ -24,6 +25,7 @@ int main(int argc, char* argv[]) {
  
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, SCR_TITLE, NULL, NULL);
     if (!window) {
@@ -44,11 +46,16 @@ int main(int argc, char* argv[]) {
     } else {
         log_info("GLEW: version %s", glewGetString(GLEW_VERSION));
     }
+
+    //#ifdef NDEBUG
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(__gl_callback, 0);
+    //#endif
+
     texture_lender_init(MAX_TEXTURES_AVIALABLE);
 
     gl_wrapper_init();
     log_info("ran gl_wrapper_init");
-
 
     if (RENDER_FRAME_MS)
         fps_counter_init(SCR_WIDTH, SCR_HEIGHT);
@@ -117,4 +124,26 @@ void __glfw_size_callback(GLFWwindow* window,
     glViewport(0, 0, width, height);
 
     glfw_size_callback(width, height);
+}
+
+void __gl_callback(GLenum source,
+                     GLenum type,
+                     GLuint id,
+                     GLenum severity,
+                     GLsizei length,
+                     const GLchar* message,
+                     const void* userParam )
+{
+    if (GL_DEBUG_TYPE_ERROR) {
+        log_error("__gl_callback: %s type = 0x%x, severity = 0x%x, message = %s\n",
+                  "** GL ERROR **", type, severity, message );
+    } else {
+        log_warn("__gl_callback: %s type = 0x%x, severity = 0x%x, message = %s\n",
+                  "", type, severity, message );
+    }
+
+    (void)source;
+    (void)id;
+    (void)length;
+    (void)userParam;
 }
