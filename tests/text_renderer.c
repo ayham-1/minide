@@ -15,7 +15,7 @@
 GLsizei MAX_TEXTURES_AVIALABLE = 10;
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
-int SCR_TARGET_FPS = 15;
+int SCR_TARGET_FPS = 1;
 const char* SCR_TITLE = "test_text_renderer";
 bool GL_WRAPPER_DO_CLOSE = false;
 
@@ -24,14 +24,14 @@ bool RENDER_FRAME_MS = false;
 
 #define TEST_DATA "~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}\\|;:'\",.<>/?\0"
 
-//#define TEST_U8 "HELLO ᙭ WORLD ФϴШՋᏍᓉᔩᗅ"
-#define TEST_U8 "HELLO ᙭ WORLD~Фϴᗅ"
+#define TEST_U8 "HELLO ᙭ WORLD ФϴШՋᏍᓉᔩᗅ˩˨ʯʶΩǞŮŠǅƵҦфъ҂ה੦"
+//#define TEST_U8 "HELLO ᙭ WORLD~Фϴᗅ"
 //#define TEST_U8 "HELLO ᙭ WORLD ФД"
 //#define TEST_U8 "HELLO ᙭ WORLD Ф"
 
 //#define TEST_U8 "ФД"
 //#define TEST_U8 "Д"
-#define TEST_U8_BYTES_NUM 20
+#define TEST_U8_BYTES_NUM sizeof(TEST_U8)
 
 char* str = NULL;
 string_t u8str1;
@@ -60,7 +60,7 @@ void gl_wrapper_render() {
     text_renderer_line(&renderer, (byte_t*) str, 100, 100);
     text_renderer_line(&renderer, (byte_t*) u8str1.bytes, 100, 150);
     //hash_table_debug(&renderer.gcache.table, __glyph_cache_table_printer);
-    //GL_WRAPPER_DO_CLOSE = true;
+    GL_WRAPPER_DO_CLOSE = true;
 }
 
 void gl_wrapper_clean() {

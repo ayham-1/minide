@@ -168,7 +168,7 @@ DATA_TYPE* glyph_cache_append(glyph_cache* cache,
 
 void __glyph_cache_atlas_build(glyph_cache* cache) {
     unsigned int row_width = 0, row_height = 0;
-    cache->awidth = 0;
+    cache->awidth = ATLAS_MAX_WIDTH;
     cache->aheight = 0;
 
     for (size_t i = 0; i < cache->table.capacity; i++) {
@@ -180,7 +180,6 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
             DATA_TYPE* info = (DATA_TYPE*) (*curr_entry).data;
 
             if (row_width + info->bglyph->bitmap.width > ATLAS_MAX_WIDTH) {
-                if (cache->awidth < row_width) cache->awidth = row_width;
                 cache->aheight += row_height;
                 row_width = 0;
                 row_height = 0;
@@ -260,18 +259,15 @@ void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
 
 void __glyph_cache_atlas_append(glyph_cache* cache, 
                                 DATA_TYPE* info) {
-    // TODO(ayham): research if resizing texture can be done without refilling it.
     if (cache->alast_row_height < info->bglyph->bitmap.rows) {
-        log_error("not checked yet");
-        //__glyph_cache_atlas_refill_gpu(cache);
-        assert(false);
+        __glyph_cache_atlas_build(cache);
+        __glyph_cache_atlas_refill_gpu(cache);
         return;
     }
 
-    if (cache->alast_offset_x + info->bglyph->bitmap.width > ATLAS_MAX_WIDTH) {
-        log_error("not checked yet");
-        //__glyph_cache_atlas_refill_gpu(cache);
-        assert(false);
+    if (cache->alast_offset_x + info->bglyph->bitmap.width >= ATLAS_MAX_WIDTH) {
+        __glyph_cache_atlas_build(cache);
+        __glyph_cache_atlas_refill_gpu(cache);
         return;
     }
 
