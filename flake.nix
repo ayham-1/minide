@@ -38,6 +38,7 @@
                         glew
                         freetype
                         harfbuzz
+                        icu
                         cglm
                     ];
                     shellHook = ''

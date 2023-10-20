@@ -14,6 +14,7 @@ find_package(glew REQUIRED)
 find_package(cglm REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(harfbuzz REQUIRED)
+find_package(ICU REQUIRED data i18n uc)
 
 set(SOURCES
     src/gl_wrapper.c
@@ -45,6 +46,7 @@ target_link_libraries(
     cglm
     freetype
     harfbuzz
+    ${ICU_LIBRARIES}
     ${GLEW_LIBRARIES}
 )
 set_property(TARGET min PROPERTY C_STANDARD 23)

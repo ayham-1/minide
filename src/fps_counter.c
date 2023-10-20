@@ -6,23 +6,41 @@
 #define PATH "assets/FreeSans.ttf"
 #define PATH_BYTES_NUM sizeof(PATH)
 
-static text_renderer_t renderer;
 static size_t nbFrames;
+
+static text_renderer_t renderer;
+static text_render_config conf = {
+    .renderer = &renderer,
+
+    .wrappable = false,
+    .max_line_width_chars = 80,
+    .base_direction = UBIDI_RTL,
+
+    .str = NULL,
+    .num_bytes = 0,
+
+    .origin_x = 0,
+    .origin_y = 0,
+};
 
 void fps_counter_init(size_t width, size_t height) {
     path_t p;
 
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
-    
+
     text_renderer_init(&renderer, p, width, height, 12);
+
 }
 
 void fps_counter_render() {
-    char str[21*2];
-    sprintf(str, "%li fps | %f ms/frame", nbFrames, 1000.0f/nbFrames);
+    byte_t str[21*2];
+    sprintf((char*) str, "%li fps | %f ms/frame", nbFrames, 1000.0f/nbFrames);
 
-    text_renderer_line(&renderer, (byte_t*) &str, 0, 0);
+    conf.str = str;
+    conf.num_bytes = strlen((char*) str);
+
+    text_renderer_do(&conf);
 }
 
 void fps_counter_update(size_t frames) {
