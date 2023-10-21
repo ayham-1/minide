@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include <unicode/ubrk.h>
+#include <unicode/ustring.h>
 
 void text_renderer_init(text_renderer_t* renderer, path_t font,
                         size_t width, size_t height, size_t font_pixel_size) {
@@ -55,93 +56,124 @@ void text_renderer_cleanup(text_renderer_t* renderer) {
     glDeleteBuffers(1, &renderer->ibo);
 }
 
+void text_renderer_undo(text_render_config* const conf) {
+    free(conf->utf16_str);
+}
+
 void text_renderer_do(text_render_config* const conf) {
     conf->curr_x = conf->origin_x;
     conf->curr_y = conf->origin_y;
 
-    size_t num_bytes = conf->num_bytes; 
+    if (conf->str_sz == 0) {
+        conf->str_sz = strlen((char*)conf->str);
+    }
 
     UErrorCode u_error_code = U_ZERO_ERROR;
-    UBiDi* bidi = ubidi_openSized(num_bytes, 0, &u_error_code);
+
+    if (conf->utf16_str == NULL) {
+        // ICU UBiDi requires UTF-16 strings
+        u_strFromUTF8(NULL, 0, (int32_t*) &conf->utf16_sz,
+                      (char*) conf->str, (int32_t) conf->str_sz,
+                      &u_error_code);
+        u_error_code = U_ZERO_ERROR;
+
+        conf->utf16_str = malloc(sizeof(UChar) * (conf->utf16_sz));
+        int32_t utf16_written = 0;
+        u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written,
+                      (char*) conf->str, (int32_t) conf->str_sz,
+                      &u_error_code);
+        if (U_FAILURE(u_error_code)) {
+            log_error("u_strFromUTF8 failed, error_code: %i",
+                      u_error_code);
+            return;
+        }
+        assert(conf->utf16_sz == utf16_written);
+    }
+
+    UBiDi* bidi = ubidi_openSized(0, 0, &u_error_code);
 
     if (bidi == NULL) {
         log_error("ubidi_openSized failed");
         return;
     }
 
-    ubidi_setPara(bidi, (UChar*) conf->str, num_bytes, 
+    ubidi_setPara(bidi, (UChar*) conf->utf16_str, conf->utf16_sz, 
                   conf->base_direction, NULL,
                   &u_error_code);
 
-    if (U_SUCCESS(u_error_code)) {
-        UBiDiLevel level = 1 & ubidi_getParaLevel(bidi);
-        size_t width_chars = __text_renderer_get_text_width(conf->str, 0, num_bytes);
-
-        if (width_chars <= conf->max_line_width_chars) {
-            // everything fits into one line
-            // consider length of width for RTL or LTR
-            // render_line
-            __text_renderer_line(bidi, conf, 0, num_bytes, &u_error_code);
-        } else {
-            UBiDi* line = ubidi_openSized(num_bytes, 0, &u_error_code);
-            if (line != NULL) {
-                int32_t start = 0, end = 0;
-                for (;;) {
-                    // get logical end of line to render
-                    __text_renderer_get_line_break(bidi, conf, 
-                                                   start, &end);
-
-                    ubidi_setLine(bidi, start, end, line, &u_error_code);
-
-                    if (U_SUCCESS(u_error_code)) {
-                        // consider length of width for RTL or LTR
-                        // render_line
-                        __text_renderer_line(line, conf, start, end, &u_error_code);
-                    }
-
-                    if (end >= num_bytes) break;
-                    start = end;
-                }
-            }
-            ubidi_close(line);
-        }
+    if (U_FAILURE(u_error_code)) {
+        log_error("failed ubidi_setPara");
+        return;
     }
+
+    //UBiDiLevel level = ubidi_getParaLevel(bidi);
+    //log_debug("level: %i", level);
+    //size_t width_chars = __text_renderer_get_text_width(conf->str, 0, str_sz);
+
+    //if (width_chars <= conf->max_line_width_chars) {
+    // everything fits into one line
+    // consider length of width for RTL or LTR
+    // render_line
+    __text_renderer_line(bidi, conf, &u_error_code);
+    //} else {
+    //    UBiDi* line = ubidi_openSized(str_sz, 0, &u_error_code);
+    //    if (line != NULL) {
+    //        int32_t start = 0, end = 0;
+    //        for (;;) {
+    //            // get logical end of line to render
+    //            __text_renderer_get_line_break(bidi, conf, 
+    //                                           start, &end);
+
+    //            ubidi_setLine(bidi, start, end, line, &u_error_code);
+
+    //            if (U_SUCCESS(u_error_code)) {
+    //                // consider length of width for RTL or LTR
+    //                // render_line
+    //                __text_renderer_line(line, conf, start, end, &u_error_code);
+    //            }
+
+    //            if (end >= str_sz) break;
+    //            start = end;
+    //        }
+    //    }
+    //    ubidi_close(line);
+    //}
 
     ubidi_close(bidi);
 }
 
 void __text_renderer_line(UBiDi* line, text_render_config* const conf,
-                          int32_t start, int32_t end,
                           UErrorCode* error_code) {
+    if (U_FAILURE(*error_code)) {
+        log_error("__text_renderer_line passed-in failure error_code: %i",
+                  *error_code);
+        return;
+    }
+
     UBiDiDirection direction = ubidi_getDirection(line);
-    log_debug("direction: %i", direction);
-    if (direction != UBIDI_MIXED) {
-        size_t count_runs = ubidi_countRuns(line, error_code);
-        log_debug("count_runs: %i", count_runs);
-        __text_renderer_run(conf, start, end, direction);
-    } else {
-        size_t count_runs = ubidi_countRuns(line, error_code);
-        log_debug("count_runs: %i", count_runs);
-        int32_t length = 0;
-        for (size_t i = 0; i < count_runs; i++) {
-            direction = ubidi_getVisualRun(line, i, &start, &length);
-            __text_renderer_run(conf, start, start + length, direction);
-        }
+    if (U_FAILURE(*error_code)) {
+        log_error("failed to run ubidi_getDirection, error_code: %i",
+                  *error_code);
+        return;
+    }
+    size_t count_runs = ubidi_countRuns(line, error_code);
+    int32_t logical_start = 0, length = 0;
+    for (size_t i = 0; i < count_runs; i++) {
+        direction = ubidi_getVisualRun(line, i, &logical_start, &length);
+        __text_renderer_run(conf, logical_start, length, direction);
     }
 }
 
 void __text_renderer_run(text_render_config* const conf, 
-                         int32_t logical_start, int32_t logical_limit,
+                         int32_t logical_start, int32_t logical_length,
                          UBiDiDirection direction) {
+    hb_buffer_reset(conf->renderer->hb_buf);
     hb_buffer_clear_contents(conf->renderer->hb_buf);
-    hb_buffer_add_utf8(conf->renderer->hb_buf, (char*) conf->str, -1, 0, -1);
+    hb_buffer_add_utf16(conf->renderer->hb_buf,
+                       (uint16_t*) conf->utf16_str + logical_start, logical_length,
+                       0, -1);
 
     hb_buffer_guess_segment_properties(conf->renderer->hb_buf);
-
-    //hb_buffer_set_direction(conf->renderer->hb_buf, direction == UBIDI_LTR ? HB_DIRECTION_LTR : HB_DIRECTION_RTL);
-    //hb_buffer_set_script(renderer->hb_buf, HB_SCRIPT_LATIN);
-    //hb_buffer_set_language(renderer->hb_buf, hb_language_from_string("en", -1));
-
     hb_shape(conf->renderer->hb_font, conf->renderer->hb_buf, NULL, 0);
 
     unsigned int hb_glyph_count;
@@ -149,7 +181,6 @@ void __text_renderer_run(text_render_config* const conf,
                                                                &hb_glyph_count);
     hb_glyph_position_t* hb_glyph_pos = hb_buffer_get_glyph_positions(conf->renderer->hb_buf, 
                                                                       &hb_glyph_count);
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_CULL_FACE);
@@ -168,8 +199,6 @@ void __text_renderer_run(text_render_config* const conf,
 
     point coords[6 * hb_glyph_count];
     size_t n = 0;
-
-    //if (direction == UBIDI_RTL) i = hb_glyph_count - 1;
 
     for (unsigned int i = 0; i < hb_glyph_count; i++) {
         hb_glyph_info_t hb_info = hb_glyph_info[i];

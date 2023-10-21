@@ -6,6 +6,12 @@
 #include <unistd.h>
 #include <GL/glew.h>
 
+#include <assert.h>
+
+#include <unicode/utypes.h>
+#include <unicode/ulocdata.h>
+#include <unicode/putil.h>
+
 static size_t nbFrames = 0;
 
 int main(int argc, char* argv[]) {
@@ -16,6 +22,22 @@ int main(int argc, char* argv[]) {
     #else
         logger_init(INFO, "/tmp/.log", true);
     #endif
+
+    UVersionInfo u_info;
+    UErrorCode u_version_error_code = U_ZERO_ERROR;
+
+    u_getVersion(u_info);
+    log_info("ICU version: %i.%i.%i.%i",
+             u_info[0], u_info[1], u_info[2], u_info[3]);
+
+    ulocdata_getCLDRVersion(u_info, &u_version_error_code);
+    if (U_FAILURE(u_version_error_code)) {
+        log_error("ICU did not find unicode data");
+        return -1;
+    } else {
+        log_info("ICU unicode data version: %i.%i.%i.%i",
+                 u_info[0], u_info[1], u_info[2], u_info[3]);
+    }
 
     GLFWwindow* window;
     glfwSetErrorCallback(__glfw_error_callback);

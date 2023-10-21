@@ -17,7 +17,6 @@ static text_render_config conf = {
     .base_direction = UBIDI_RTL,
 
     .str = NULL,
-    .num_bytes = 0,
 
     .origin_x = 0,
     .origin_y = 0,
@@ -38,7 +37,6 @@ void fps_counter_render() {
     sprintf((char*) str, "%li fps | %f ms/frame", nbFrames, 1000.0f/nbFrames);
 
     conf.str = str;
-    conf.num_bytes = strlen((char*) str);
 
     text_renderer_do(&conf);
 }

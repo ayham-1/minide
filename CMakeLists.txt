@@ -14,7 +14,7 @@ find_package(glew REQUIRED)
 find_package(cglm REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(harfbuzz REQUIRED)
-find_package(ICU REQUIRED data i18n uc)
+find_package(ICU COMPONENTS data uc i18n io REQUIRED)
 
 set(SOURCES
     src/gl_wrapper.c

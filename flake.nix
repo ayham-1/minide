@@ -18,6 +18,7 @@
                     nativeBuildInputs = with pkgs; [
                         clang
                         cmake
+                        pkg-config
                         ninja
                         gdb
                         valgrind

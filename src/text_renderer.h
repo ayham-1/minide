@@ -14,6 +14,7 @@
 #include <cglm/cglm.h>
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ft.h>
+
 #include <unicode/ubidi.h>
 
 typedef struct {
@@ -47,7 +48,10 @@ typedef struct {
     UBiDiDirection base_direction;
 
     byte_t* str;
-    size_t num_bytes;
+    size_t str_sz;
+
+    UChar* utf16_str;
+    size_t utf16_sz;
 
     GLfloat origin_x, origin_y;
     GLfloat curr_x, curr_y; // resets after every "do" call
@@ -60,9 +64,9 @@ void text_renderer_cleanup(text_renderer_t* renderer);
 void text_renderer_update_window_size(text_renderer_t* renderer, int width, int height);
 
 void text_renderer_do(text_render_config* const conf);
+void text_renderer_undo(text_render_config* const conf);
 
 void __text_renderer_line(UBiDi* line, text_render_config* const conf,
-                          int32_t logical_start, int32_t logical_end,
                           UErrorCode* error_code);
 void __text_renderer_run(text_render_config* const conf, 
                          int32_t logical_start, int32_t logical_limit,
