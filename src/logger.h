@@ -46,4 +46,5 @@ extern logger_t* g_logger;
 #define log_warn(...)  logger_log(WARNING, __FILE_NAME__, __LINE__, __VA_ARGS__)
 #define log_error(...) logger_log(ERROR, __FILE_NAME__, __LINE__, __VA_ARGS__)
 
+#define log_var(var) logger_log(DEBUG, __FILE_NAME__, __LINE__, "%s: %i", #var ,var)
 #endif

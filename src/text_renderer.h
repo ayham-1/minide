@@ -45,6 +45,9 @@ typedef struct {
 
     bool wrappable;
     size_t max_line_width_chars;
+    int32_t* wrap_indices;
+    size_t wrap_indices_sz;
+
     UBiDiDirection base_direction;
 
     byte_t* str;
@@ -67,16 +70,19 @@ void text_renderer_do(text_render_config* const conf);
 void text_renderer_undo(text_render_config* const conf);
 
 void __text_renderer_line(UBiDi* line, text_render_config* const conf,
+                          int32_t logical_line_start_offset,
                           UErrorCode* error_code);
 void __text_renderer_run(text_render_config* const conf, 
                          int32_t logical_start, int32_t logical_limit,
                          UBiDiDirection run_direction);
+void __text_renderer_new_line(text_render_config* const conf);
 
-size_t __text_renderer_get_text_width(const byte_t* const str, 
-                                      int32_t logical_start,
-                                      int32_t logical_end);
+void __text_renderer_calculate_line_wraps(text_render_config* const conf);
 void __text_renderer_get_line_break(UBiDi* bidi,
                                     text_render_config* const conf,
                                     int32_t logical_line_start,
                                     int32_t* out_logical_end);
+size_t __text_renderer_get_text_width(const UChar* const str, 
+                                      int32_t logical_start,
+                                      int32_t logical_end);
 #endif

@@ -4,6 +4,7 @@
 
 #include <assert.h>
 
+#include <unicode/uloc.h>
 #include <unicode/ubrk.h>
 #include <unicode/ustring.h>
 
@@ -106,43 +107,42 @@ void text_renderer_do(text_render_config* const conf) {
         return;
     }
 
-    //UBiDiLevel level = ubidi_getParaLevel(bidi);
-    //log_debug("level: %i", level);
-    //size_t width_chars = __text_renderer_get_text_width(conf->str, 0, str_sz);
+    UBiDiLevel level = ubidi_getParaLevel(bidi);
+    size_t width_chars = __text_renderer_get_text_width(conf->utf16_str, 0, conf->utf16_sz);
 
-    //if (width_chars <= conf->max_line_width_chars) {
-    // everything fits into one line
-    // consider length of width for RTL or LTR
-    // render_line
-    __text_renderer_line(bidi, conf, &u_error_code);
-    //} else {
-    //    UBiDi* line = ubidi_openSized(str_sz, 0, &u_error_code);
-    //    if (line != NULL) {
-    //        int32_t start = 0, end = 0;
-    //        for (;;) {
-    //            // get logical end of line to render
-    //            __text_renderer_get_line_break(bidi, conf, 
-    //                                           start, &end);
+    if (width_chars <= conf->max_line_width_chars) {
+        __text_renderer_line(bidi, conf, 0, &u_error_code);
+    } else {
+        UBiDi* line = ubidi_openSized(conf->str_sz, 0, &u_error_code);
+        if (line != NULL) {
+            int32_t start = 0, end = 0;
+            while (end < conf->utf16_sz) {
+                // get logical end of line to render
+                __text_renderer_get_line_break(bidi, conf, start, &end);
 
-    //            ubidi_setLine(bidi, start, end, line, &u_error_code);
+                ubidi_setLine(bidi, start, end, line, &u_error_code);
+                if (U_FAILURE(u_error_code)) {
+                    log_error("failed ubidi_setLine for line wrapping, error_code: %i",
+                              u_error_code);
+                    log_debug("start: %i", start);
+                    log_debug("end: %i", end);
+                    log_debug("length: %i", end - start);
+                    break;
+                }
+                __text_renderer_line(line, conf, start, &u_error_code);
+                __text_renderer_new_line(conf);
 
-    //            if (U_SUCCESS(u_error_code)) {
-    //                // consider length of width for RTL or LTR
-    //                // render_line
-    //                __text_renderer_line(line, conf, start, end, &u_error_code);
-    //            }
-
-    //            if (end >= str_sz) break;
-    //            start = end;
-    //        }
-    //    }
-    //    ubidi_close(line);
-    //}
+                start = end;
+            }
+        }
+        ubidi_close(line);
+    }
 
     ubidi_close(bidi);
 }
 
 void __text_renderer_line(UBiDi* line, text_render_config* const conf,
+                          int32_t logical_line_offset,
                           UErrorCode* error_code) {
     if (U_FAILURE(*error_code)) {
         log_error("__text_renderer_line passed-in failure error_code: %i",
@@ -160,7 +160,7 @@ void __text_renderer_line(UBiDi* line, text_render_config* const conf,
     int32_t logical_start = 0, length = 0;
     for (size_t i = 0; i < count_runs; i++) {
         direction = ubidi_getVisualRun(line, i, &logical_start, &length);
-        __text_renderer_run(conf, logical_start, length, direction);
+        __text_renderer_run(conf, logical_start + logical_line_offset, length, direction);
     }
 }
 
@@ -260,28 +260,52 @@ void __text_renderer_run(text_render_config* const conf,
     glDrawArrays(GL_TRIANGLES, 0, n);
 }
 
-size_t __text_renderer_get_text_width(const byte_t* const str, 
-                                      int32_t logical_start,
-                                      int32_t logical_end) {
-    size_t char_width = 0;
+void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
+    // TODO(ayham): requires character length and not UTF16 codepoint length
 
-    UBreakIterator* it;
-    UErrorCode err = U_ZERO_ERROR;
-    it = ubrk_open(UBRK_CHARACTER, 0, 
-                   (UChar*) str, strlen((char*) str), &err);
-    if (U_FAILURE(err)) {
-        log_error("unable to count character width of text");
-        return char_width;
+    if (conf->max_line_width_chars >= conf->utf16_sz) { 
+    no_wrap:
+        conf->wrap_indices_sz = 0;
+        conf->wrap_indices = NULL;
+        return;
     }
 
-    int32_t p = ubrk_first(it);
-    while (p != UBRK_DONE) {
-        char_width++;
-        p = ubrk_next(it);
+    UErrorCode u_error = U_ZERO_ERROR;
+    UBreakIterator* it = ubrk_open(UBRK_LINE, uloc_getDefault(),
+                                   conf->utf16_str, conf->utf16_sz, &u_error);
+
+    if (U_FAILURE(u_error)) {
+        log_error("failed ubrk_open, error_code: %i", u_error);
+        // TODO(ayham): check if line needs forceful breaking
+        goto no_wrap;
     }
 
-    ubrk_close(it);
-    return char_width;
+    int32_t logical_start = 0, logical_end;
+    if (ubrk_countAvailable() == 0) {
+        log_warn("called get_line_break() with no reported available line breaks");
+        // TODO(ayham): check if line needs forceful breaking
+        goto no_wrap;
+    }
+
+    // TODO(ayham): check if ubrk_first() returns after conf->max_line_width_chars
+
+    while (logical_end != UBRK_DONE && logical_end < conf->utf16_sz) {
+        if (ubrk_isBoundary(it, logical_start + conf->max_line_width_chars)) {
+            logical_end = ubrk_current(it);
+        } else {
+            logical_end = ubrk_following(it, logical_start + conf->max_line_width_chars);
+            if (logical_end - (logical_start + 1) > conf->max_line_width_chars) {
+                (void)ubrk_first(it);
+                logical_end = ubrk_preceding(it,  logical_start + conf->max_line_width_chars);
+            }
+        }
+        // insert pair into vector
+        // TODO(ayham): implement vector and pair types
+        logical_start = logical_end;
+    }
+
+    // TODO(ayham): check if last start and last end is longer than conf->max_line_width_chars
+    // break it further
 }
 
 void __text_renderer_get_line_break(UBiDi* bidi,
@@ -295,8 +319,51 @@ void __text_renderer_get_line_break(UBiDi* bidi,
     //                                                        logical_line_start,
     //                                                        logical_run_end);
 
-    // TODO(ayham): implement actual line breaking algorithm
-    out_logical_end += conf->max_line_width_chars;
+    UErrorCode u_error = U_ZERO_ERROR;
+    UBreakIterator* it = ubrk_open(UBRK_LINE, uloc_getDefault(),
+                                   conf->utf16_str, conf->utf16_sz, &u_error);
+    if (U_FAILURE(u_error)) {
+        log_error("failed ubrk_open, error_code: %i", u_error);
+        *out_logical_end = conf->utf16_sz;
+        return;
+    }
+
+    if (ubrk_countAvailable() == 0) {
+        log_warn("called get_line_break() with no reported available line breaks");
+
+        *out_logical_end += logical_line_start + conf->max_line_width_chars;
+        return;
+    }
+
+    *out_logical_end  = ubrk_first(it);
+    if (*out_logical_end - (logical_line_start + 1) > (int32_t) conf->max_line_width_chars) {
+        return;
+    }
+
+    if (ubrk_isBoundary(it, logical_line_start + conf->max_line_width_chars)) {
+        *out_logical_end = ubrk_current(it);
+        return;
+    }
+
+    *out_logical_end = ubrk_following(it, logical_line_start + conf->max_line_width_chars);
+    if (*out_logical_end - (logical_line_start + 1) > conf->max_line_width_chars) {
+        (void)ubrk_first(it);
+        *out_logical_end = ubrk_preceding(it,  logical_line_start + conf->max_line_width_chars);
+    }
+}
+
+size_t __text_renderer_get_text_width(const UChar* const str, 
+                                      int32_t logical_start,
+                                      int32_t logical_end) {
+    // TODO(ayham): may cause visual errors, needs research and confirmation:
+    // Since logcial_* refer to UTF16 format, where every character is represented
+    // by a single UChar, this *should* be fine.
+    return logical_end - logical_start;
+}
+
+void __text_renderer_new_line(text_render_config* const conf) {
+    conf->curr_y -= conf->renderer->gcache.ft_face->height >> 6;
+    conf->curr_x = conf->origin_x;
 }
 
 void text_renderer_update_window_size(text_renderer_t* renderer, int width, int height) {
