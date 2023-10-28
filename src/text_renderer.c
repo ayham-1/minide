@@ -59,6 +59,9 @@ void text_renderer_cleanup(text_renderer_t* renderer) {
 
 void text_renderer_undo(text_render_config* const conf) {
     free(conf->utf16_str);
+
+    free(conf->wrap_indices_dat);
+    conf->wrap_indices_cnt = 0;
 }
 
 void text_renderer_do(text_render_config* const conf) {
@@ -107,33 +110,38 @@ void text_renderer_do(text_render_config* const conf) {
         return;
     }
 
-    UBiDiLevel level = ubidi_getParaLevel(bidi);
-    size_t width_chars = __text_renderer_get_text_width(conf->utf16_str, 0, conf->utf16_sz);
+    //UBiDiLevel level = ubidi_getParaLevel(bidi);
+    int32_t width_chars = __text_renderer_get_text_width(0, conf->utf16_sz);
 
     if (width_chars <= conf->max_line_width_chars) {
         __text_renderer_line(bidi, conf, 0, &u_error_code);
     } else {
         UBiDi* line = ubidi_openSized(conf->str_sz, 0, &u_error_code);
-        if (line != NULL) {
-            int32_t start = 0, end = 0;
-            while (end < conf->utf16_sz) {
-                // get logical end of line to render
-                __text_renderer_get_line_break(bidi, conf, start, &end);
+        if (line == NULL) {
+            log_error("ubidi_openSized failed");
+            return;
+        }
+        __text_renderer_calculate_line_wraps(conf);
+        log_info("calced");
 
-                ubidi_setLine(bidi, start, end, line, &u_error_code);
-                if (U_FAILURE(u_error_code)) {
-                    log_error("failed ubidi_setLine for line wrapping, error_code: %i",
-                              u_error_code);
-                    log_debug("start: %i", start);
-                    log_debug("end: %i", end);
-                    log_debug("length: %i", end - start);
-                    break;
-                }
-                __text_renderer_line(line, conf, start, &u_error_code);
-                __text_renderer_new_line(conf);
+        int32_t start = 0, end = 0, line_number = 0;
+        while (end < conf->utf16_sz) {
+            // get logical end of line to render
+            __text_renderer_get_line_break(conf, line_number++, &end);
 
-                start = end;
+            ubidi_setLine(bidi, start, end, line, &u_error_code);
+            if (U_FAILURE(u_error_code)) {
+                log_error("failed ubidi_setLine for line wrapping, error_code: %i",
+                          u_error_code);
+                log_debug("start: %i", start);
+                log_debug("end: %i", end);
+                log_debug("length: %i", end - start);
+                break;
             }
+            __text_renderer_line(line, conf, start, &u_error_code);
+            __text_renderer_new_line(conf);
+
+            start = end;
         }
         ubidi_close(line);
     }
@@ -150,7 +158,6 @@ void __text_renderer_line(UBiDi* line, text_render_config* const conf,
         return;
     }
 
-    UBiDiDirection direction = ubidi_getDirection(line);
     if (U_FAILURE(*error_code)) {
         log_error("failed to run ubidi_getDirection, error_code: %i",
                   *error_code);
@@ -159,14 +166,13 @@ void __text_renderer_line(UBiDi* line, text_render_config* const conf,
     size_t count_runs = ubidi_countRuns(line, error_code);
     int32_t logical_start = 0, length = 0;
     for (size_t i = 0; i < count_runs; i++) {
-        direction = ubidi_getVisualRun(line, i, &logical_start, &length);
-        __text_renderer_run(conf, logical_start + logical_line_offset, length, direction);
+        (void)ubidi_getVisualRun(line, i, &logical_start, &length);
+        __text_renderer_run(conf, logical_start + logical_line_offset, length);
     }
 }
 
 void __text_renderer_run(text_render_config* const conf, 
-                         int32_t logical_start, int32_t logical_length,
-                         UBiDiDirection direction) {
+                         int32_t logical_start, int32_t logical_length) {
     hb_buffer_reset(conf->renderer->hb_buf);
     hb_buffer_clear_contents(conf->renderer->hb_buf);
     hb_buffer_add_utf16(conf->renderer->hb_buf,
@@ -263,10 +269,13 @@ void __text_renderer_run(text_render_config* const conf,
 void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
     // TODO(ayham): requires character length and not UTF16 codepoint length
 
+    if (conf->wrap_indices_dat && conf->wrap_indices_cnt)
+        return; // already computed
+
     if (conf->max_line_width_chars >= conf->utf16_sz) { 
     no_wrap:
-        conf->wrap_indices_sz = 0;
-        conf->wrap_indices = NULL;
+        conf->wrap_indices_cnt = 0;
+        conf->wrap_indices_dat = NULL;
         return;
     }
 
@@ -280,15 +289,28 @@ void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
         goto no_wrap;
     }
 
-    int32_t logical_start = 0, logical_end;
+    int32_t logical_start = 0, logical_end = 0;
     if (ubrk_countAvailable() == 0) {
         log_warn("called get_line_break() with no reported available line breaks");
-        // TODO(ayham): check if line needs forceful breaking
-        goto no_wrap;
+        conf->wrap_indices_cnt = (conf->utf16_sz / conf->max_line_width_chars) + 1;
+        conf->wrap_indices_dat = calloc(conf->wrap_indices_cnt, sizeof(int32_t));
+
+        for (int32_t i = 0; i < conf->wrap_indices_cnt; i++) {
+            logical_end = logical_start + conf->max_line_width_chars;
+            conf->wrap_indices_dat[i] = logical_end;
+            logical_start = logical_end;
+        }
     }
 
     // TODO(ayham): check if ubrk_first() returns after conf->max_line_width_chars
 
+    bool mem_run = true;
+    int32_t line = 0;
+run_start:
+    ubrk_first(it);
+    line = 0;
+    logical_start = 0;
+    logical_end = 0;
     while (logical_end != UBRK_DONE && logical_end < conf->utf16_sz) {
         if (ubrk_isBoundary(it, logical_start + conf->max_line_width_chars)) {
             logical_end = ubrk_current(it);
@@ -299,61 +321,39 @@ void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
                 logical_end = ubrk_preceding(it,  logical_start + conf->max_line_width_chars);
             }
         }
+
+        if (logical_end == logical_start) {
+            if (logical_end + conf->max_line_width_chars >= conf->utf16_sz)
+                logical_end = conf->utf16_sz;
+            logical_end += conf->max_line_width_chars;
+        }
+
         // insert pair into vector
         // TODO(ayham): implement vector and pair types
         logical_start = logical_end;
+        if (!mem_run)
+            conf->wrap_indices_dat[line] = logical_end;
+        line++;
     }
+    if (!mem_run) return;
 
-    // TODO(ayham): check if last start and last end is longer than conf->max_line_width_chars
-    // break it further
+    conf->wrap_indices_cnt = line + 1;
+    conf->wrap_indices_dat = calloc(conf->wrap_indices_cnt, sizeof(int32_t));
+    mem_run = false;
+    goto run_start;
 }
 
-void __text_renderer_get_line_break(UBiDi* bidi,
-                                    text_render_config* const conf,
-                                    int32_t logical_line_start, 
+void __text_renderer_get_line_break(text_render_config* const conf,
+                                    int32_t line_number, 
                                     int32_t* out_logical_end) {
-    //int32_t logical_run_end = 0;
-    //ubidi_getLogicalRun(bidi, logical_line_start, &logical_run_end, NULL);
-
-    //size_t count_run_chars = __text_renderer_get_text_width(conf->str,
-    //                                                        logical_line_start,
-    //                                                        logical_run_end);
-
-    UErrorCode u_error = U_ZERO_ERROR;
-    UBreakIterator* it = ubrk_open(UBRK_LINE, uloc_getDefault(),
-                                   conf->utf16_str, conf->utf16_sz, &u_error);
-    if (U_FAILURE(u_error)) {
-        log_error("failed ubrk_open, error_code: %i", u_error);
+    if (conf->wrap_indices_cnt == 0) {
         *out_logical_end = conf->utf16_sz;
         return;
     }
-
-    if (ubrk_countAvailable() == 0) {
-        log_warn("called get_line_break() with no reported available line breaks");
-
-        *out_logical_end += logical_line_start + conf->max_line_width_chars;
-        return;
-    }
-
-    *out_logical_end  = ubrk_first(it);
-    if (*out_logical_end - (logical_line_start + 1) > (int32_t) conf->max_line_width_chars) {
-        return;
-    }
-
-    if (ubrk_isBoundary(it, logical_line_start + conf->max_line_width_chars)) {
-        *out_logical_end = ubrk_current(it);
-        return;
-    }
-
-    *out_logical_end = ubrk_following(it, logical_line_start + conf->max_line_width_chars);
-    if (*out_logical_end - (logical_line_start + 1) > conf->max_line_width_chars) {
-        (void)ubrk_first(it);
-        *out_logical_end = ubrk_preceding(it,  logical_line_start + conf->max_line_width_chars);
-    }
+    *out_logical_end = conf->wrap_indices_dat[line_number];
 }
 
-size_t __text_renderer_get_text_width(const UChar* const str, 
-                                      int32_t logical_start,
+size_t __text_renderer_get_text_width(int32_t logical_start,
                                       int32_t logical_end) {
     // TODO(ayham): may cause visual errors, needs research and confirmation:
     // Since logcial_* refer to UTF16 format, where every character is represented

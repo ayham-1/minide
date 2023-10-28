@@ -5,6 +5,7 @@
 #include "u8string.h"
 #include "path.h"
 #include "shaders_util.h"
+#include "types/vector.h"
 
 #include "glyph_cache.h"
 
@@ -44,20 +45,21 @@ typedef struct {
     text_renderer_t* renderer;
 
     bool wrappable;
-    size_t max_line_width_chars;
-    int32_t* wrap_indices;
-    size_t wrap_indices_sz;
+    int32_t max_line_width_chars;
+
+    int32_t* wrap_indices_dat;
+    int32_t wrap_indices_cnt;
 
     UBiDiDirection base_direction;
 
     byte_t* str;
-    size_t str_sz;
+    int32_t str_sz;
 
     UChar* utf16_str;
-    size_t utf16_sz;
+    int32_t utf16_sz;
 
     GLfloat origin_x, origin_y;
-    GLfloat curr_x, curr_y; // resets after every "do" call
+    GLfloat curr_x, curr_y;
 } text_render_config;
 
 void text_renderer_init(text_renderer_t* renderer, path_t font, 
@@ -73,16 +75,13 @@ void __text_renderer_line(UBiDi* line, text_render_config* const conf,
                           int32_t logical_line_start_offset,
                           UErrorCode* error_code);
 void __text_renderer_run(text_render_config* const conf, 
-                         int32_t logical_start, int32_t logical_limit,
-                         UBiDiDirection run_direction);
+                         int32_t logical_start, int32_t logical_limit);
 void __text_renderer_new_line(text_render_config* const conf);
 
 void __text_renderer_calculate_line_wraps(text_render_config* const conf);
-void __text_renderer_get_line_break(UBiDi* bidi,
-                                    text_render_config* const conf,
+void __text_renderer_get_line_break(text_render_config* const conf,
                                     int32_t logical_line_start,
                                     int32_t* out_logical_end);
-size_t __text_renderer_get_text_width(const UChar* const str, 
-                                      int32_t logical_start,
+size_t __text_renderer_get_text_width(int32_t logical_start,
                                       int32_t logical_end);
 #endif
