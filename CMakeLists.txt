@@ -15,6 +15,7 @@ find_package(cglm REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(harfbuzz REQUIRED)
 find_package(ICU COMPONENTS data uc i18n io REQUIRED)
+find_package(Fontconfig REQUIRED)
 
 set(SOURCES
     src/gl_wrapper.c
@@ -23,6 +24,7 @@ set(SOURCES
     src/logger.c
     src/u8string.c
     src/path.c
+    src/fontconfig.c
 
     src/types/hash_table.c
 
@@ -46,6 +48,7 @@ target_link_libraries(
     cglm
     freetype
     harfbuzz
+    fontconfig
     ${ICU_LIBRARIES}
     ${GLEW_LIBRARIES}
 )

@@ -34,10 +34,6 @@ bool RENDER_FRAME_MS = false;
 
 #define TEST_DATA_CACHE_EXPANSION "HELLO ᙭ WORLD ФϴШՋᏍᓉᔩᗅ˩˨ʯʶΩǞŮŠǅƵҦфъ҂ה੦"
 
-#define TEST_DATA_BYTES_NUM sizeof(TEST_DATA)
-#define TEST_DATA_ARABIC_BYTES_NUM sizeof(TEST_DATA_ARABIC)
-#define TEST_U8_BYTES_NUM sizeof(TEST_U8)
-
 path_t p;
 
 text_renderer_t renderer;

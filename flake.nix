@@ -32,6 +32,7 @@
                         man
                         man-pages
                         man-pages-posix
+                        taskell
                     ];
 
                     buildInputs = with pkgs; [
@@ -41,6 +42,8 @@
                         harfbuzz
                         icu
                         cglm
+                        fontconfig
+                        expat
                     ];
                     shellHook = ''
                         #export PS1="minide> "

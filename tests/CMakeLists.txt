@@ -57,6 +57,9 @@ gen_test(u8str_is_utf8_valid YES YES)
 # path testing
 gen_test(path_expand YES YES)
 
+# fontconfig testing
+gen_test(fontconfig YES NO)
+
 # hash table testing
 gen_test(hash_table_insert_collision YES YES)
 gen_test(hash_table_insert_unifont YES YES)
