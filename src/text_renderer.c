@@ -136,6 +136,7 @@ void text_renderer_do(text_render_config* const conf) {
                 log_debug("start: %i", start);
                 log_debug("end: %i", end);
                 log_debug("length: %i", end - start);
+                log_debug("line number: %i", line_number - 1);
                 break;
             }
             __text_renderer_line(line, conf, start, &u_error_code);
@@ -302,8 +303,6 @@ void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
         }
     }
 
-    // TODO(ayham): check if ubrk_first() returns after conf->max_line_width_chars
-
     bool mem_run = true;
     int32_t line = 0;
 run_start:
@@ -328,8 +327,8 @@ run_start:
             logical_end += conf->max_line_width_chars;
         }
 
-        // insert pair into vector
-        // TODO(ayham): implement vector and pair types
+        if (logical_end == UBRK_DONE) logical_end = conf->utf16_sz;
+
         logical_start = logical_end;
         if (!mem_run)
             conf->wrap_indices_dat[line] = logical_end;
