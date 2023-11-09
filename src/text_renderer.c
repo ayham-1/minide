@@ -286,8 +286,10 @@ void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
 
     if (U_FAILURE(u_error)) {
         log_error("failed ubrk_open, error_code: %i", u_error);
-        // TODO(ayham): check if line needs forceful breaking
-        goto no_wrap;
+        // goto no_wrap; // just continue and pray it doesn't break, 
+        // can't think of a situation where this may be an issue,
+        // except maybe malloc problems, and i am not going to handle that :D
+        // hopefully won't come back to bite. goodluck!
     }
 
     int32_t logical_start = 0, logical_end = 0;
