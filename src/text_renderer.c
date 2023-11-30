@@ -59,9 +59,15 @@ void text_renderer_cleanup(text_renderer_t* renderer) {
 
 void text_renderer_undo(text_render_config* const conf) {
     free(conf->utf16_str);
+    conf->utf16_str = NULL;
 
     free(conf->wrap_indices_dat);
     conf->wrap_indices_cnt = 0;
+    conf->wrap_indices_dat = NULL;
+
+    free(conf->it_char);
+    conf->it_char = NULL;
+    conf->char_num = 0;
 }
 
 void text_renderer_do(text_render_config* const conf) {
@@ -111,7 +117,7 @@ void text_renderer_do(text_render_config* const conf) {
     }
 
     //UBiDiLevel level = ubidi_getParaLevel(bidi);
-    int32_t width_chars = __text_renderer_get_text_width(0, conf->utf16_sz);
+    int32_t width_chars = __text_renderer_get_text_width(conf, 0, conf->utf16_sz);
 
     if (width_chars <= conf->max_line_width_chars) {
         __text_renderer_line(bidi, conf, 0, &u_error_code);
@@ -121,8 +127,8 @@ void text_renderer_do(text_render_config* const conf) {
             log_error("ubidi_openSized failed");
             return;
         }
+        __text_renderer_calculate_line_char_width(conf);
         __text_renderer_calculate_line_wraps(conf);
-        log_info("calced");
 
         int32_t start = 0, end = 0, line_number = 0;
         while (end < conf->utf16_sz) {
@@ -273,7 +279,7 @@ void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
     if (conf->wrap_indices_dat && conf->wrap_indices_cnt)
         return; // already computed
 
-    if (conf->max_line_width_chars >= conf->utf16_sz) { 
+    if (conf->max_line_width_chars >= conf->char_num) { 
     no_wrap:
         conf->wrap_indices_cnt = 0;
         conf->wrap_indices_dat = NULL;
@@ -285,7 +291,7 @@ void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
                                    conf->utf16_str, conf->utf16_sz, &u_error);
 
     if (U_FAILURE(u_error)) {
-        log_error("failed ubrk_open, error_code: %i", u_error);
+        log_error("failed ubrk_open for line wrap, error_code: %i", u_error);
         // goto no_wrap; // just continue and pray it doesn't break, 
         // can't think of a situation where this may be an issue,
         // except maybe malloc problems, and i am not going to handle that :D
@@ -293,25 +299,37 @@ void __text_renderer_calculate_line_wraps(text_render_config* const conf) {
     }
 
     int32_t logical_start = 0, logical_end = 0;
-    if (ubrk_countAvailable() == 0) {
+    if (ubrk_following(it, 0) == conf->utf16_sz) {
         log_warn("called get_line_break() with no reported available line breaks");
-        conf->wrap_indices_cnt = (conf->utf16_sz / conf->max_line_width_chars) + 1;
+        conf->wrap_indices_cnt = (conf->char_num / conf->max_line_width_chars) + 1;
         conf->wrap_indices_dat = calloc(conf->wrap_indices_cnt, sizeof(int32_t));
 
-        for (int32_t i = 0; i < conf->wrap_indices_cnt; i++) {
-            logical_end = logical_start + conf->max_line_width_chars;
-            conf->wrap_indices_dat[i] = logical_end;
-            logical_start = logical_end;
+        UBreakIterator* it_end = ubrk_open(UBRK_CHARACTER, uloc_getDefault(),
+                                         conf->utf16_str, conf->utf16_sz, &u_error);
+
+        int32_t crnt_line = 0;
+        while (logical_end != UBRK_DONE) {
+            logical_end = ubrk_next(it_end);
+            if (logical_end - logical_start >= conf->max_line_width_chars) {
+                if (logical_end > conf->utf16_sz) logical_end = conf->utf16_sz;
+                conf->wrap_indices_dat[crnt_line] = logical_end;
+                crnt_line++;
+                logical_start = logical_end;
+            }
         }
+        conf->wrap_indices_dat[conf->wrap_indices_cnt - 1] = conf->utf16_sz;
+        ubrk_close(it_end);
+        return;
     }
 
     bool mem_run = true;
     int32_t line = 0;
-run_start:
+calc_wrap_run_start:
     ubrk_first(it);
     line = 0;
     logical_start = 0;
     logical_end = 0;
+    // TODO(ayham-1): don't use ubrk_isBoundary() rather, use ubrk_next()
     while (logical_end != UBRK_DONE && logical_end < conf->utf16_sz) {
         if (ubrk_isBoundary(it, logical_start + conf->max_line_width_chars)) {
             logical_end = ubrk_current(it);
@@ -323,25 +341,45 @@ run_start:
             }
         }
 
-        if (logical_end == logical_start) {
-            if (logical_end + conf->max_line_width_chars >= conf->utf16_sz)
-                logical_end = conf->utf16_sz;
-            logical_end += conf->max_line_width_chars;
-        }
-
-        if (logical_end == UBRK_DONE) logical_end = conf->utf16_sz;
-
         logical_start = logical_end;
         if (!mem_run)
             conf->wrap_indices_dat[line] = logical_end;
         line++;
     }
-    if (!mem_run) return;
+    if (!mem_run) goto calc_wrap_end;
 
     conf->wrap_indices_cnt = line + 1;
     conf->wrap_indices_dat = calloc(conf->wrap_indices_cnt, sizeof(int32_t));
     mem_run = false;
-    goto run_start;
+    goto calc_wrap_run_start;
+
+calc_wrap_end:
+    ubrk_close(it);
+    return;
+}
+
+void __text_renderer_calculate_line_char_width(text_render_config* const conf) {
+    if (conf->it_char) return;
+    UErrorCode u_error = U_ZERO_ERROR;
+
+    conf->it_char = ubrk_open(UBRK_CHARACTER, uloc_getDefault(), 
+                              conf->utf16_str, conf->utf16_sz, &u_error);
+
+    if (U_FAILURE(u_error)) {
+        log_error("failed ubrk_open for line width, error_code: %i", u_error);
+        // goto no_wrap; // just continue and pray it doesn't break, 
+        // can't think of a situation where this may be an issue,
+        // except maybe malloc problems, and i am not going to handle that :D
+        // hopefully won't come back to bite. goodluck!
+    }
+
+    conf->char_num = 0;
+    int32_t logical = 0;
+    while (logical != UBRK_DONE){
+            logical = ubrk_next(conf->it_char);
+            conf->char_num++;
+    }
+    (void)ubrk_first(conf->it_char);
 }
 
 void __text_renderer_get_line_break(text_render_config* const conf,
@@ -354,7 +392,8 @@ void __text_renderer_get_line_break(text_render_config* const conf,
     *out_logical_end = conf->wrap_indices_dat[line_number];
 }
 
-size_t __text_renderer_get_text_width(int32_t logical_start,
+size_t __text_renderer_get_text_width(text_render_config* const conf, 
+                                      int32_t logical_start,
                                       int32_t logical_end) {
     // TODO(ayham): may cause visual errors, needs research and confirmation:
     // Since logcial_* refer to UTF16 format, where every character is represented

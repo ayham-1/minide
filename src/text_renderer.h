@@ -17,6 +17,7 @@
 #include <harfbuzz/hb-ft.h>
 
 #include <unicode/ubidi.h>
+#include <unicode/ubrk.h>
 
 typedef struct {
     glyph_cache gcache;
@@ -58,6 +59,9 @@ typedef struct {
     UChar* utf16_str;
     int32_t utf16_sz;
 
+    UBreakIterator* it_char;
+    size_t char_num;
+
     GLfloat origin_x, origin_y;
     GLfloat curr_x, curr_y;
 } text_render_config;
@@ -79,9 +83,12 @@ void __text_renderer_run(text_render_config* const conf,
 void __text_renderer_new_line(text_render_config* const conf);
 
 void __text_renderer_calculate_line_wraps(text_render_config* const conf);
+void __text_renderer_calculate_line_char_width(text_render_config* const conf);
+
 void __text_renderer_get_line_break(text_render_config* const conf,
                                     int32_t logical_line_start,
                                     int32_t* out_logical_end);
-size_t __text_renderer_get_text_width(int32_t logical_start,
+size_t __text_renderer_get_text_width(text_render_config* const conf,
+                                      int32_t logical_start,
                                       int32_t logical_end);
 #endif
