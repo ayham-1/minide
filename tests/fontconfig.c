@@ -9,15 +9,18 @@
 
 #include "../src/gl_wrapper.h"
 
-GLsizei MAX_TEXTURES_AVIALABLE = 10;
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
-int SCR_TARGET_FPS = 1;
-const char* SCR_TITLE = "test_fontconfig";
-bool GL_WRAPPER_DO_CLOSE = false;
+gl_wrapper_config_t config = (gl_wrapper_config_t) {
+    .max_textures_available = 10,
+    .scr_width = 1000,
+    .scr_height = 700,
+    .scr_target_fps = 1,
+    .scr_title = "test_fonctonfig",
 
-bool PRINT_FRAME_MS = false;
-bool RENDER_FRAME_MS = false;
+    .do_print_frame_ms = false,
+    .do_render_frame_ms = false,
+
+    .gl_wrapper_do_close = false,
+};
 
 void gl_wrapper_init() {
     fc_init();
@@ -30,7 +33,7 @@ void gl_wrapper_init() {
 }
 
 void gl_wrapper_render() {
-    GL_WRAPPER_DO_CLOSE = true;
+    config.gl_wrapper_do_close = true;
 }
 
 void gl_wrapper_clean() {

@@ -12,15 +12,18 @@
 
 #include "../src/gl_wrapper.h"
 
-GLsizei MAX_TEXTURES_AVIALABLE = 10;
-int SCR_WIDTH = 1000;
-int SCR_HEIGHT = 700;
-int SCR_TARGET_FPS = 1;
-const char* SCR_TITLE = "test_text_renderer";
-bool GL_WRAPPER_DO_CLOSE = false;
+gl_wrapper_config_t config = (gl_wrapper_config_t) {
+    .max_textures_available = 10,
+    .scr_width = 1000,
+    .scr_height = 700,
+    .scr_target_fps = 1,
+    .scr_title = "test_text_renderer",
 
-bool PRINT_FRAME_MS = false;
-bool RENDER_FRAME_MS = false;
+    .do_print_frame_ms = false,
+    .do_render_frame_ms = false,
+
+    .gl_wrapper_do_close = false,
+};
 
 #define TEST_DATA "~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}\\|;:'\",.<>/?\0"
 
@@ -52,7 +55,7 @@ void gl_wrapper_init() {
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-    text_renderer_init(&renderer, p, SCR_WIDTH, SCR_HEIGHT, 18);
+    text_renderer_init(&renderer, p, config.scr_width, config.scr_height, 18);
 
     conf1 = (text_render_config) {
         .renderer = &renderer,

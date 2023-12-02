@@ -7,15 +7,20 @@
 
 #include "logger.h"
 
-extern GLsizei MAX_TEXTURES_AVIALABLE;
-extern int SCR_WIDTH;
-extern int SCR_HEIGHT;
-extern int SCR_TARGET_FPS;
-extern const char* SCR_TITLE;
-extern bool GL_WRAPPER_DO_CLOSE;
+typedef struct {
+    GLsizei max_textures_available;
+    int scr_width;
+    int scr_height;
+    int scr_target_fps;
+    char* scr_title;
 
-extern bool PRINT_FRAME_MS;
-extern bool RENDER_FRAME_MS;
+    bool do_print_frame_ms;
+    bool do_render_frame_ms;
+
+    bool gl_wrapper_do_close;
+} gl_wrapper_config_t;
+
+extern gl_wrapper_config_t config;
 
 extern void gl_wrapper_init();
 extern void gl_wrapper_render();
