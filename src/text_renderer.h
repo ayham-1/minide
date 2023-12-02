@@ -43,13 +43,18 @@ typedef struct {
 } text_renderer_t;
 
 typedef struct {
+    int32_t start;
+    int32_t end;
+} wrap_run_indices_t;
+
+typedef struct {
     text_renderer_t* renderer;
 
     bool wrappable;
     int32_t max_line_width_chars;
 
-    int32_t* wrap_indices_dat;
-    int32_t wrap_indices_cnt;
+    wrap_run_indices_t* wrap_runs_dat;
+    int32_t wrap_runs_cnt;
 
     UBiDiDirection base_direction;
 
@@ -60,7 +65,7 @@ typedef struct {
     int32_t utf16_sz;
 
     UBreakIterator* it_char;
-    size_t char_num;
+    int32_t char_num;
 
     GLfloat origin_x, origin_y;
     GLfloat curr_x, curr_y;
@@ -86,9 +91,7 @@ void __text_renderer_calculate_line_wraps(text_render_config* const conf);
 void __text_renderer_calculate_line_char_width(text_render_config* const conf);
 
 void __text_renderer_get_line_break(text_render_config* const conf,
-                                    int32_t logical_line_start,
+                                    int32_t line_number,
+                                    int32_t* out_logical_start,
                                     int32_t* out_logical_end);
-size_t __text_renderer_get_text_width(text_render_config* const conf,
-                                      int32_t logical_start,
-                                      int32_t logical_end);
 #endif

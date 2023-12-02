@@ -94,10 +94,10 @@ int main(int argc, char* argv[]) {
             fps_counter_render();
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
+        glfwWaitEvents();
 
-        while (SCR_TARGET_FPS && glfwGetTime() < frameStartTime + 1.0 / SCR_TARGET_FPS) {
-            //sleep(glfwGetTime() - (lastTime + 1.0 / SCR_TARGET_FPS));
+        if (SCR_TARGET_FPS && glfwGetTime() < frameStartTime + 1.0 / SCR_TARGET_FPS) {
+            sleep(glfwGetTime() - (frameStartTime + 1.0 / SCR_TARGET_FPS));
         }
 
         if (GL_WRAPPER_DO_CLOSE) glfwSetWindowShouldClose(window, GLFW_TRUE);

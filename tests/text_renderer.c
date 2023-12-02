@@ -175,16 +175,17 @@ void gl_wrapper_init() {
 }
 
 void gl_wrapper_render() {
-    //text_renderer_do(&conf1);
-    //text_renderer_do(&conf2);
-    //text_renderer_do(&conf3);
-    //text_renderer_do(&conf4);
-    //text_renderer_do(&conf5);
+    text_renderer_do(&conf1);
+    text_renderer_do(&conf2);
+    text_renderer_do(&conf3);
+    text_renderer_do(&conf4);
+    text_renderer_do(&conf5);
 
-    //text_renderer_do(&conf6);
+    // wrap tests
+    text_renderer_do(&conf6);
     text_renderer_do(&conf7);
-    //text_renderer_do(&conf8);
-    //text_renderer_do(&conf9);
+    text_renderer_do(&conf8);
+    text_renderer_do(&conf9);
 
     //GL_WRAPPER_DO_CLOSE = true;
 }
