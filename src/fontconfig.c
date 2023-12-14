@@ -7,49 +7,49 @@
 
 #define INITIAL_PATS_SIZE 10
 
-static FontState fonts;
+static fc_state fc;
 
 void fc_init() {
-    assert(!fonts.config);
+    assert(!fc.config);
 
-    fonts.config = FcInitLoadConfigAndFonts();
-    fonts.sz = 0;
-    fonts.capacity = 0;
+    fc.config = FcInitLoadConfigAndFonts();
+    fc.sz = 0;
+    fc.capacity = 0;
 
     log_info("initialized fontconfig library of version %i", FcGetVersion());
 }
 
 void fc_clean() {
-    assert(fonts.config);
+    assert(fc.config);
 
-    for (size_t i = 0; i < fonts.capacity; i++) {
+    for (size_t i = 0; i < fc.capacity; i++) {
         //FcPatternDestroy(fonts.list[i].pattern);
-        FcPatternDestroy(fonts.list[i].matched_font);
+        FcPatternDestroy(fc.list[i].matched_font);
     }
 
-    FcConfigDestroy(fonts.config);
+    FcConfigDestroy(fc.config);
     FcFini();
 }
 
-FontHolder* fc_request(char* font_name) {
-    if (fonts.sz == 0) {
-        fonts.sz = INITIAL_PATS_SIZE;
-        fonts.list = malloc(sizeof(FontHolder) * fonts.sz);
+fc_holder* fc_request(char* font_name) {
+    if (fc.sz == 0) {
+        fc.sz = INITIAL_PATS_SIZE;
+        fc.list = malloc(sizeof(fc_holder) * fc.sz);
     }
 
-    if (fonts.capacity + 1 >= fonts.sz) {
-        fonts.sz += INITIAL_PATS_SIZE;
-        fonts.list = realloc(fonts.list, sizeof(FontHolder) * fonts.sz);
+    if (fc.capacity + 1 >= fc.sz) {
+        fc.sz += INITIAL_PATS_SIZE;
+        fc.list = realloc(fc.list, sizeof(fc_holder) * fc.sz);
     }
 
-    FcPattern* pat = fonts.list[fonts.capacity].pattern;
+    FcPattern* pat = fc.list[fc.capacity].pattern;
     pat = FcNameParse((const FcChar8*) font_name);
 
-    FcConfigSubstitute(fonts.config, pat, FcMatchPattern);
+    FcConfigSubstitute(fc.config, pat, FcMatchPattern);
     FcDefaultSubstitute(pat);
 
     FcResult result;
-    fonts.list[fonts.capacity].matched_font = FcFontMatch(fonts.config, pat, &result);
+    fc.list[fc.capacity].matched_font = FcFontMatch(fc.config, pat, &result);
 
     if (result != FcResultMatch) {
         log_error("failed to resolve font name pattern: %s", font_name);
@@ -67,22 +67,22 @@ FontHolder* fc_request(char* font_name) {
                 log_error("error: FcResultOutOfMemory");
                 break;
             default:
-                log_error("unkown error");
+                log_error("unknown error");
         };
         return NULL;
     }
 
     FcChar8* file = NULL;
-    if (FcPatternGetString(fonts.list[fonts.capacity].matched_font, 
+    if (FcPatternGetString(fc.list[fc.capacity].matched_font, 
                            FC_FILE, 0, &file) != FcResultMatch) {
         log_error("unable to get file path from already matched file pattern");
         file = NULL;
     }
-    fonts.list[fonts.capacity].matched_font_path = file;
-    return &fonts.list[fonts.capacity++];
+    fc.list[fc.capacity].matched_font_path = file;
+    return &fc.list[fc.capacity++];
 }
 
-char* fc_get_path_by_font(FontHolder* holder) {
+char* fc_get_path_by_font(fc_holder* holder) {
     assert(holder);
 
     return (char*) holder->matched_font_path;

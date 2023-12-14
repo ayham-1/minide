@@ -8,6 +8,7 @@
 #include "types/vector.h"
 
 #include "glyph_cache.h"
+#include "fonts.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -40,6 +41,7 @@ typedef struct {
     hb_font_t* hb_font;
     hb_buffer_t* hb_buf;
     size_t font_pixel_size;
+    enum FontFamilyStyle font_style;
 } text_renderer_t;
 
 typedef struct {
@@ -71,7 +73,8 @@ typedef struct {
     GLfloat curr_x, curr_y;
 } text_render_config;
 
-void text_renderer_init(text_renderer_t* renderer, path_t font, 
+void text_renderer_init(text_renderer_t* renderer, 
+                        enum FontFamilyStyle font_style, 
                         size_t width, size_t height, size_t font_pixel_size);
 void text_renderer_cleanup(text_renderer_t* renderer);
 

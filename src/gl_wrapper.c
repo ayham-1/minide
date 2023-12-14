@@ -2,6 +2,7 @@
 
 #include "fps_counter.h"
 #include "texture_lender.h"
+#include "fonts.h"
 
 #include <unistd.h>
 #include <GL/glew.h>
@@ -77,6 +78,7 @@ int main(int argc, char* argv[]) {
     //#endif
 
     texture_lender_init(config.max_textures_available);
+    fonts_man_init();
 
     gl_wrapper_init();
     log_info("ran gl_wrapper_init");

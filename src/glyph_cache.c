@@ -2,6 +2,7 @@
 
 #include "aristotle.h"
 #include "texture_lender.h"
+#include "fonts.h"
 
 #include <assert.h>
 #include <unistd.h>
@@ -12,24 +13,15 @@
 #define DATA_TYPE glyph_info
 
 bool glyph_cache_init(glyph_cache* cache, 
-                      path_t font, 
+                      enum FontFamilyStyle font_style, 
                       size_t capacity, 
                       size_t pixelSize) {
-
-    if (FT_Init_FreeType(&cache->ft_library)) {
-        log_error("failed library initialization.");
-        return false;
-    }
-
-    if (FT_New_Face(cache->ft_library, (char *)font.fullPath.bytes, 0,
-                    &cache->ft_face)) {
-        log_error("failed font loading.");
-        return false;
-    }
-    FT_Set_Pixel_Sizes(cache->ft_face, 0, pixelSize);
+    cache->font_style = font_style;
+    cache->pixel_size = pixelSize;
+    cache->face_ref = fonts_get_by_type(cache->font_style)->face;
 
     log_info("font contains %i glyphs. YEEEPEE!",
-             (int)cache->ft_face->num_glyphs);
+             (int)cache->face_ref->num_glyphs);
 
     if (cache->capacity < 96) {
         cache->capacity = 96;
@@ -51,7 +43,7 @@ bool glyph_cache_init(glyph_cache* cache,
     assert(notdef);
 
     for (unsigned char i = 32; i < 127; i++) {
-        FT_ULong id = FT_Get_Char_Index(cache->ft_face, i);
+        FT_ULong id = FT_Get_Char_Index(cache->face_ref, i);
         DATA_TYPE* res = glyph_cache_append(cache, id);
         assert(res);
         assert(res->bglyph);
@@ -70,9 +62,6 @@ bool glyph_cache_init(glyph_cache* cache,
 }
 
 void glyph_cache_cleanup(glyph_cache* cache) {
-    FT_Done_Face(cache->ft_face);
-    FT_Done_FreeType(cache->ft_library);
-
     hash_table_cleanup((hash_table_t *const)&cache->table);
     free(cache->keys);
     free(cache->data);
@@ -132,13 +121,15 @@ DATA_TYPE* glyph_cache_append(glyph_cache* cache,
     DATA_TYPE* info = &cache->data[cache->fullness];
     cache->keys[cache->fullness] = glyphid;
 
-    if (FT_Load_Glyph(cache->ft_face, cache->keys[cache->fullness], FT_LOAD_DEFAULT | FT_LOAD_RENDER)) {
+    FT_Set_Pixel_Sizes(cache->face_ref, 0, cache->pixel_size);
+    if (FT_Load_Glyph(cache->face_ref, cache->keys[cache->fullness],
+                      FT_LOAD_DEFAULT | FT_LOAD_RENDER)) {
         log_error("unable to load glyph with glyphid %li", glyphid);
         return NULL;
     }
 
     FT_Glyph tglyph;
-    if (FT_Get_Glyph(cache->ft_face->glyph, &tglyph)) {
+    if (FT_Get_Glyph(cache->face_ref->glyph, &tglyph)) {
         log_error("unable to get glyph with glyphid %li", glyphid);
         return NULL;
     }
@@ -154,8 +145,8 @@ DATA_TYPE* glyph_cache_append(glyph_cache* cache,
     assert(tglyph);
     assert(info->bglyph);
 
-    info->bearing_x = cache->ft_face->glyph->bitmap_left;
-    info->bearing_y = cache->ft_face->glyph->bitmap_top;
+    info->bearing_x = cache->face_ref->glyph->bitmap_left;
+    info->bearing_y = cache->face_ref->glyph->bitmap_top;
 
     hash_table_insert(
         &cache->table,

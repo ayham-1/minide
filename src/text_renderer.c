@@ -8,7 +8,8 @@
 #include <unicode/ubrk.h>
 #include <unicode/ustring.h>
 
-void text_renderer_init(text_renderer_t* renderer, path_t font,
+void text_renderer_init(text_renderer_t* renderer, 
+                        enum FontFamilyStyle font_style,
                         size_t width, size_t height, size_t font_pixel_size) {
     renderer->shaderProgram = shader_program_create("glsl/text.v.glsl", 
                                                     "glsl/text.f.glsl");
@@ -28,7 +29,7 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
 
     glGenBuffers(1, &renderer->ibo);
 
-    glyph_cache_init(&renderer->gcache, font, 512, font_pixel_size);
+    glyph_cache_init(&renderer->gcache, font_style, 512, font_pixel_size);
 
     renderer->scr_width = width;
     renderer->scr_height = height;
@@ -36,21 +37,19 @@ void text_renderer_init(text_renderer_t* renderer, path_t font,
 
     glm_ortho(0.0f, (float) width, 0.0f, (float) height, -1, 1, renderer->projection);
 
-    hb_blob_t* blob = hb_blob_create_from_file((char*) font.fullPath.bytes);
-    assert(blob);
-    renderer->hb_face = hb_face_create(blob, 0);
-    renderer->hb_font = hb_ft_font_create(renderer->gcache.ft_face, NULL);
     renderer->hb_buf =  hb_buffer_create();
     assert(hb_buffer_allocation_successful(renderer->hb_buf));
 
-    hb_blob_destroy(blob);
+    renderer->font_style = font_style;
+    renderer->hb_face = fonts_get_by_type(font_style)->hb_face;
+    renderer->hb_font = fonts_get_by_type(font_style)->hb_font;
 
     log_info("created text renderer");
 }
 
 void text_renderer_cleanup(text_renderer_t* renderer) {
-    hb_font_destroy(renderer->hb_font);
-    hb_face_destroy(renderer->hb_face);
+    //hb_font_destroy(renderer->hb_font);
+    //hb_face_destroy(renderer->hb_face);
     hb_buffer_destroy(renderer->hb_buf);
 
     glDeleteBuffers(1, &renderer->vbo);
@@ -269,7 +268,7 @@ void __text_renderer_run(text_render_config* const conf,
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, conf->renderer->gcache.atexOBJ);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_DYNAMIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, n);
 }
 
@@ -468,7 +467,8 @@ void __text_renderer_get_line_break(text_render_config* const conf,
 }
 
 void __text_renderer_new_line(text_render_config* const conf) {
-    conf->curr_y -= conf->renderer->gcache.ft_face->height >> 6;
+    conf->curr_y -= fonts_get_by_type(
+        conf->renderer->font_style)->face->size->metrics.height >> 6;
     conf->curr_x = conf->origin_x;
 }
 

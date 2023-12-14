@@ -25,6 +25,7 @@ set(SOURCES
     src/u8string.c
     src/path.c
     src/fontconfig.c
+    src/fonts.c
 
     src/types/hash_table.c
 

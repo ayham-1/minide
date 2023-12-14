@@ -12,6 +12,8 @@
 
 #include "types/hash_table.h"
 
+#include "fonts.h"
+
 typedef struct {
     // https://learnopengl.com/img/in-practice/glyph.png
     float bearing_x;
@@ -24,9 +26,9 @@ typedef struct {
 } glyph_info;
 
 typedef struct {
-    /* Freetype */
-    FT_Library ft_library;
-    FT_Face ft_face;
+    enum FontFamilyStyle font_style;
+    size_t pixel_size;
+    FT_Face face_ref;
 
     /* cache hash table */
     hash_table_t table; // uint32_t, glyph_info | font's glyphid, info
@@ -45,7 +47,8 @@ typedef struct {
 } glyph_cache;
 
 bool glyph_cache_init(glyph_cache* cache, 
-                      path_t fontPath, size_t capacity,
+                      enum FontFamilyStyle font_style,
+                      size_t capacity,
                       size_t pixelSize);
 void glyph_cache_cleanup(glyph_cache* cache);
 

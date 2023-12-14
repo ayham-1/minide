@@ -23,11 +23,12 @@ gl_wrapper_config_t config = (gl_wrapper_config_t) {
 };
 
 void gl_wrapper_init() {
-    fc_init();
     log_debug("monospace: %s",
               fc_get_path_by_font(fc_request("monospace")));
     log_debug("serif: %s",
               fc_get_path_by_font(fc_request("serif")));
+    log_debug("sans-serif: %s",
+              fc_get_path_by_font(fc_request("sans-serif")));
     log_debug("emoji: %s",
               fc_get_path_by_font(fc_request("emoji")));
 }
@@ -37,7 +38,6 @@ void gl_wrapper_render() {
 }
 
 void gl_wrapper_clean() {
-    fc_clean();
 }
 
 void glfw_size_callback(int width, int height) {
