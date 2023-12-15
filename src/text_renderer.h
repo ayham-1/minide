@@ -22,6 +22,7 @@
 
 typedef struct {
     glyph_cache gcache;
+    glyph_cache gcache_emoji;
 
     GLuint shaderProgram;
     GLuint attributeCoord;

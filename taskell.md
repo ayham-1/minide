@@ -1,9 +1,9 @@
 ## To Do
 
-- create emoji_cache.c w/ testing
 
 ## Doing
 
+- create emoji_cache.c w/ testing
 - fonts: add fonts.c and use it in text_renderer
 
 ## Done

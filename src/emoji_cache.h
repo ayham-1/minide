@@ -1,5 +1,5 @@
-#ifndef GLYPH_CACHE_H
-#define GLYPH_CACHE_H
+#ifndef EMOJI_CACHE_H
+#define EMOJI_CACHE_H
 
 #include <GL/glew.h>
 
@@ -12,6 +12,8 @@
 
 #include "types/hash_table.h"
 
+#include "fonts.h"
+
 typedef struct {
     // https://learnopengl.com/img/in-practice/glyph.png
     float bearing_x;
@@ -21,18 +23,19 @@ typedef struct {
     float texture_y;
 
     FT_BitmapGlyph bglyph;
-} glyph_info;
+} emoji_info;
 
 typedef struct {
-    FT_Face font_face;
+    enum FontFamilyStyle font_style;
     size_t pixel_size;
+    FT_Face face_ref;
 
     /* cache hash table */
-    hash_table_t table; // uint32_t, glyph_info | font's glyphid, info
+    hash_table_t table; // uint32_t, emoji_info | font's glyphid, info
     size_t capacity;
     size_t fullness;
     uint32_t* keys;
-    glyph_info* data;
+    emoji_info* data;
 
     /* gpu atlas */
     GLuint atexID;
@@ -44,7 +47,7 @@ typedef struct {
 } glyph_cache;
 
 bool glyph_cache_init(glyph_cache* cache, 
-                      FT_Face face,
+                      enum FontFamilyStyle font_style,
                       size_t capacity,
                       size_t pixelSize);
 void glyph_cache_cleanup(glyph_cache* cache);

@@ -2,6 +2,7 @@
 
 #include "aristotle.h"
 #include "texture_lender.h"
+#include "fonts.h"
 
 #include <assert.h>
 #include <unistd.h>
@@ -12,12 +13,15 @@
 #define DATA_TYPE glyph_info
 
 bool glyph_cache_init(glyph_cache* cache, 
-                      FT_Face font_face,
+                      enum FontFamilyStyle font_style, 
                       size_t capacity, 
                       size_t pixelSize) {
-    FT_Reference_Face(font_face);
-    cache->font_face = font_face;
+    cache->font_style = font_style;
     cache->pixel_size = pixelSize;
+    cache->face_ref = fonts_get_by_type(cache->font_style)->face;
+
+    log_info("font contains %i glyphs. YEEEPEE!",
+             (int)cache->face_ref->num_glyphs);
 
     if (cache->capacity < 96) {
         cache->capacity = 96;
@@ -39,7 +43,7 @@ bool glyph_cache_init(glyph_cache* cache,
     assert(notdef);
 
     for (unsigned char i = 32; i < 127; i++) {
-        FT_ULong id = FT_Get_Char_Index(font_face, i);
+        FT_ULong id = FT_Get_Char_Index(cache->face_ref, i);
         DATA_TYPE* res = glyph_cache_append(cache, id);
         assert(res);
         assert(res->bglyph);
@@ -58,8 +62,6 @@ bool glyph_cache_init(glyph_cache* cache,
 }
 
 void glyph_cache_cleanup(glyph_cache* cache) {
-    FT_Done_Face(cache->font_face);
-
     hash_table_cleanup((hash_table_t *const)&cache->table);
     free(cache->keys);
     free(cache->data);
@@ -95,7 +97,7 @@ DATA_TYPE* glyph_cache_retrieve(glyph_cache* cache,
     return info;
 }
 
-DATA_TYPE* glyph_cache_append(glyph_cache* cache,
+DATA_TYPE* glyph_cache_append(glyph_cache* cache, 
                                KEY_TYPE glyphid) {
     if (cache->fullness + 1 >= cache->capacity) {
         // resize the hash_table
@@ -119,16 +121,15 @@ DATA_TYPE* glyph_cache_append(glyph_cache* cache,
     DATA_TYPE* info = &cache->data[cache->fullness];
     cache->keys[cache->fullness] = glyphid;
 
-    FT_Set_Pixel_Sizes(cache->font_face, 0, cache->pixel_size);
-
-    FT_Int32 load_flags = FT_LOAD_DEFAULT | FT_LOAD_RENDER | FT_LOAD_COLOR;
-    if (FT_Load_Glyph(cache->font_face, cache->keys[cache->fullness], load_flags)) {
+    FT_Set_Pixel_Sizes(cache->face_ref, 0, cache->pixel_size);
+    if (FT_Load_Glyph(cache->face_ref, cache->keys[cache->fullness],
+                      FT_LOAD_DEFAULT | FT_LOAD_RENDER)) {
         log_error("unable to load glyph with glyphid %li", glyphid);
         return NULL;
     }
 
     FT_Glyph tglyph;
-    if (FT_Get_Glyph(cache->font_face->glyph, &tglyph)) {
+    if (FT_Get_Glyph(cache->face_ref->glyph, &tglyph)) {
         log_error("unable to get glyph with glyphid %li", glyphid);
         return NULL;
     }
@@ -144,8 +145,8 @@ DATA_TYPE* glyph_cache_append(glyph_cache* cache,
     assert(tglyph);
     assert(info->bglyph);
 
-    info->bearing_x = cache->font_face->glyph->bitmap_left;
-    info->bearing_y = cache->font_face->glyph->bitmap_top;
+    info->bearing_x = cache->face_ref->glyph->bitmap_left;
+    info->bearing_y = cache->face_ref->glyph->bitmap_top;
 
     hash_table_insert(
         &cache->table,
@@ -188,8 +189,7 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
     glGenTextures(1, &cache->atexOBJ);
     glBindTexture(GL_TEXTURE_2D, cache->atexOBJ);
 
-    glTexImage2D(GL_TEXTURE_2D, 0,
-                 GL_RGBA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 
                  cache->awidth, cache->aheight,
                  0, GL_RED, GL_UNSIGNED_BYTE, 0);
 
@@ -228,7 +228,7 @@ void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
             glTexSubImage2D(GL_TEXTURE_2D, 0, 
                             offset_x, offset_y,
                             info->bglyph->bitmap.width, info->bglyph->bitmap.rows,
-                            GL_RGBA,
+                            GL_RED,
                             GL_UNSIGNED_BYTE,
                             info->bglyph->bitmap.buffer);
 
@@ -267,7 +267,7 @@ void __glyph_cache_atlas_append(glyph_cache* cache,
     glTexSubImage2D(GL_TEXTURE_2D, 0, 
                     cache->alast_offset_x, cache->alast_offset_y,
                     info->bglyph->bitmap.width, info->bglyph->bitmap.rows,
-                    GL_RGBA,
+                    GL_RED,
                     GL_UNSIGNED_BYTE,
                     info->bglyph->bitmap.buffer);
 
