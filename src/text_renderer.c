@@ -32,8 +32,6 @@ void text_renderer_init(text_renderer_t *renderer,
 
     glGenBuffers(1, &renderer->ibo);
 
-    glyph_cache_init(&renderer->gcache, font_style, 512, font_pixel_size);
-
     renderer->scr_width = width;
     renderer->scr_height = height;
     renderer->font_pixel_size = font_pixel_size;
@@ -45,8 +43,6 @@ void text_renderer_init(text_renderer_t *renderer,
     assert(hb_buffer_allocation_successful(renderer->hb_buf));
 
     renderer->font_style = font_style;
-    renderer->hb_face = fonts_get_by_type(font_style)->hb_face;
-    renderer->hb_font = fonts_get_by_type(font_style)->hb_font;
 
     log_info("created text renderer");
 }
@@ -176,10 +172,6 @@ void __text_renderer_line(UBiDi *line, text_render_config *const conf,
 
 void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
                          int32_t logical_length) {
-
-    FT_Set_Pixel_Sizes(conf->renderer->gcache.face_ref, 0, conf->renderer->font_pixel_size);
-    FT_Set_Pixel_Sizes(conf->renderer->gcache_emoji.face_ref, 0, conf->renderer->font_pixel_size);
- 
     hb_buffer_reset(conf->renderer->hb_buf);
     hb_buffer_clear_contents(conf->renderer->hb_buf);
     hb_buffer_add_utf16(conf->renderer->hb_buf,

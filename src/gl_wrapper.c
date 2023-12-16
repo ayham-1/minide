@@ -1,8 +1,8 @@
 #include "gl_wrapper.h"
 
+#include "font_manager.h"
 #include "fps_counter.h"
 #include "texture_lender.h"
-#include "fonts.h"
 
 #include <unistd.h>
 #include <GL/glew.h>

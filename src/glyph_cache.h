@@ -43,10 +43,10 @@ typedef struct {
     size_t alast_row_height;
 } glyph_cache;
 
-bool glyph_cache_init(glyph_cache* cache, 
-                      FT_Face face,
-                      size_t capacity,
-                      size_t pixelSize);
+bool glyph_cache_create(glyph_cache* cache,
+                        FT_Face face,
+                        size_t capacity,
+                        size_t pixelSize);
 void glyph_cache_cleanup(glyph_cache* cache);
 
 glyph_info* glyph_cache_retrieve(glyph_cache* cache, 

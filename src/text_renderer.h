@@ -8,7 +8,8 @@
 #include "types/vector.h"
 
 #include "glyph_cache.h"
-#include "fonts.h"
+#include "font.h"
+#include "font_manager.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -21,9 +22,6 @@
 #include <unicode/ubrk.h>
 
 typedef struct {
-    glyph_cache gcache;
-    glyph_cache gcache_emoji;
-
     GLuint shaderProgram;
     GLuint attributeCoord;
     GLuint uniformTex;
@@ -38,8 +36,6 @@ typedef struct {
     size_t scr_width;
     size_t scr_height;
 
-    hb_face_t* hb_face;
-    hb_font_t* hb_font;
     hb_buffer_t* hb_buf;
     size_t font_pixel_size;
     enum FontFamilyStyle font_style;

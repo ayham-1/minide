@@ -10,6 +10,7 @@
 #define PATH_BYTES_NUM sizeof(PATH)
 
 #include "../src/gl_wrapper.h"
+#include "../src/font_manager.h"
 
 gl_wrapper_config_t config = (gl_wrapper_config_t) {
     .max_textures_available = 10,
@@ -31,7 +32,7 @@ void gl_wrapper_init() {
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-    glyph_cache_init(&cache, Monospace, 512, 24, false);
+    assert(glyph_cache_create(&cache, fonts_man_get()->monospace->face, 512, 24));
 }
 
 void gl_wrapper_render() {

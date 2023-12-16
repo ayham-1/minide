@@ -33,6 +33,7 @@
                         man-pages
                         man-pages-posix
                         taskell
+                        neovide
                     ];
 
                     buildInputs = with pkgs; [

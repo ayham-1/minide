@@ -11,10 +11,10 @@
 #define KEY_TYPE uint32_t
 #define DATA_TYPE glyph_info
 
-bool glyph_cache_init(glyph_cache* cache, 
-                      FT_Face font_face,
-                      size_t capacity, 
-                      size_t pixelSize) {
+bool glyph_cache_create(glyph_cache* cache,
+                        FT_Face font_face,
+                        size_t capacity,
+                        size_t pixelSize) {
     FT_Reference_Face(font_face);
     cache->font_face = font_face;
     cache->pixel_size = pixelSize;
