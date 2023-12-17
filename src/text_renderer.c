@@ -39,19 +39,12 @@ void text_renderer_init(text_renderer_t *renderer,
     glm_ortho(0.0f, (float)width, 0.0f, (float)height, -1, 1,
               renderer->projection);
 
-    renderer->hb_buf = hb_buffer_create();
-    assert(hb_buffer_allocation_successful(renderer->hb_buf));
-
     renderer->font_style = font_style;
 
     log_info("created text renderer");
 }
 
 void text_renderer_cleanup(text_renderer_t *renderer) {
-    // hb_font_destroy(renderer->hb_font);
-    // hb_face_destroy(renderer->hb_face);
-    hb_buffer_destroy(renderer->hb_buf);
-
     glDeleteBuffers(1, &renderer->vbo);
     glDeleteBuffers(1, &renderer->ibo);
 }
@@ -172,20 +165,11 @@ void __text_renderer_line(UBiDi *line, text_render_config *const conf,
 
 void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
                          int32_t logical_length) {
-    hb_buffer_reset(conf->renderer->hb_buf);
-    hb_buffer_clear_contents(conf->renderer->hb_buf);
-    hb_buffer_add_utf16(conf->renderer->hb_buf,
-                        (uint16_t *)conf->utf16_str + logical_start,
-                        logical_length, 0, -1);
+    shaper_holder holder = shaper_do(conf->utf16_str + logical_start, logical_length,
+                                     conf->renderer->font_style,
+                                     conf->renderer->font_pixel_size,
+                                     true, true);
 
-    hb_buffer_guess_segment_properties(conf->renderer->hb_buf);
-    hb_shape(conf->renderer->hb_font, conf->renderer->hb_buf, NULL, 0);
-
-    unsigned int hb_glyph_count;
-    hb_glyph_info_t *hb_glyph_info =
-        hb_buffer_get_glyph_infos(conf->renderer->hb_buf, &hb_glyph_count);
-    hb_glyph_position_t *hb_glyph_pos =
-        hb_buffer_get_glyph_positions(conf->renderer->hb_buf, &hb_glyph_count);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_CULL_FACE);
@@ -203,67 +187,76 @@ void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
         GLfloat t;
     } point;
 
-    point coords[6 * hb_glyph_count];
-    size_t n = 0;
+    for (size_t run_num = 0; run_num < holder.runs_fullness; run_num++) {
+        shaper_font_run_t run = holder.runs[run_num];
 
-    for (unsigned int i = 0; i < hb_glyph_count; i++) {
-        hb_glyph_info_t hb_info = hb_glyph_info[i];
-        hb_glyph_position_t hb_pos = hb_glyph_pos[i];
+        point coords[6 * run.glyph_count];
+        size_t n = 0;
 
-        glyph_info *info = NULL;
-        info = glyph_cache_retrieve(&conf->renderer->gcache, hb_info.codepoint);
-        assert(info != NULL);
+        glyph_cache* gcache = font_get_glyph_cache(run.font, conf->renderer->font_pixel_size);
+        assert(gcache != NULL);
 
-        // NOTE: left-bottom origin
-        uint32_t awidth = conf->renderer->gcache.awidth;
-        uint32_t aheight = conf->renderer->gcache.aheight;
-        uint32_t w = info->bglyph->bitmap.width;
-        uint32_t h = info->bglyph->bitmap.rows;
+        for (unsigned int i = 0; i < run.glyph_count; i++) {
+            hb_glyph_info_t hb_info = run.glyph_infos[i];
+            hb_glyph_position_t hb_pos = run.glyph_pos[i];
 
-        float ratio_w = (float)w / awidth;
-        float ratio_h = (float)h / aheight;
+            glyph_info *info = font_get_glyph(run.font, hb_info.codepoint, conf->renderer->font_pixel_size);
+            assert(info != NULL);
 
-        // char quad ccw
-        GLfloat x0 = conf->curr_x + info->bearing_x;
-        GLfloat y0 = conf->curr_y + info->bearing_y;
-        GLfloat s0 = info->texture_x;
-        GLfloat t0 = info->texture_y;
+            // NOTE: left-bottom origin
+            uint32_t awidth = gcache->awidth;
+            uint32_t aheight = gcache->aheight;
+            uint32_t w = info->bglyph->bitmap.width;
+            uint32_t h = info->bglyph->bitmap.rows;
 
-        GLfloat x1 = x0;
-        GLfloat y1 = y0 - h;
-        GLfloat s1 = s0;
-        GLfloat t1 = t0 + ratio_h;
+            float ratio_w = (float)w / awidth;
+            float ratio_h = (float)h / aheight;
 
-        GLfloat x2 = x0 + w;
-        GLfloat y2 = y1;
-        GLfloat s2 = s1 + ratio_w;
-        GLfloat t2 = t1;
+            // char quad ccw
+            GLfloat x0 = conf->curr_x + info->bearing_x;
+            GLfloat y0 = conf->curr_y + info->bearing_y;
+            GLfloat s0 = info->texture_x;
+            GLfloat t0 = info->texture_y;
 
-        GLfloat x3 = x2;
-        GLfloat y3 = y0;
-        GLfloat s3 = s2;
-        GLfloat t3 = t0;
+            GLfloat x1 = x0;
+            GLfloat y1 = y0 - h;
+            GLfloat s1 = s0;
+            GLfloat t1 = t0 + ratio_h;
 
-        coords[n++] = (point){x0, y0, s0, t0};
-        coords[n++] = (point){x1, y1, s1, t1};
-        coords[n++] = (point){x2, y2, s2, t2};
+            GLfloat x2 = x0 + w;
+            GLfloat y2 = y1;
+            GLfloat s2 = s1 + ratio_w;
+            GLfloat t2 = t1;
 
-        coords[n++] = (point){x2, y2, s2, t2};
-        coords[n++] = (point){x3, y3, s3, t3};
-        coords[n++] = (point){x0, y0, s0, t0};
+            GLfloat x3 = x2;
+            GLfloat y3 = y0;
+            GLfloat s3 = s2;
+            GLfloat t3 = t0;
 
-        conf->curr_x += hb_pos.x_advance >> 6;
-        conf->curr_y += hb_pos.y_advance >> 6;
+            coords[n++] = (point){x0, y0, s0, t0};
+            coords[n++] = (point){x1, y1, s1, t1};
+            coords[n++] = (point){x2, y2, s2, t2};
+
+            coords[n++] = (point){x2, y2, s2, t2};
+            coords[n++] = (point){x3, y3, s3, t3};
+            coords[n++] = (point){x0, y0, s0, t0};
+
+            conf->curr_x += hb_pos.x_advance >> 6;
+            conf->curr_y += hb_pos.y_advance >> 6;
+        }
+
+        glBindVertexArray(conf->renderer->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, conf->renderer->vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, conf->renderer->ibo);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gcache->atexOBJ);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, n);
+
     }
 
-    glBindVertexArray(conf->renderer->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, conf->renderer->vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, conf->renderer->ibo);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, conf->renderer->gcache.atexOBJ);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_TRIANGLES, 0, n);
+    shaper_undo(&holder);
 }
 
 void __text_renderer_calculate_line_wraps(text_render_config *const conf) {
@@ -458,8 +451,7 @@ void __text_renderer_get_line_break(text_render_config *const conf,
 }
 
 void __text_renderer_new_line(text_render_config *const conf) {
-    conf->curr_y -= fonts_get_by_type(conf->renderer->font_style)
-        ->face->size->metrics.height >>
+    conf->curr_y -= fonts_man_get_font_by_type(conf->renderer->font_style)->face->size->metrics.height >>
         6;
     conf->curr_x = conf->origin_x;
 }

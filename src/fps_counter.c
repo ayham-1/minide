@@ -3,7 +3,8 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "fonts.h"
+#include "font.h"
+#include "font_manager.h"
 
 static size_t nbFrames;
 
@@ -22,7 +23,7 @@ static text_render_config conf = {
 };
 
 void fps_counter_init(size_t width, size_t height) {
-    text_renderer_init(&renderer, Monospace, width, height, 12);
+    text_renderer_init(&renderer, FONT_FAMILY_Monospace, width, height, 12);
 }
 
 void fps_counter_render() {

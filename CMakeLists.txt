@@ -24,13 +24,14 @@ set(SOURCES
     src/logger.c
     src/u8string.c
     src/path.c
-    src/fontconfig.c
 
     src/types/hash_table.c
 
     src/glyph_cache.c
+    src/fontconfig.c
     src/font.c
     src/font_manager.c
+    src/shaper.c
 
     src/shaders_util.c
     src/text_renderer.c

@@ -11,12 +11,12 @@
 #include "font.h"
 #include "font_manager.h"
 
+#include "shaper.h"
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
 #include <cglm/cglm.h>
-#include <harfbuzz/hb.h>
-#include <harfbuzz/hb-ft.h>
 
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
@@ -36,7 +36,6 @@ typedef struct {
     size_t scr_width;
     size_t scr_height;
 
-    hb_buffer_t* hb_buf;
     size_t font_pixel_size;
     enum FontFamilyStyle font_style;
 } text_renderer_t;

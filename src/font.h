@@ -33,9 +33,11 @@ void font_clean(font_t* font);
 glyph_info* font_get_glyph(font_t* font, uint32_t glyphid, size_t pixel_size);
 
 glyph_cache* font_create_glyph_cache(font_t* font, size_t pixel_size);
-glyph_cache* font_retrieve_glyph_cache(font_t* font, size_t pixel_size);
+glyph_cache* font_get_glyph_cache(font_t* font, size_t pixel_size);
 
 bool font_does_have_charid(font_t* font, uint32_t charid);
+
+void font_set_pixel_size(font_t* font, size_t pixel_size);
 
 uint64_t __font_table_hash(const uint8_t *const key);
 bool __font_table_entry_cleanup(hash_table_entry_t *entry);

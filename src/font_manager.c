@@ -29,11 +29,11 @@ void fonts_man_clean() {
     FT_Done_FreeType(fonts_man.ft_lib);
 }
 
-fonts_manager* fonts_get() {
+fonts_manager* fonts_man_get() {
     return &fonts_man;
 }
 
-font_t* fonts_get_by_type(enum FontFamilyStyle style) {
+font_t* fonts_man_get_font_by_type(enum FontFamilyStyle style) {
     switch (style) {
         case FONT_FAMILY_Monospace:
             return fonts_man_get()->monospace;

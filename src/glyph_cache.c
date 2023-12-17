@@ -17,7 +17,10 @@ bool glyph_cache_create(glyph_cache* cache,
                         size_t pixelSize) {
     FT_Reference_Face(font_face);
     cache->font_face = font_face;
-    cache->pixel_size = pixelSize;
+
+    // implicit sizing for freetype,
+    // check font_set_pixel_size() for more info
+    cache->pixel_size = pixelSize; 
 
     if (cache->capacity < 96) {
         cache->capacity = 96;
@@ -26,7 +29,7 @@ bool glyph_cache_create(glyph_cache* cache,
     }
 
     hash_table_create((hash_table_t *const)&cache->table,
-                      capacity,
+                      cache->capacity,
                       __glyph_cache_table_hash,
                       __glyph_cache_table_eql_func,
                       __glyph_cache_table_entry_cleanup);
@@ -119,8 +122,6 @@ DATA_TYPE* glyph_cache_append(glyph_cache* cache,
     DATA_TYPE* info = &cache->data[cache->fullness];
     cache->keys[cache->fullness] = glyphid;
 
-    FT_Set_Pixel_Sizes(cache->font_face, 0, cache->pixel_size);
-
     FT_Int32 load_flags = FT_LOAD_DEFAULT | FT_LOAD_RENDER | FT_LOAD_COLOR;
     if (FT_Load_Glyph(cache->font_face, cache->keys[cache->fullness], load_flags)) {
         log_error("unable to load glyph with glyphid %li", glyphid);
@@ -189,7 +190,7 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
     glBindTexture(GL_TEXTURE_2D, cache->atexOBJ);
 
     glTexImage2D(GL_TEXTURE_2D, 0,
-                 GL_RGBA,
+                 GL_RED,
                  cache->awidth, cache->aheight,
                  0, GL_RED, GL_UNSIGNED_BYTE, 0);
 
@@ -228,7 +229,7 @@ void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
             glTexSubImage2D(GL_TEXTURE_2D, 0, 
                             offset_x, offset_y,
                             info->bglyph->bitmap.width, info->bglyph->bitmap.rows,
-                            GL_RGBA,
+                            GL_RED,
                             GL_UNSIGNED_BYTE,
                             info->bglyph->bitmap.buffer);
 
@@ -267,7 +268,7 @@ void __glyph_cache_atlas_append(glyph_cache* cache,
     glTexSubImage2D(GL_TEXTURE_2D, 0, 
                     cache->alast_offset_x, cache->alast_offset_y,
                     info->bglyph->bitmap.width, info->bglyph->bitmap.rows,
-                    GL_RGBA,
+                    GL_RED,
                     GL_UNSIGNED_BYTE,
                     info->bglyph->bitmap.buffer);
 
