@@ -17,6 +17,12 @@ find_package(harfbuzz REQUIRED)
 find_package(ICU COMPONENTS data uc i18n io REQUIRED)
 find_package(Fontconfig REQUIRED)
 
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(glib REQUIRED IMPORTED_TARGET glib-2.0)
+pkg_check_modules(cairo REQUIRED IMPORTED_TARGET cairo)
+pkg_check_modules(rsvg REQUIRED IMPORTED_TARGET librsvg-2.0)
+
 set(SOURCES
     src/gl_wrapper.c
     src/texture_lender.c
@@ -46,12 +52,16 @@ add_library(
 )
 target_link_libraries(
     min
-    PRIVATE
+    PUBLIC
     glfw
     cglm
     freetype
     harfbuzz
     fontconfig
+    PkgConfig::glib
+    PkgConfig::cairo
+    PkgConfig::rsvg
+
     ${ICU_LIBRARIES}
     ${GLEW_LIBRARIES}
 )

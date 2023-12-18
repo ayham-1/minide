@@ -44,7 +44,16 @@
                         icu
                         cglm
                         fontconfig
-                        expat
+
+                        pcre
+                        pcre2
+                        libuuid
+                        libselinux
+                        libsepol
+                        xorg.libXdmcp
+                        glib
+                        cairo
+                        librsvg
                     ];
                     shellHook = ''
                         #export PS1="minide> "
