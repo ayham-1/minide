@@ -15,7 +15,7 @@ shaper_holder shaper_do(UChar* utf16_str,
     holder.do_style_falllback = do_style_fallback;
     holder.do_font_fallback = do_font_fallback;
 
-    holder.runs_capacity = 1;
+    holder.runs_capacity = 3;
     holder.runs_fullness = 0;
     holder.runs = calloc(holder.runs_capacity, sizeof(shaper_font_run_t));
 
@@ -28,11 +28,7 @@ shaper_holder shaper_do(UChar* utf16_str,
     hb_buffer_add_utf16(holder.buffer, (uint16_t*)utf16_str, logical_length, 0, -1);
 
     hb_buffer_guess_segment_properties(holder.buffer);
-    hb_buffer_set_script(holder.buffer, HB_SCRIPT_ARABIC);
-    hb_buffer_set_language(holder.buffer, hb_language_from_string("ar", -1));
-    log_debug("%s", hb_language_to_string(hb_buffer_get_language(holder.buffer)));
-    log_debug("%s", hb_direction_to_string(hb_buffer_get_direction(holder.buffer)));
-
+    
     font_set_pixel_size(primary_font, pixel_size);
     hb_shape(primary_font->hb, holder.buffer, NULL, 0);
 
@@ -42,25 +38,13 @@ shaper_holder shaper_do(UChar* utf16_str,
     hb_glyph_info_t* glyph_infos = hb_buffer_get_glyph_infos(holder.buffer, &glyph_count);
     hb_glyph_position_t* glyph_pos = hb_buffer_get_glyph_positions(holder.buffer, &glyph_count);
 
-    unsigned int glyph_start = 0;
-    unsigned int glyph_end = 0;
-    int32_t logical_start = glyph_infos[0].cluster;
-    int32_t logical_end = 0;
-    for (unsigned int i = glyph_start; i <= glyph_count; i++) {
-        if (glyph_infos[i].codepoint == 0 || i == glyph_count) {
-            glyph_end = i;
-            logical_end = glyph_infos[i].cluster;
-            __shaper_add_run(&holder, 
-                             __shaper_make_run(logical_start, logical_end,
-                                               primary_font,
-                                               &glyph_infos[glyph_start],
-                                               &glyph_pos[glyph_start],
-                                               glyph_end - glyph_start));
-            glyph_start = i;
-        } else {
-            continue;
-        }
-    }
+    __shaper_add_run(&holder, 
+                     __shaper_make_run(0, glyph_count,
+                                       primary_font,
+                                       &glyph_infos[0],
+                                       &glyph_pos[0],
+                                       glyph_count));
+
 
     return holder;
 }
@@ -70,6 +54,9 @@ void shaper_undo(shaper_holder* holder) {
         __shaper_clean_run(&holder->runs[i]);
     }
 
+    free(holder->runs);
+    holder->runs_fullness = 0;
+    holder->runs_capacity = 0;
     hb_buffer_destroy(holder->buffer);
 }
 

@@ -276,7 +276,6 @@ void __glyph_cache_atlas_append(glyph_cache* cache,
                     ? GL_BGRA : GL_RED,
                     GL_UNSIGNED_BYTE,
                     info->bglyph->bitmap.buffer);
-    log_var(info->bglyph->bitmap.pixel_mode);
 
     info->texture_x = cache->alast_offset_x / (float) cache->awidth;
     info->texture_y = cache->alast_offset_y / (float) cache->aheight;

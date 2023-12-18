@@ -38,8 +38,6 @@ gl_wrapper_config_t config = (gl_wrapper_config_t) {
 
 #define TEST_DATA_CACHE_EXPANSION "HELLO ᙭ WORLD ФϴШՋᏍᓉᔩᗅ˩˨ʯʶΩǞŮŠǅƵҦфъ҂ה੦"
 
-path_t p;
-
 text_renderer_t renderer;
 text_render_config conf1;
 text_render_config conf2;
@@ -52,10 +50,7 @@ text_render_config conf8;
 text_render_config conf9;
 
 void gl_wrapper_init() {
-    path_create(&p, PATH_BYTES_NUM);
-    memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
-
-    text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 24);
+    text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 18);
 
     conf1 = (text_render_config) {
         .renderer = &renderer,
@@ -132,7 +127,7 @@ void gl_wrapper_init() {
 
         .str = (byte_t*) &TEST_DATA_LINE_WRAPPING_STANDARD,
 
-        .origin_x = 100,
+        .origin_x = 50,
         .origin_y = begin_y,
     };
 
@@ -171,31 +166,28 @@ void gl_wrapper_init() {
 
         .str = (byte_t*) &TEST_DATA_LINE_WRAPPING_FORCEFUL,
 
-        .origin_x = 800,
+        .origin_x = 750,
         .origin_y = begin_y,
     };
-
 }
 
 void gl_wrapper_render() {
-    //text_renderer_do(&conf1);
+    text_renderer_do(&conf1);
     text_renderer_do(&conf2);
-    //text_renderer_do(&conf3);
-    //text_renderer_do(&conf4);
-    //text_renderer_do(&conf5);
+    text_renderer_do(&conf3);
+    text_renderer_do(&conf4);
+    text_renderer_do(&conf5);
 
-    //// wrap tests
-    //text_renderer_do(&conf6);
-    //text_renderer_do(&conf7);
-    //text_renderer_do(&conf8);
-    //text_renderer_do(&conf9);
+    // wrap tests
+    text_renderer_do(&conf6);
+    text_renderer_do(&conf7);
+    text_renderer_do(&conf8);
+    text_renderer_do(&conf9);
 
     //config.gl_wrapper_do_close = true;
 }
 
 void gl_wrapper_clean() {
-    path_cleanup(&p);
-
     text_renderer_undo(&conf1);
     text_renderer_undo(&conf2);
     text_renderer_undo(&conf3);

@@ -3,9 +3,6 @@
 #include <limits.h>
 #include <assert.h>
 
-#define KEY_TYPE short
-#define DATA_TYPE glyph_cache
-
 font_t* font_create(FT_Library ft_lib,
                   fc_holder* fc_holder) {
     font_t* result = malloc(sizeof(font_t));
@@ -18,20 +15,10 @@ font_t* font_create(FT_Library ft_lib,
     }
 
     result->hb = hb_ft_font_create_referenced(result->face);
-    //FT_Set_Pixel_Sizes(result->face, 0, 18);
 
-    result->table_capacity = 3;
-    result->table_fullness = 0;
-    hash_table_create((hash_table_t *const)&result->table,
-                      result->table_capacity,
-                      __font_table_hash,
-                      __font_table_eql_func,
-                      __font_table_entry_cleanup);
-
-    result->table_keys = calloc(result->table_capacity,
-                                sizeof(KEY_TYPE));
-    result->table_data = calloc(result->table_capacity,
-                                sizeof(DATA_TYPE));
+    result->caches_capacity = 3;
+    result->caches_fullness = 0;
+    result->caches = calloc(result->caches_capacity, sizeof(glyph_cache));
 
     return result;
 }
@@ -88,37 +75,18 @@ glyph_info* font_get_glyph(font_t* font, uint32_t glyphid, short pixel_size) {
 }
 
 glyph_cache* font_create_glyph_cache(font_t* font, short pixel_size) {
-    if (font->table_fullness + 1 >= font->table_capacity) {
+    if (font->caches_fullness + 1 >= font->caches_capacity) {
         // resize the hash_table
-        font->table_keys = (KEY_TYPE*) realloc(font->table_keys, 2 * font->table_capacity * sizeof(KEY_TYPE));
-        font->table_data = (DATA_TYPE*) realloc(font->table_data, 2 * font->table_capacity * sizeof(DATA_TYPE));
-        font->table_capacity *= 2;
+        font->caches = (glyph_cache*) realloc(font->caches, 2 * font->caches_capacity * sizeof(glyph_cache));
+        font->caches_capacity *= 2;
 
-        hash_table_cleanup(&font->table);
-        hash_table_create((hash_table_t *const)&font->table,
-                      font->table_capacity,
-                      __font_table_hash,
-                      __font_table_eql_func,
-                      __font_table_entry_cleanup);
-
-        for (size_t i = 0; i < font->table_fullness; i++) {
-            hash_table_insert(&font->table, 
-                              (void*) &font->table_keys[i], 
-                              (void*) &font->table_data[i]);
-        }
-
-        log_info("font table full, attempted realloc");
+        log_info("font glyphcache list full, attempted realloc");
     }
 
-    DATA_TYPE* gcache = &font->table_data[font->table_fullness];
-    font->table_keys[font->table_fullness] = pixel_size;
+    glyph_cache* gcache = &font->caches[font->caches_fullness];
 
     glyph_cache_create(gcache, font->face, 0, pixel_size);
-
-    hash_table_insert(&font->table,
-                      (void*) &font->table_keys[font->table_fullness],
-                      (void*) &font->table_data[font->table_fullness]);
-    font->table_fullness++;
+    font->caches_fullness++;
 
     return gcache;
 }
@@ -127,47 +95,16 @@ glyph_cache* font_get_glyph_cache(font_t* font, short pixel_size) {
     hash_table_entry_t* entry = NULL;
     glyph_cache* gcache = NULL;
 
-    if (!hash_table_get(&font->table,
-                        (uint8_t*) &pixel_size,
-                        &entry)) {
-        gcache = font_create_glyph_cache(font, pixel_size);
-    } else 
-        gcache = (DATA_TYPE*) entry->data;
+    for (size_t i = 0; i < font->caches_fullness; i++) {
+        if (font->caches[i].pixel_size == pixel_size) {
+            gcache = &font->caches[i];
+            break;
+        }
+    }
 
     if (gcache == NULL) {
-        log_error("font table reported available gcache, however value is NULL");
-
         gcache = font_create_glyph_cache(font, pixel_size);
     }
 
     return gcache;
-}
-
-uint64_t __font_table_hash(const uint8_t *const key) {
-    // djb2
-    // https://web.archive.org/web/20230906035458/http://www.cse.yorku.ca/~oz/hash.html
-    uint64_t hash = 5381;
-    hash = ((hash << 5) + hash) + *key;
-    hash = ((hash << 5) + hash) + *(key + 1);
-    hash = ((hash << 5) + hash) + *(key + 2);
-    hash = ((hash << 5) + hash) + *(key + 3);
-    return hash;
-}
-
-
-bool __font_table_entry_cleanup(hash_table_entry_t *entry) {
-    (void)entry;
-    return true;
-}
-
-bool __font_table_eql_func(const uint8_t *const key1, const uint8_t *const key2) {
-    KEY_TYPE key_1 = *(KEY_TYPE*) key1;
-    KEY_TYPE key_2 = *(KEY_TYPE*) key2;
-    return key_1 == key_2;
-}
-
-void __font_table_printer(const hash_table_entry_t* const entry) {
-    KEY_TYPE size = *(KEY_TYPE*) entry->key;
-
-    log_debug("\tfont's size: %li", size);
 }

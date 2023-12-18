@@ -19,11 +19,9 @@ typedef struct {
 
     fc_holder* fc_holder;
 
-    hash_table_t table;
-    size_t table_capacity;
-    size_t table_fullness;
-    short* table_keys;
-    glyph_cache* table_data;
+    glyph_cache* caches;
+    size_t caches_capacity;
+    size_t caches_fullness;
 
     float scale;
 } font_t;
@@ -40,10 +38,5 @@ glyph_cache* font_get_glyph_cache(font_t* font, short pixel_size);
 bool font_does_have_charid(font_t* font, uint32_t charid);
 
 void font_set_pixel_size(font_t* font, short pixel_size);
-
-uint64_t __font_table_hash(const uint8_t *const key);
-bool __font_table_entry_cleanup(hash_table_entry_t *entry);
-bool __font_table_eql_func(const uint8_t *const key1, const uint8_t *const key2);
-void __font_table_printer(const hash_table_entry_t* const entry);
 
 #endif
