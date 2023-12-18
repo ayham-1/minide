@@ -215,10 +215,10 @@ void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
             float ratio_w = (float)w / awidth;
             float ratio_h = (float)h / aheight;
 
-            //if (run.scale != 1) {
-            //    w = ((float)w) * run.scale;
-            //    h = ((float)h) * run.scale;
-            //}
+            if (run.scale != 1) {
+                w = ((float)w) * run.scale;
+                h = ((float)h) * run.scale;
+            }
 
             // char quad ccw
             GLfloat x0 = conf->curr_x + info->bearing_x;
@@ -249,13 +249,13 @@ void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
             coords[n++] = (point){x3, y3, s3, t3};
             coords[n++] = (point){x0, y0, s0, t0};
 
-            //if (run.scale != 1) {
-            //    conf->curr_x += ((float)(hb_pos.x_advance >> 6)) * run.scale;
-            //    conf->curr_y += ((float)(hb_pos.y_advance >> 6)) * run.scale;
-            //} else {
+            if (run.scale != 1) {
+                conf->curr_x += ((float)(hb_pos.x_advance >> 6)) * run.scale;
+                conf->curr_y += ((float)(hb_pos.y_advance >> 6)) * run.scale;
+            } else {
                 conf->curr_x += hb_pos.x_advance >> 6;
                 conf->curr_y += hb_pos.y_advance >> 6;
-            //}
+            }
         }
 
         glBindVertexArray(conf->renderer->vao);
