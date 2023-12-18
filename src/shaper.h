@@ -14,6 +14,9 @@ typedef struct {
     int32_t logical_end;
 
     font_t* font;
+    float scale;
+    bool is_textual_single_color;
+
     hb_glyph_info_t* glyph_infos;
     hb_glyph_position_t* glyph_pos;
     size_t glyph_count;

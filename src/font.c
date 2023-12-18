@@ -1,8 +1,9 @@
 #include "font.h"
 
+#include <limits.h>
 #include <assert.h>
 
-#define KEY_TYPE size_t
+#define KEY_TYPE short
 #define DATA_TYPE glyph_cache
 
 font_t* font_create(FT_Library ft_lib,
@@ -46,7 +47,7 @@ bool font_does_have_charid(font_t* font, uint32_t charid) {
     return FT_Get_Char_Index(font->face, charid);
 }
 
-void font_set_pixel_size(font_t* font, size_t pixel_size) {
+void font_set_pixel_size(font_t* font, short pixel_size) {
     /*
      * This function changes the size of FT_Face and hb_font_t,
      * it is done centrally here as a way to connect harfbuzz and freetype,
@@ -56,18 +57,37 @@ void font_set_pixel_size(font_t* font, size_t pixel_size) {
      *
      * To correctly use this function, call before doing hb_shape() - shaper.h does this.
      */
-    FT_Set_Pixel_Sizes(font->face, 0, pixel_size);
+    if (FT_IS_SCALABLE(font->face)) {
+        FT_Set_Pixel_Sizes(font->face, 0, pixel_size);
+        font->scale = 1.0f;
+    } else {
+        // pick closest in font->face->available_sizes[]
+        short distance = SHRT_MAX;
+        int index = 0; 
+        for (FT_Int i = 0; i < font->face->num_fixed_sizes; i++) {
+            short new_distance = abs(font->face->available_sizes[i].height - (FT_Short) pixel_size);
+            if (distance >= new_distance) {
+                distance = new_distance;
+                index = i;
+            }
+        }
+
+        FT_Select_Size(font->face, index);
+        font->scale = ((float) pixel_size) / ((float) font->face->available_sizes[index].height);
+        log_warn("using manual font scaling");
+    }
+
     hb_font_changed(font->hb);
 }
 
-glyph_info* font_get_glyph(font_t* font, uint32_t glyphid, size_t pixel_size) {
+glyph_info* font_get_glyph(font_t* font, uint32_t glyphid, short pixel_size) {
     glyph_cache* gcache = font_get_glyph_cache(font, pixel_size);
     assert(gcache);
 
     return glyph_cache_retrieve(gcache, glyphid);
 }
 
-glyph_cache* font_create_glyph_cache(font_t* font, size_t pixel_size) {
+glyph_cache* font_create_glyph_cache(font_t* font, short pixel_size) {
     if (font->table_fullness + 1 >= font->table_capacity) {
         // resize the hash_table
         font->table_keys = (KEY_TYPE*) realloc(font->table_keys, 2 * font->table_capacity * sizeof(KEY_TYPE));
@@ -103,14 +123,13 @@ glyph_cache* font_create_glyph_cache(font_t* font, size_t pixel_size) {
     return gcache;
 }
 
-glyph_cache* font_get_glyph_cache(font_t* font, size_t pixel_size) {
+glyph_cache* font_get_glyph_cache(font_t* font, short pixel_size) {
     hash_table_entry_t* entry = NULL;
     glyph_cache* gcache = NULL;
 
     if (!hash_table_get(&font->table,
                         (uint8_t*) &pixel_size,
                         &entry)) {
-        
         gcache = font_create_glyph_cache(font, pixel_size);
     } else 
         gcache = (DATA_TYPE*) entry->data;

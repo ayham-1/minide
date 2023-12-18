@@ -20,6 +20,8 @@ void text_renderer_init(text_renderer_t *renderer,
         shader_get_uniform(renderer->shaderProgram, "textColor");
     renderer->uniformProjection =
         shader_get_uniform(renderer->shaderProgram, "projection");
+    renderer->uniformSingleColor =
+        shader_get_uniform(renderer->shaderProgram, "singleColor");
 
     glGenVertexArrays(1, &renderer->vao);
     glGenBuffers(1, &renderer->vbo);
@@ -189,6 +191,7 @@ void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
 
     for (size_t run_num = 0; run_num < holder.runs_fullness; run_num++) {
         shaper_font_run_t run = holder.runs[run_num];
+        glUniform1i(conf->renderer->uniformSingleColor, run.is_textual_single_color);
 
         point coords[6 * run.glyph_count];
         size_t n = 0;
@@ -211,6 +214,11 @@ void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
 
             float ratio_w = (float)w / awidth;
             float ratio_h = (float)h / aheight;
+
+            //if (run.scale != 1) {
+            //    w = ((float)w) * run.scale;
+            //    h = ((float)h) * run.scale;
+            //}
 
             // char quad ccw
             GLfloat x0 = conf->curr_x + info->bearing_x;
@@ -241,8 +249,13 @@ void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
             coords[n++] = (point){x3, y3, s3, t3};
             coords[n++] = (point){x0, y0, s0, t0};
 
-            conf->curr_x += hb_pos.x_advance >> 6;
-            conf->curr_y += hb_pos.y_advance >> 6;
+            //if (run.scale != 1) {
+            //    conf->curr_x += ((float)(hb_pos.x_advance >> 6)) * run.scale;
+            //    conf->curr_y += ((float)(hb_pos.y_advance >> 6)) * run.scale;
+            //} else {
+                conf->curr_x += hb_pos.x_advance >> 6;
+                conf->curr_y += hb_pos.y_advance >> 6;
+            //}
         }
 
         glBindVertexArray(conf->renderer->vao);

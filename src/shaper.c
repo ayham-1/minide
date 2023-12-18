@@ -28,6 +28,10 @@ shaper_holder shaper_do(UChar* utf16_str,
     hb_buffer_add_utf16(holder.buffer, (uint16_t*)utf16_str, logical_length, 0, -1);
 
     hb_buffer_guess_segment_properties(holder.buffer);
+    hb_buffer_set_script(holder.buffer, HB_SCRIPT_ARABIC);
+    hb_buffer_set_language(holder.buffer, hb_language_from_string("ar", -1));
+    log_debug("%s", hb_language_to_string(hb_buffer_get_language(holder.buffer)));
+    log_debug("%s", hb_direction_to_string(hb_buffer_get_direction(holder.buffer)));
 
     font_set_pixel_size(primary_font, pixel_size);
     hb_shape(primary_font->hb, holder.buffer, NULL, 0);
@@ -89,6 +93,8 @@ shaper_font_run_t __shaper_make_run(int32_t logical_start, int32_t logical_end,
     run.logical_start = logical_start;
     run.logical_end = logical_end;
     run.font = font;
+    run.scale = font->scale;
+    run.is_textual_single_color = font != fonts_man_get_font_by_type(FONT_FAMILY_Emoji);
     run.glyph_count = glyph_count;
 
     run.glyph_infos = (hb_glyph_info_t*) calloc(run.glyph_count, sizeof(hb_glyph_info_t));

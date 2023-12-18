@@ -136,7 +136,7 @@ void __glfw_key_callback(GLFWwindow* window,
     (void)mods;
     (void)scancode;
 
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    if (key == GLFW_KEY_Q && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 

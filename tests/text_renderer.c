@@ -55,7 +55,7 @@ void gl_wrapper_init() {
     path_create(&p, PATH_BYTES_NUM);
     memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-    text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 18);
+    text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 24);
 
     conf1 = (text_render_config) {
         .renderer = &renderer,
@@ -178,17 +178,17 @@ void gl_wrapper_init() {
 }
 
 void gl_wrapper_render() {
-    text_renderer_do(&conf1);
+    //text_renderer_do(&conf1);
     text_renderer_do(&conf2);
-    text_renderer_do(&conf3);
-    text_renderer_do(&conf4);
-    text_renderer_do(&conf5);
+    //text_renderer_do(&conf3);
+    //text_renderer_do(&conf4);
+    //text_renderer_do(&conf5);
 
-    // wrap tests
-    text_renderer_do(&conf6);
-    text_renderer_do(&conf7);
-    text_renderer_do(&conf8);
-    text_renderer_do(&conf9);
+    //// wrap tests
+    //text_renderer_do(&conf6);
+    //text_renderer_do(&conf7);
+    //text_renderer_do(&conf8);
+    //text_renderer_do(&conf9);
 
     //config.gl_wrapper_do_close = true;
 }

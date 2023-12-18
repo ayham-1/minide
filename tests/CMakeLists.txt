@@ -70,3 +70,4 @@ gen_test(glyph_cache YES NO)
 
 # text renderer
 gen_test(text_renderer YES NO)
+gen_test(text_renderer_emoji YES NO)

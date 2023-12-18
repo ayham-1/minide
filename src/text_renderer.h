@@ -27,6 +27,7 @@ typedef struct {
     GLuint uniformTex;
     GLuint uniformColor;
     GLuint uniformProjection;
+    GLuint uniformSingleColor;
 
     GLuint vbo;
     GLuint ibo;

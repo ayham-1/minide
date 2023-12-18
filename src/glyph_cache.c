@@ -22,6 +22,7 @@ bool glyph_cache_create(glyph_cache* cache,
     // check font_set_pixel_size() for more info
     cache->pixel_size = pixelSize; 
 
+    //cache->capacity = 300;
     if (cache->capacity < 96) {
         cache->capacity = 96;
     } else {
@@ -79,7 +80,7 @@ DATA_TYPE* glyph_cache_retrieve(glyph_cache* cache,
                    (uint8_t*) &glyphid,
                    &entry)) {
         info = glyph_cache_append(cache, glyphid);
-        log_warn("glyphid was not in cache %li, attempted to cache", glyphid);
+        log_warn("glyphid %li was not in cache, attempted to cache", glyphid);
         __glyph_cache_atlas_append(cache, info);
     }
     else {
@@ -122,22 +123,24 @@ DATA_TYPE* glyph_cache_append(glyph_cache* cache,
     DATA_TYPE* info = &cache->data[cache->fullness];
     cache->keys[cache->fullness] = glyphid;
 
-    FT_Int32 load_flags = FT_LOAD_DEFAULT | FT_LOAD_RENDER | FT_LOAD_COLOR;
-    if (FT_Load_Glyph(cache->font_face, cache->keys[cache->fullness], load_flags)) {
-        log_error("unable to load glyph with glyphid %li", glyphid);
+    FT_Int32 load_flags = FT_LOAD_DEFAULT | FT_LOAD_COLOR;
+    FT_Error err = FT_Load_Glyph(cache->font_face, cache->keys[cache->fullness], load_flags);
+    if (err != 0) {
+        log_error("unable to load glyph with glyphid %li \n\terror: ", glyphid);
+        log_var(FT_Error_String(err));
+        log_var(err);
         return NULL;
+    }
+
+    // ensure bitmap is present
+    if (FT_Render_Glyph(cache->font_face->glyph, FT_RENDER_MODE_NORMAL)) {
+        log_error("unable to render glyph's bitmap of glyphid %li", glyphid);
     }
 
     FT_Glyph tglyph;
     if (FT_Get_Glyph(cache->font_face->glyph, &tglyph)) {
         log_error("unable to get glyph with glyphid %li", glyphid);
         return NULL;
-    }
-
-    // ensure bitmap is present
-    if ((tglyph->format != FT_GLYPH_FORMAT_BITMAP)
-        && FT_Glyph_To_Bitmap(&tglyph, FT_RENDER_MODE_NORMAL, 0, 1)) {
-        log_error("unable to get glyph's bitmap of glyphid %li", glyphid);
     }
 
     assert(info);
@@ -190,9 +193,9 @@ void __glyph_cache_atlas_build(glyph_cache* cache) {
     glBindTexture(GL_TEXTURE_2D, cache->atexOBJ);
 
     glTexImage2D(GL_TEXTURE_2D, 0,
-                 GL_RED,
+                 GL_RGBA,
                  cache->awidth, cache->aheight,
-                 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+                 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -229,7 +232,8 @@ void __glyph_cache_atlas_refill_gpu(glyph_cache* cache) {
             glTexSubImage2D(GL_TEXTURE_2D, 0, 
                             offset_x, offset_y,
                             info->bglyph->bitmap.width, info->bglyph->bitmap.rows,
-                            GL_RED,
+                            (info->bglyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) 
+                            ? GL_BGRA : GL_RED,
                             GL_UNSIGNED_BYTE,
                             info->bglyph->bitmap.buffer);
 
@@ -268,9 +272,11 @@ void __glyph_cache_atlas_append(glyph_cache* cache,
     glTexSubImage2D(GL_TEXTURE_2D, 0, 
                     cache->alast_offset_x, cache->alast_offset_y,
                     info->bglyph->bitmap.width, info->bglyph->bitmap.rows,
-                    GL_RED,
+                    (info->bglyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) 
+                    ? GL_BGRA : GL_RED,
                     GL_UNSIGNED_BYTE,
                     info->bglyph->bitmap.buffer);
+    log_var(info->bglyph->bitmap.pixel_mode);
 
     info->texture_x = cache->alast_offset_x / (float) cache->awidth;
     info->texture_y = cache->alast_offset_y / (float) cache->aheight;
