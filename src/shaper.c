@@ -42,8 +42,8 @@ shaper_holder shaper_do(UChar* utf16_str,
     unsigned int glyph_end = 0;
     int32_t logical_start = glyph_infos[0].cluster;
     int32_t logical_end = 0;
-    for (unsigned int i = glyph_start; i < glyph_count; i++) {
-        if (glyph_infos[i].codepoint == 0 || i == glyph_count - 1) {
+    for (unsigned int i = glyph_start; i <= glyph_count; i++) {
+        if (glyph_infos[i].codepoint == 0 || i == glyph_count) {
             glyph_end = i;
             logical_end = glyph_infos[i].cluster;
             __shaper_add_run(&holder, 
