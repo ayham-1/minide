@@ -1,6 +1,5 @@
 #!/bin/sh
 tmux new-session -s minide   -n code -d
-tmux source .tmux.conf
 
 tmux new-window  -t minide:2 -n run
 tmux new-window  -t minide:3 -n gdb
@@ -8,9 +7,7 @@ tmux new-window  -t minide:4 -n files
 tmux new-window  -t minide:5 -n git
 tmux new-window  -t minide:6 -n kanban
 
-tmux send-keys -t 'code' 'nix develop' Enter
-tmux send-keys -t 'code' 'ide' Enter
-tmux send-keys -t 'run' 'test' Enter
+tmux send-keys -t 'code' 'nvim' Enter
 tmux send-keys -t 'files' 'man tmux' Enter
 tmux send-keys -t 'git' 'git log' Enter
 tmux send-keys -t 'kanban' 'taskell' Enter
