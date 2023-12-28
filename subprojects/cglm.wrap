@@ -1,0 +1,8 @@
+[wrap-file]
+directory = cglm-0.9.1
+source_url = https://github.com/recp/cglm/archive/refs/tags/v0.9.1.tar.gz
+source_filename = v0.9.1.tar.gz
+source_hash = ba16ee484c9d5e808ef01e55008a156831e8ff5297f10bbca307adeb827a0913
+
+[provide]
+cglm = cglm_dep
