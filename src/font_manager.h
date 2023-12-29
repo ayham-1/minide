@@ -16,33 +16,33 @@
 #include "font.h"
 
 enum FontFamilyStyle {
-    FONT_FAMILY_Monospace,
-    FONT_FAMILY_Serif,
-    FONT_FAMILY_Sans_Serif,
-    FONT_FAMILY_Emoji,
+	FONT_FAMILY_Monospace,
+	FONT_FAMILY_Serif,
+	FONT_FAMILY_Sans_Serif,
+	FONT_FAMILY_Emoji,
 };
 
 typedef struct {
-    FT_Library ft_lib;
+	FT_Library ft_lib;
 
-    font_t *monospace;
-    size_t monospace_count;
+	font_t * monospace;
+	size_t monospace_count;
 
-    font_t *serif;
-    size_t serif_count;
+	font_t * serif;
+	size_t serif_count;
 
-    font_t *sans_serif;
-    size_t sans_count;
+	font_t * sans_serif;
+	size_t sans_count;
 
-    font_t *emoji;
-    size_t emoji_count;
+	font_t * emoji;
+	size_t emoji_count;
 } fonts_manager;
 
 bool fonts_man_init();
 void fonts_man_clean();
 
-fonts_manager *fonts_man_get();
+fonts_manager * fonts_man_get();
 
-font_t *fonts_man_get_font_by_type(enum FontFamilyStyle style);
+font_t * fonts_man_get_font_by_type(enum FontFamilyStyle style);
 
 #endif

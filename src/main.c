@@ -33,7 +33,8 @@ void gl_wrapper_render() {}
 
 void gl_wrapper_clean() {}
 
-void glfw_size_callback(int width, int height) {
-    (void)width;
-    (void)height;
+void glfw_size_callback(int width, int height)
+{
+	(void)width;
+	(void)height;
 }

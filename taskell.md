@@ -3,9 +3,7 @@
 
 ## Doing
 
-- create emoji_cache.c w/ testing
 - fonts: add fonts.c and use it in text_renderer
-- skell
 
 ## Done
 
@@ -14,3 +12,4 @@
 - text_renderer: impl forceful breaking when ubrk_open() fails
 - text_renderer: use UTF-8 characters for line wrapping
 - replace the variable for gl_wrappepr.c configuration with a struct
+- create emoji_cache.c w/ testing

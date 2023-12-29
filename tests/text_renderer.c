@@ -26,27 +26,31 @@ gl_wrapper_config_t config = (gl_wrapper_config_t){
 };
 
 #define TEST_DATA                                                              \
-    "~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}\\|;" \
-    ":'"                                                                       \
-    "\",.<>/?\0"
+	"~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}" \
+	"\\|;"                                                                 \
+	":'"                                                                   \
+	"\",.<>/?\0"
 
 #define TEST_DATA_ENGLISH_MIXED "hello عالم world"
 #define TEST_DATA_ARABIC_MIXED "مرحبا world بالعالم"
 #define TEST_DATA_ARABIC_ONLY "مرحبا بالعالم"
 
 #define TEST_DATA_LINE_WRAPPING_STANDARD                                       \
-    "WRAP TEST STANDARD 1 WRAP TEST STANDARD 2 WRAP TEST STANDARD 3 #END#"
+	"WRAP TEST STANDARD 1 WRAP TEST STANDARD 2 WRAP TEST STANDARD 3 #END#"
 #define TEST_DATA_LINE_WRAPPING_OVERFLOW                                       \
-    "12345678901234567890 12345678901234567890# WRAP TEST STANDARD 1 WRAP "    \
-    "TEST "                                                                    \
-    "STANDARD 2 WRAP TEST STANDARD 3 #END#"
+	"12345678901234567890 12345678901234567890# WRAP TEST STANDARD 1 "     \
+	"WRAP "                                                                \
+	"TEST "                                                                \
+	"STANDARD 2 WRAP TEST STANDARD 3 #END#"
 #define TEST_DATA_LINE_WRAPPING_WRAP_ON_WORD                                   \
-    "HELLOWORLDTHISISAWRAPONWORDTEST OTHERWISE KNOWN AS A LINE WRAPPING TEST " \
-    "#END#"
+	"HELLOWORLDTHISISAWRAPONWORDTEST OTHERWISE KNOWN AS A LINE WRAPPING "  \
+	"TEST "                                                                \
+	"#END#"
 #define TEST_DATA_LINE_WRAPPING_FORCEFUL                                       \
-    "HELLOWORLDTHISISAFORCEFULWRAPHELLOWORLDTHISISAFORCEFULWRAPHELLOWORLDTHIS" \
-    "IS"                                                                       \
-    "AFORCEFULWRAP#END#"
+	"HELLOWORLDTHISISAFORCEFULWRAPHELLOWORLDTHISISAFORCEFULWRAPHELLOWORLD" \
+	"THIS"                                                                 \
+	"IS"                                                                   \
+	"AFORCEFULWRAP#END#"
 
 #define TEST_DATA_CACHE_EXPANSION "HELLO ᙭ WORLD ФϴШՋᏍᓉᔩᗅ˩˨ʯʶΩǞŮŠǅƵҦфъ҂ה੦"
 
@@ -61,160 +65,164 @@ text_render_config conf7;
 text_render_config conf8;
 text_render_config conf9;
 
-void gl_wrapper_init() {
-    text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width,
-                       config.scr_height, 18);
+void gl_wrapper_init()
+{
+	text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width,
+			   config.scr_height, 18);
 
-    conf1 = (text_render_config){
-        .renderer = &renderer,
+	conf1 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 100,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA,
+	    .str = (byte_t *)&TEST_DATA,
 
-        .origin_x = 100,
-        .origin_y = 100,
-    };
+	    .origin_x = 100,
+	    .origin_y = 100,
+	};
 
-    conf2 = (text_render_config){
-        .renderer = &renderer,
+	conf2 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 100,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA_ARABIC_ONLY,
+	    .str = (byte_t *)&TEST_DATA_ARABIC_ONLY,
 
-        .origin_x = 100,
-        .origin_y = 130,
-    };
+	    .origin_x = 100,
+	    .origin_y = 130,
+	};
 
-    conf3 = (text_render_config){
-        .renderer = &renderer,
+	conf3 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 100,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA_ARABIC_MIXED,
+	    .str = (byte_t *)&TEST_DATA_ARABIC_MIXED,
 
-        .origin_x = 100,
-        .origin_y = 150,
-    };
+	    .origin_x = 100,
+	    .origin_y = 150,
+	};
 
-    conf4 = (text_render_config){
-        .renderer = &renderer,
+	conf4 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 100,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA_ENGLISH_MIXED,
+	    .str = (byte_t *)&TEST_DATA_ENGLISH_MIXED,
 
-        .origin_x = 100,
-        .origin_y = 170,
-    };
+	    .origin_x = 100,
+	    .origin_y = 170,
+	};
 
-    conf5 = (text_render_config){
-        .renderer = &renderer,
+	conf5 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 100,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA_CACHE_EXPANSION,
+	    .str = (byte_t *)&TEST_DATA_CACHE_EXPANSION,
 
-        .origin_x = 100,
-        .origin_y = 190,
-    };
+	    .origin_x = 100,
+	    .origin_y = 190,
+	};
 
-    int32_t begin_y = 360;
-    conf6 = (text_render_config){
-        .renderer = &renderer,
+	int32_t begin_y = 360;
+	conf6 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 20,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 20,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_STANDARD,
+	    .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_STANDARD,
 
-        .origin_x = 50,
-        .origin_y = begin_y,
-    };
+	    .origin_x = 50,
+	    .origin_y = begin_y,
+	};
 
-    conf7 = (text_render_config){
-        .renderer = &renderer,
+	conf7 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 20,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 20,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_OVERFLOW,
+	    .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_OVERFLOW,
 
-        .origin_x = 300,
-        .origin_y = begin_y,
-    };
+	    .origin_x = 300,
+	    .origin_y = begin_y,
+	};
 
-    conf8 = (text_render_config){
-        .renderer = &renderer,
+	conf8 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 20,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 20,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_WRAP_ON_WORD,
+	    .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_WRAP_ON_WORD,
 
-        .origin_x = 500,
-        .origin_y = begin_y,
-    };
+	    .origin_x = 500,
+	    .origin_y = begin_y,
+	};
 
-    conf9 = (text_render_config){
-        .renderer = &renderer,
+	conf9 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 20,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 20,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_FORCEFUL,
+	    .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_FORCEFUL,
 
-        .origin_x = 750,
-        .origin_y = begin_y,
-    };
+	    .origin_x = 750,
+	    .origin_y = begin_y,
+	};
 }
 
-void gl_wrapper_render() {
-    text_renderer_do(&conf1);
-    text_renderer_do(&conf2);
-    text_renderer_do(&conf3);
-    text_renderer_do(&conf4);
-    text_renderer_do(&conf5);
+void gl_wrapper_render()
+{
+	text_renderer_do(&conf1);
+	text_renderer_do(&conf2);
+	text_renderer_do(&conf3);
+	text_renderer_do(&conf4);
+	text_renderer_do(&conf5);
 
-    // wrap tests
-    text_renderer_do(&conf6);
-    text_renderer_do(&conf7);
-    text_renderer_do(&conf8);
-    text_renderer_do(&conf9);
+	// wrap tests
+	text_renderer_do(&conf6);
+	text_renderer_do(&conf7);
+	text_renderer_do(&conf8);
+	text_renderer_do(&conf9);
 
-    config.gl_wrapper_do_close = true;
+	config.gl_wrapper_do_close = true;
 }
 
-void gl_wrapper_clean() {
-    text_renderer_undo(&conf1);
-    text_renderer_undo(&conf2);
-    text_renderer_undo(&conf3);
-    text_renderer_undo(&conf4);
-    text_renderer_undo(&conf5);
-    text_renderer_undo(&conf6);
+void gl_wrapper_clean()
+{
+	text_renderer_undo(&conf1);
+	text_renderer_undo(&conf2);
+	text_renderer_undo(&conf3);
+	text_renderer_undo(&conf4);
+	text_renderer_undo(&conf5);
+	text_renderer_undo(&conf6);
 
-    text_renderer_undo(&conf7);
-    text_renderer_undo(&conf8);
-    text_renderer_undo(&conf9);
+	text_renderer_undo(&conf7);
+	text_renderer_undo(&conf8);
+	text_renderer_undo(&conf9);
 
-    text_renderer_cleanup(&renderer);
+	text_renderer_cleanup(&renderer);
 }
 
-void glfw_size_callback(int width, int height) {
-    text_renderer_update_window_size(&renderer, width, height);
+void glfw_size_callback(int width, int height)
+{
+	text_renderer_update_window_size(&renderer, width, height);
 }

@@ -28,19 +28,21 @@ gl_wrapper_config_t config = (gl_wrapper_config_t){
 path_t p;
 glyph_cache cache;
 
-void gl_wrapper_init() {
-    path_create(&p, PATH_BYTES_NUM);
-    memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
+void gl_wrapper_init()
+{
+	path_create(&p, PATH_BYTES_NUM);
+	memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-    assert(
-        glyph_cache_create(&cache, fonts_man_get()->monospace->face, 512, 24));
+	assert(glyph_cache_create(&cache, fonts_man_get()->monospace->face, 512,
+				  24));
 }
 
 void gl_wrapper_render() { config.gl_wrapper_do_close = true; }
 
-void gl_wrapper_clean() {
-    path_cleanup(&p);
-    glyph_cache_cleanup(&cache);
+void gl_wrapper_clean()
+{
+	path_cleanup(&p);
+	glyph_cache_cleanup(&cache);
 }
 
 void glfw_size_callback(int width, int height) {}

@@ -32,50 +32,54 @@ text_renderer_t renderer;
 text_render_config conf1;
 text_render_config conf2;
 
-void gl_wrapper_init() {
-    text_renderer_init(&renderer, FONT_FAMILY_Emoji, config.scr_width,
-                       config.scr_height, 24);
+void gl_wrapper_init()
+{
+	text_renderer_init(&renderer, FONT_FAMILY_Emoji, config.scr_width,
+			   config.scr_height, 24);
 
-    conf1 = (text_render_config){
-        .renderer = &renderer,
+	conf1 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 100,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA,
+	    .str = (byte_t *)&TEST_DATA,
 
-        .origin_x = 100,
-        .origin_y = 100,
-    };
+	    .origin_x = 100,
+	    .origin_y = 100,
+	};
 
-    conf2 = (text_render_config){
-        .renderer = &renderer,
+	conf2 = (text_render_config){
+	    .renderer = &renderer,
 
-        .wrappable = false,
-        .max_line_width_chars = 100,
-        .base_direction = UBIDI_DEFAULT_LTR,
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
 
-        .str = (byte_t *)&TEST_DATA2,
+	    .str = (byte_t *)&TEST_DATA2,
 
-        .origin_x = 100,
-        .origin_y = 200,
-    };
+	    .origin_x = 100,
+	    .origin_y = 200,
+	};
 }
 
-void gl_wrapper_render() {
-    text_renderer_do(&conf1);
-    text_renderer_do(&conf2);
+void gl_wrapper_render()
+{
+	text_renderer_do(&conf1);
+	text_renderer_do(&conf2);
 
-    // config.gl_wrapper_do_close = true;
+	// config.gl_wrapper_do_close = true;
 }
 
-void gl_wrapper_clean() {
-    text_renderer_undo(&conf2);
+void gl_wrapper_clean()
+{
+	text_renderer_undo(&conf2);
 
-    text_renderer_cleanup(&renderer);
+	text_renderer_cleanup(&renderer);
 }
 
-void glfw_size_callback(int width, int height) {
-    text_renderer_update_window_size(&renderer, width, height);
+void glfw_size_callback(int width, int height)
+{
+	text_renderer_update_window_size(&renderer, width, height);
 }

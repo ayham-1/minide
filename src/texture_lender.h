@@ -12,10 +12,10 @@
 #include <stdbool.h>
 
 typedef struct {
-    GLsizei max_textures;
-    GLsizei available_textures;
+	GLsizei max_textures;
+	GLsizei available_textures;
 
-    bool *textureIDs;
+	bool * textureIDs;
 } texture_lender;
 
 void texture_lender_init(GLsizei max_textures);

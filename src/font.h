@@ -14,28 +14,28 @@
 #include "glyph_cache.h"
 
 typedef struct {
-    FT_Face face;
-    hb_font_t *hb;
+	FT_Face face;
+	hb_font_t * hb;
 
-    fc_holder *fc_holder;
+	fc_holder * fc_holder;
 
-    glyph_cache *caches;
-    size_t caches_capacity;
-    size_t caches_fullness;
+	glyph_cache * caches;
+	size_t caches_capacity;
+	size_t caches_fullness;
 
-    float scale;
+	float scale;
 } font_t;
 
-font_t *font_create(FT_Library ft_lib, fc_holder *fc_holder);
-void font_clean(font_t *font);
+font_t * font_create(FT_Library ft_lib, fc_holder * fc_holder);
+void font_clean(font_t * font);
 
-glyph_info *font_get_glyph(font_t *font, uint32_t glyphid, short pixel_size);
+glyph_info * font_get_glyph(font_t * font, uint32_t glyphid, short pixel_size);
 
-glyph_cache *font_create_glyph_cache(font_t *font, short pixel_size);
-glyph_cache *font_get_glyph_cache(font_t *font, short pixel_size);
+glyph_cache * font_create_glyph_cache(font_t * font, short pixel_size);
+glyph_cache * font_get_glyph_cache(font_t * font, short pixel_size);
 
-bool font_does_have_charid(font_t *font, uint32_t charid);
+bool font_does_have_charid(font_t * font, uint32_t charid);
 
-void font_set_pixel_size(font_t *font, short pixel_size);
+void font_set_pixel_size(font_t * font, short pixel_size);
 
 #endif

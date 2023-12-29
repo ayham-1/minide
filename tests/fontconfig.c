@@ -22,11 +22,14 @@ gl_wrapper_config_t config = (gl_wrapper_config_t){
     .gl_wrapper_do_close = false,
 };
 
-void gl_wrapper_init() {
-    log_debug("monospace: %s", fc_get_path_by_font(fc_request("monospace")));
-    log_debug("serif: %s", fc_get_path_by_font(fc_request("serif")));
-    log_debug("sans-serif: %s", fc_get_path_by_font(fc_request("sans-serif")));
-    log_debug("emoji: %s", fc_get_path_by_font(fc_request("emoji")));
+void gl_wrapper_init()
+{
+	log_debug("monospace: %s",
+		  fc_get_path_by_font(fc_request("monospace")));
+	log_debug("serif: %s", fc_get_path_by_font(fc_request("serif")));
+	log_debug("sans-serif: %s",
+		  fc_get_path_by_font(fc_request("sans-serif")));
+	log_debug("emoji: %s", fc_get_path_by_font(fc_request("emoji")));
 }
 
 void gl_wrapper_render() { config.gl_wrapper_do_close = true; }

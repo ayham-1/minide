@@ -36,9 +36,11 @@ dep_list = [
   dependency('icu-i18n', version: '>=73.2'),
   ]
 
+incdir = include_directories('include')
+
 libmin = static_library('min', sources, dependencies: dep_list)
 
-executable('minide', [sources, 'src/main.c'], link_with: [libmin], dependencies: dep_list)
+executable('minide', [sources, 'src/main.c'], link_with: [libmin], dependencies: dep_list, include_directories: incdir)
 
 # tests
 
