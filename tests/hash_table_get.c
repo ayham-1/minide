@@ -1,19 +1,17 @@
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "../src/types/hash_table.h"
 #include "../src/logger.h"
+#include "../src/types/hash_table.h"
 
-uint64_t hash(const uint8_t* const key) {
+uint64_t hash(const uint8_t *const key) {
     return 1; // force hash collision
 }
 
-bool cleanup(hash_table_entry_t* entry) {
-    return true;
-}
+bool cleanup(hash_table_entry_t *entry) { return true; }
 
-bool eql(const uint8_t* const key1, const uint8_t* const key2) {
+bool eql(const uint8_t *const key1, const uint8_t *const key2) {
     return *key1 == *key2;
 }
 
@@ -31,7 +29,7 @@ int main(int argc, char *argv[]) {
 
     log_info("hash collisions: %i", table.collisions);
 
-    hash_table_entry_t* entry = NULL;
+    hash_table_entry_t *entry = NULL;
     assert(hash_table_get(&table, &key, &entry));
     assert(entry->key == &key);
     assert(entry->data == &data);
@@ -49,4 +47,3 @@ int main(int argc, char *argv[]) {
     logger_cleanup();
     return 0;
 }
-

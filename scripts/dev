@@ -7,7 +7,6 @@ tmux new-window  -t minide:4 -n files
 tmux new-window  -t minide:5 -n git
 tmux new-window  -t minide:6 -n kanban
 
-tmux send-keys -t 'code' 'nvim' Enter
 tmux send-keys -t 'files' 'man tmux' Enter
 tmux send-keys -t 'git' 'git log' Enter
 tmux send-keys -t 'kanban' 'taskell' Enter

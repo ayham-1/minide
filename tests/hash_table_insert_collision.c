@@ -1,20 +1,15 @@
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "../src/types/hash_table.h"
 #include "../src/logger.h"
+#include "../src/types/hash_table.h"
 
-uint64_t hash(const uint8_t* const key) {
-    return 1;
-}
+uint64_t hash(const uint8_t *const key) { return 1; }
 
-bool cleanup(hash_table_entry_t* entry) {
-    return true;
-}
+bool cleanup(hash_table_entry_t *entry) { return true; }
 
-bool eql_entry(const uint8_t* const key1,
-               const uint8_t* const key2) {
+bool eql_entry(const uint8_t *const key1, const uint8_t *const key2) {
     return *key1 == *key2;
 }
 

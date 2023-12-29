@@ -3,12 +3,7 @@
 #include "../src/u8string.h"
 
 int main(int argc, char *argv[]) {
-    byte_t a[4] = {
-        0b11110000,
-        0b10010000,
-        0b10001101,
-        0b10001000
-    };
+    byte_t a[4] = {0b11110000, 0b10010000, 0b10001101, 0b10001000};
     u8encode w_a = 0;
 
     assert(u8str_get_encode_seq(&a[0], &w_a) == 4);

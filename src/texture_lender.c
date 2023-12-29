@@ -1,7 +1,7 @@
 #include "texture_lender.h"
 
-#include <malloc.h>
 #include <assert.h>
+#include <malloc.h>
 #include <string.h>
 
 texture_lender __t_lender;
@@ -29,7 +29,8 @@ GLuint texture_lender_request() {
 }
 
 void texture_lender_return(GLuint texID) {
-    if (!__t_lender.textureIDs[texID]) return;
+    if (!__t_lender.textureIDs[texID])
+        return;
 
     __t_lender.textureIDs[texID] = false;
     __t_lender.available_textures++;

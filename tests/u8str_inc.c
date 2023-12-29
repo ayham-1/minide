@@ -1,6 +1,6 @@
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "../src/u8string.h"
 
@@ -16,7 +16,8 @@ int main(int argc, char *argv[]) {
     size_t incs = 0;
 
     u8cptr_t ptr = ustr.bytes;
-    while (u8str_inc(&ustr, &ptr)) incs++;
+    while (u8str_inc(&ustr, &ptr))
+        incs++;
 
     // '- 1' -> must not increment past last character
     assert(incs == HELLO_LEN - 1);

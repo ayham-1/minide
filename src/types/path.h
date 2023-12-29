@@ -9,18 +9,18 @@
 #include "u8string.h"
 
 typedef struct {
-    string_t fullPath;
+  string_t fullPath;
 } path_t;
 
-void path_create(path_t* p, size_t size);
-void path_cleanup(path_t* p);
+void path_create(path_t *p, size_t size);
+void path_cleanup(path_t *p);
 
-bool path_expand(path_t* p);
+bool path_expand(path_t *p);
 
-bool path_is_real(path_t* p);
-bool path_can_access(path_t* p);
-string_t* path_get_name(path_t* p);
-string_t* path_get_extension(path_t* p);
-string_t* path_get_type(path_t* p);
+bool path_is_real(path_t *p);
+bool path_can_access(path_t *p);
+string_t *path_get_name(path_t *p);
+string_t *path_get_extension(path_t *p);
+string_t *path_get_type(path_t *p);
 
 #endif

@@ -1,9 +1,9 @@
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "../src/path.h"
 #include "../src/logger.h"
+#include "../src/path.h"
 
 #define PATH "~/"
 #define PATH_BYTES_NUM sizeof(PATH)

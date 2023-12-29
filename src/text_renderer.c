@@ -154,7 +154,8 @@ void __text_renderer_line(UBiDi *line, text_render_config *const conf,
     }
 
     if (U_FAILURE(*error_code)) {
-        log_error("failed to run ubidi_getDirection, error_code: %i", *error_code);
+        log_error("failed to run ubidi_getDirection, error_code: %i",
+                  *error_code);
         return;
     }
     size_t count_runs = ubidi_countRuns(line, error_code);
@@ -167,10 +168,10 @@ void __text_renderer_line(UBiDi *line, text_render_config *const conf,
 
 void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
                          int32_t logical_length) {
-    shaper_holder holder = shaper_do(conf->utf16_str + logical_start, logical_length,
-                                     conf->renderer->font_style,
-                                     conf->renderer->font_pixel_size,
-                                     true, true);
+    shaper_holder holder =
+        shaper_do(conf->utf16_str + logical_start, logical_length,
+                  conf->renderer->font_style, conf->renderer->font_pixel_size,
+                  true, true);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -191,19 +192,22 @@ void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
 
     for (size_t run_num = 0; run_num < holder.runs_fullness; run_num++) {
         shaper_font_run_t run = holder.runs[run_num];
-        glUniform1i(conf->renderer->uniformSingleColor, run.is_textual_single_color);
+        glUniform1i(conf->renderer->uniformSingleColor,
+                    run.is_textual_single_color);
 
         point coords[6 * run.glyph_count];
         size_t n = 0;
 
-        glyph_cache* gcache = font_get_glyph_cache(run.font, conf->renderer->font_pixel_size);
+        glyph_cache *gcache =
+            font_get_glyph_cache(run.font, conf->renderer->font_pixel_size);
         assert(gcache != NULL);
 
         for (unsigned int i = 0; i < run.glyph_count; i++) {
             hb_glyph_info_t hb_info = run.glyph_infos[i];
             hb_glyph_position_t hb_pos = run.glyph_pos[i];
 
-            glyph_info *info = font_get_glyph(run.font, hb_info.codepoint, conf->renderer->font_pixel_size);
+            glyph_info *info = font_get_glyph(run.font, hb_info.codepoint,
+                                              conf->renderer->font_pixel_size);
             assert(info != NULL);
 
             // NOTE: left-bottom origin
@@ -266,7 +270,6 @@ void __text_renderer_run(text_render_config *const conf, int32_t logical_start,
         glBindTexture(GL_TEXTURE_2D, gcache->atexOBJ);
         glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_DYNAMIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, n);
-
     }
 
     shaper_undo(&holder);
@@ -285,8 +288,8 @@ void __text_renderer_calculate_line_wraps(text_render_config *const conf) {
     }
 
     UErrorCode u_error = U_ZERO_ERROR;
-    UBreakIterator *it_line =
-        ubrk_open(UBRK_LINE, NULL, conf->utf16_str, conf->utf16_sz - 1, &u_error);
+    UBreakIterator *it_line = ubrk_open(UBRK_LINE, NULL, conf->utf16_str,
+                                        conf->utf16_sz - 1, &u_error);
 
     if (U_FAILURE(u_error)) {
         log_error("failed ubrk_open for line wrap, error_code: %i", u_error);
@@ -379,8 +382,8 @@ calc_wrap_run_start:
 
             // skip whitespace
             while (cand_visual_end < length &&
-                (u_isspace(c) || u_charType(c) == U_CONTROL_CHAR ||
-                u_charType(c) == U_NON_SPACING_MARK)) {
+                   (u_isspace(c) || u_charType(c) == U_CONTROL_CHAR ||
+                    u_charType(c) == U_NON_SPACING_MARK)) {
                 cand_visual_end++;
                 cand_logical_end = vis2log_map[cand_visual_end];
                 c = conf->utf16_str[cand_logical_end];
@@ -397,7 +400,7 @@ calc_wrap_run_start:
         // ensure final_logical_end is not way too far back
         //
         if (log2vis_map[final_logical_end] - log2vis_map[final_logical_start] <
-            (int32_t)(0.75f * (float)conf->max_line_width_chars) &&
+                (int32_t)(0.75f * (float)conf->max_line_width_chars) &&
             !is_it_line_empty && !reached_end)
             final_logical_end = margin_logical_end;
 
@@ -413,7 +416,8 @@ calc_wrap_run_start:
         goto calc_wrap_end;
 
     conf->wrap_runs_cnt = lines;
-    conf->wrap_runs_dat = calloc(conf->wrap_runs_cnt, sizeof(wrap_run_indices_t));
+    conf->wrap_runs_dat =
+        calloc(conf->wrap_runs_cnt, sizeof(wrap_run_indices_t));
     mem_run = false;
     goto calc_wrap_run_start;
 
@@ -430,8 +434,8 @@ void __text_renderer_calculate_line_char_width(text_render_config *const conf) {
         return;
     UErrorCode u_error = U_ZERO_ERROR;
 
-    conf->it_char = ubrk_open(UBRK_CHARACTER, uloc_getDefault(), conf->utf16_str,
-                              conf->utf16_sz, &u_error);
+    conf->it_char = ubrk_open(UBRK_CHARACTER, uloc_getDefault(),
+                              conf->utf16_str, conf->utf16_sz, &u_error);
 
     if (U_FAILURE(u_error)) {
         log_error("failed ubrk_open for line width, error_code: %i", u_error);
@@ -464,8 +468,9 @@ void __text_renderer_get_line_break(text_render_config *const conf,
 }
 
 void __text_renderer_new_line(text_render_config *const conf) {
-    conf->curr_y -= fonts_man_get_font_by_type(conf->renderer->font_style)->face->size->metrics.height >>
-        6;
+    conf->curr_y -= fonts_man_get_font_by_type(conf->renderer->font_style)
+                        ->face->size->metrics.height >>
+                    6;
     conf->curr_x = conf->origin_x;
 }
 
