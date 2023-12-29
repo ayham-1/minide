@@ -5,7 +5,7 @@
 #include "../src/path.h"
 #include "../src/logger.h"
 
-#define PATH "../../tests/../src"
+#define PATH "~/"
 #define PATH_BYTES_NUM sizeof(PATH)
 
 int main(int argc, char *argv[]) {

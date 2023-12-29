@@ -92,7 +92,6 @@ glyph_cache* font_create_glyph_cache(font_t* font, short pixel_size) {
 }
 
 glyph_cache* font_get_glyph_cache(font_t* font, short pixel_size) {
-    hash_table_entry_t* entry = NULL;
     glyph_cache* gcache = NULL;
 
     for (size_t i = 0; i < font->caches_fullness; i++) {

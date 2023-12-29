@@ -62,3 +62,4 @@ Testing/
 
 subprojects/*
 !subprojects/*.wrap
+.cache

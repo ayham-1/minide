@@ -6,8 +6,7 @@
 #include <GL/glew.h>
 
 /* URL: https://gitlab.com/wikibooks-opengl/modern-tutorials/-/blame/master/common/shader_utils.cpp#L15 */
-char* file_read(const char* filename)
-{
+char* file_read(const char* filename) {
     FILE* in = fopen(filename, "rb");
     if (in == NULL) return NULL;
 
@@ -31,8 +30,7 @@ char* file_read(const char* filename)
     return res;
 }
 
-void print_shader_log(GLuint object)
-{
+void print_shader_log(GLuint object) {
     GLint log_length = 0;
     if (glIsShader(object))
         glGetShaderiv(object, GL_INFO_LOG_LENGTH, &log_length);
@@ -59,7 +57,7 @@ GLuint shader_create(const char* filename, GLenum type) {
 
     if (source == NULL) {
         log_error("error opening shader file %s", filename);
-        return 0;
+		exit(1);
     }
 
     GLuint res = glCreateShader(type);
