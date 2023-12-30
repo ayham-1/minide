@@ -1,6 +1,6 @@
-#include "fontconfig.h"
+#include "minide/fontconfig.h"
 
-#include "logger.h"
+#include "minide/logger.h"
 
 #include <assert.h>
 #include <malloc.h>

@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/fontconfig.h"
-#include "../src/logger.h"
-#include "../src/path.h"
-#include "../src/u8string.h"
+#include "minide/fontconfig.h"
+#include "minide/logger.h"
+#include "minide/path.h"
+#include "minide/u8string.h"
 
-#include "../src/gl_wrapper.h"
+#include "minide/gl_wrapper.h"
 
 gl_wrapper_config_t config = (gl_wrapper_config_t){
     .max_textures_available = 10,

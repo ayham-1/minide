@@ -1,4 +1,4 @@
-#include "u8string.h"
+#include "minide/u8string.h"
 
 #include <assert.h>
 #include <math.h>

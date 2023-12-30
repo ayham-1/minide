@@ -1,6 +1,6 @@
-#include "path.h"
+#include "minide/path.h"
 
-// TODO(ayham): when writing cross-platform impl. fix includes
+// TODO(ayham-1): when writing cross-platform impl. fix includes
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>

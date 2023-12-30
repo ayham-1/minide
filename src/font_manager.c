@@ -1,10 +1,10 @@
-#include "font_manager.h"
+#include "minide/font_manager.h"
 
 #include <assert.h>
 
 #include <freetype/ftlcdfil.h>
 
-#include "path.h"
+#include "minide/path.h"
 
 fonts_manager fonts_man;
 

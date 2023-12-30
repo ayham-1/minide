@@ -1,4 +1,4 @@
-#include "texture_lender.h"
+#include "minide/texture_lender.h"
 
 #include <assert.h>
 #include <malloc.h>

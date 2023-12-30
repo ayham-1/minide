@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "../src/u8string.h"
+#include "minide/u8string.h"
 
 int main(int argc, char * argv[])
 {

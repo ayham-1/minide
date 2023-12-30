@@ -1,4 +1,4 @@
-#include "hash_table.h"
+#include "minide/types/hash_table.h"
 
 #include <assert.h>
 #include <stdlib.h>

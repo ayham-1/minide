@@ -1,5 +1,5 @@
-#include "shaders_util.h"
-#include "logger.h"
+#include "minide/shaders_util.h"
+#include "minide/logger.h"
 
 #include <GL/glew.h>
 #include <stdio.h>

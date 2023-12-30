@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/logger.h"
-#include "../src/types/hash_table.h"
+#include "minide/logger.h"
+#include "minide/types/hash_table.h"
 
 uint64_t hash(const uint8_t * const key) { return 1; }
 

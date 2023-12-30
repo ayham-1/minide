@@ -1,6 +1,6 @@
-#include "text_renderer.h"
+#include "minide/text_renderer.h"
 
-#include "texture_lender.h"
+#include "minide/texture_lender.h"
 
 #include <assert.h>
 

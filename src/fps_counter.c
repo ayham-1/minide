@@ -1,10 +1,10 @@
-#include "fps_counter.h"
+#include "minide/fps_counter.h"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "font.h"
-#include "font_manager.h"
+#include "minide/font.h"
+#include "minide/font_manager.h"
 
 static size_t nbFrames;
 

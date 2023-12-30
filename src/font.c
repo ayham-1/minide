@@ -1,4 +1,4 @@
-#include "font.h"
+#include "minide/font.h"
 
 #include <assert.h>
 #include <limits.h>

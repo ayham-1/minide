@@ -2,15 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/glyph_cache.h"
-#include "../src/logger.h"
-#include "../src/path.h"
+#include "minide/glyph_cache.h"
+#include "minide/logger.h"
+#include "minide/path.h"
 
 #define PATH "assets/FreeSans.ttf"
 #define PATH_BYTES_NUM sizeof(PATH)
 
-#include "../src/font_manager.h"
-#include "../src/gl_wrapper.h"
+#include "minide/font_manager.h"
+#include "minide/gl_wrapper.h"
 
 gl_wrapper_config_t config = (gl_wrapper_config_t){
     .max_textures_available = 10,

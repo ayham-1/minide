@@ -36,9 +36,9 @@ dep_list = [
   dependency('icu-i18n', version: '>=73.2'),
   ]
 
-incdir = include_directories('include')
+incdir = include_directories('include/')
 
-libmin = static_library('min', sources, dependencies: dep_list)
+libmin = static_library('min', sources, dependencies: dep_list, include_directories: incdir)
 
 executable('minide', [sources, 'src/main.c'], link_with: [libmin], dependencies: dep_list, include_directories: incdir)
 
@@ -54,18 +54,18 @@ unit_tests = ['u8str_get_bytes_needed_for',
 
   #'path_expand', this is not needed rn, and needs revisiting
   'fontconfig',
-  'glyph_cache', 
+  'glyph_cache',
 
   'hash_table_insert_collision',
   'hash_table_insert_unifont',
   'hash_table_get',
 
-  'text_renderer', 
+  'text_renderer',
   'text_renderer_emoji']
 
 foreach unit_test : unit_tests
   e = executable('test_' + unit_test, 'tests/' + unit_test + '.c',
     link_with: libmin, dependencies: dep_list, d_unittest: true,
-    override_options: ['b_pie=true'])
+    override_options: ['b_pie=true'], include_directories: incdir)
   test(unit_test, e)
 endforeach

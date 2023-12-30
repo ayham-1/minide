@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/u8string.h"
+#include "minide/u8string.h"
 
 #define HELLO "HELLO 👋 WORLD 🌏"
 #define HELLO_BYTES_NUM 21

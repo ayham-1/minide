@@ -7,8 +7,8 @@
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb.h>
 
-#include "path.h"
-#include "types/hash_table.h"
+#include "minide/path.h"
+#include "minide/types/hash_table.h"
 
 #include "fontconfig.h"
 #include "glyph_cache.h"

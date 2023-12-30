@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/logger.h"
-#include "../src/path.h"
-#include "../src/types/hash_table.h"
-#include "../src/u8string.h"
+#include "minide/logger.h"
+#include "minide/path.h"
+#include "minide/types/hash_table.h"
+#include "minide/u8string.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

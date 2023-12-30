@@ -1,4 +1,4 @@
-#include "shaper.h"
+#include "minide/shaper.h"
 
 #include <assert.h>
 

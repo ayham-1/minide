@@ -1,7 +1,6 @@
-#include "glyph_cache.h"
+#include "minide/glyph_cache.h"
 
-#include "aristotle.h"
-#include "texture_lender.h"
+#include "minide/texture_lender.h"
 
 #include <assert.h>
 #include <unistd.h>
