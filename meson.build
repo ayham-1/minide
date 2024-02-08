@@ -16,6 +16,7 @@ sources = files([
   'src/font.c',
   'src/font_manager.c',
   'src/shaper.c',
+  'src/rsvg-port.c',
 
   'src/shaders_util.c',
   'src/text_renderer.c',
@@ -30,6 +31,8 @@ dep_list = [
   dependency('glfw3', version: '>=3.3.8'),
   dependency('harfbuzz', version: '>=8.3.0'),
   dependency('fontconfig', version: '>=2.14.2'),
+  dependency('cairo', version: '>=1.18.0'),
+  dependency('librsvg-2.0', version: '>=2.57.1'),
 
   dependency('icu-uc', version: '>=73.2'),
   dependency('icu-io', version: '>=73.2'),

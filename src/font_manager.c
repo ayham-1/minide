@@ -4,6 +4,9 @@
 
 #include <freetype/ftlcdfil.h>
 
+#include "rsvg-port.h"
+#include <freetype/ftmodapi.h>
+
 #include "minide/path.h"
 
 fonts_manager fonts_man;
@@ -15,10 +18,11 @@ bool fonts_man_init()
 		return false;
 	}
 	FT_Library_SetLcdFilter(fonts_man.ft_lib, FT_LCD_FILTER_DEFAULT);
+	FT_Property_Set(fonts_man.ft_lib, "ot-svg", "svg-hooks", &rsvg_hooks);
 
 	fc_holder * monospace = fc_request("monospace");
 	fc_holder * serif = fc_request("serif");
-	fc_holder * sans_serif = fc_request("sans_serif");
+	fc_holder * sans_serif = fc_request("sans-serif");
 	fc_holder * emoji = fc_request("emoji");
 
 	fonts_man.monospace_count = monospace->matched_fonts_n;
@@ -49,7 +53,7 @@ bool fonts_man_init()
 	log_info("first priority sans-serif: %s", fc_get_path_by_font(sans_serif));
 	log_info("sans-serif count: %i", fonts_man.sans_count);
 	log_info("first priority emoji: %s", fc_get_path_by_font(emoji));
-	log_info("emoji count: %i", fonts_man.emoji_count);
+	log_info("emoji count: %i", fonts_man.emoji);
 
 	return true;
 }
@@ -64,9 +68,6 @@ void fonts_man_clean()
 
 	for (int i = 0; i < fonts_man_get()->sans_count; i++)
 		font_clean(fonts_man.sans_serif[i]);
-
-	for (int i = 0; i < fonts_man_get()->emoji_count; i++)
-		font_clean(fonts_man.emoji[i]);
 
 	FT_Done_FreeType(fonts_man.ft_lib);
 }
@@ -108,16 +109,7 @@ int __fonts_man_safe_create_fonts(int count, font_t ** list, fc_holder * holder)
 	int ignored_fonts = 0;
 	for (int i = 0; i < count; i++) {
 		font_t * font_in_question = font_create(fonts_man.ft_lib, holder, i);
-		if (FT_HAS_SVG(font_in_question->face) && !FT_HAS_COLOR(font_in_question->face)) {
-			log_warn("refusing font: %s", holder->matched_fonts_paths[font_in_question->fc_holder_index]);
-			log_warn("reason: not using SVG font, as it is a pain in the ass to implement.");
-			log_warn(
-			    "please switch to a non-SVG font, for humanity's sake, for my sake, and for your sake :D");
-			log_warn("if you are using SVG emoji font, make sure to use COLRv0-supported font");
-			ignored_fonts++;
-			continue;
-		}
-
+		// log_warn("%s", font_in_question->fc_holder->matched_fonts_paths[font_in_question->fc_holder_index]);
 		list[i] = font_in_question;
 	}
 

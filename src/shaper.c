@@ -16,11 +16,6 @@ void shaper_do(shaper_holder * holder)
 	holder->buffer = hb_buffer_create();
 	assert(hb_buffer_allocation_successful(holder->buffer));
 
-	// TODO(ayham-1): possible optimization is to lower the amount of
-	// switching between fonts for each run, by doing glyph positioning
-	// calculations here and combining different runs together. This is
-	// probably done by creating a new struct 'glyph_position'
-
 	hb_buffer_reset(holder->buffer);
 	hb_buffer_clear_contents(holder->buffer);
 
@@ -28,6 +23,7 @@ void shaper_do(shaper_holder * holder)
 	font_t * best_font = fonts_man_get_font_by_type(holder->preferred_style, 0);
 	for (int i = 0; i < fonts_man_get_font_num_by_type(holder->preferred_style); i++) {
 		font_t * subrun_font = fonts_man_get_font_by_type(holder->preferred_style, i);
+
 		font_set_pixel_size(subrun_font, holder->pixel_size);
 
 		hb_buffer_reset(holder->buffer);

@@ -42,7 +42,8 @@ fc_holder * fc_request(char * font_name)
 	}
 
 	FcPattern * pat = fc.list[fc.capacity].pattern;
-	pat = FcNameParse((const FcChar8 *)font_name);
+	pat = FcPatternCreate();
+	FcPatternAddString(pat, FC_FAMILY, (FcChar8 *)font_name);
 
 	FcConfigSubstitute(fc.config, pat, FcMatchPattern);
 	FcDefaultSubstitute(pat);
