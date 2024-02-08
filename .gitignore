@@ -63,3 +63,5 @@ Testing/
 subprojects/*
 !subprojects/*.wrap
 .cache
+
+*.cap

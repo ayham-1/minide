@@ -22,22 +22,18 @@ typedef struct {
 	std_file_t * std_file;
 } logger_t;
 
-int logger_init(logger_level_t const level, char const * const filename,
-		bool const write_to_file);
+int logger_init(logger_level_t const level, char const * const filename, bool const write_to_file);
 void logger_cleanup();
 
-void logger_log(logger_level_t const level, char const * const file,
-		size_t const line, char const * const fmt, ...);
+void logger_log(logger_level_t const level, char const * const file, size_t const line, char const * const fmt, ...);
 
 extern logger_t * g_logger;
 
-#define __FILENAME__                                                           \
-	(strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define log_debug(...) logger_log(DEBUG, __FILE_NAME__, __LINE__, __VA_ARGS__)
 #define log_info(...) logger_log(INFO, __FILE_NAME__, __LINE__, __VA_ARGS__)
 #define log_warn(...) logger_log(WARNING, __FILE_NAME__, __LINE__, __VA_ARGS__)
 #define log_error(...) logger_log(ERROR, __FILE_NAME__, __LINE__, __VA_ARGS__)
 
-#define log_var(var)                                                           \
-	logger_log(DEBUG, __FILE_NAME__, __LINE__, "%s: %i", #var, var)
+#define log_var(var) logger_log(DEBUG, __FILE_NAME__, __LINE__, "%s: %i", #var, var)
 #endif

@@ -13,8 +13,7 @@ void std_file_init(std_file_t * const std_file)
 	std_file->vfprintf = vfprintf;
 }
 
-int logger_init(logger_level_t const level, char const * const filename,
-		bool const write_to_file)
+int logger_init(logger_level_t const level, char const * const filename, bool const write_to_file)
 {
 	std_file_t * std_file = malloc(sizeof(std_file_t));
 	g_logger = malloc(sizeof(logger_t));
@@ -71,8 +70,7 @@ static void get_datetime(FILE * fptr)
 	free(modified_date);
 }
 
-void logger_log(logger_level_t const level, char const * const file,
-		size_t const line, char const * const fmt, ...)
+void logger_log(logger_level_t const level, char const * const file, size_t const line, char const * const fmt, ...)
 {
 	if (level < g_logger->level) {
 		return;
@@ -82,10 +80,8 @@ void logger_log(logger_level_t const level, char const * const file,
 	// file logger
 	if (g_logger->fp != NULL) {
 		get_datetime(g_logger->fp);
-		g_logger->std_file->fprintf(g_logger->fp, "%-10s",
-					    log_level_strings[level]);
-		g_logger->std_file->fprintf(g_logger->fp, "%s: %lu: ", file,
-					    line);
+		g_logger->std_file->fprintf(g_logger->fp, "%-10s", log_level_strings[level]);
+		g_logger->std_file->fprintf(g_logger->fp, "%s: %lu: ", file, line);
 		va_start(argp, fmt);
 		g_logger->std_file->vfprintf(g_logger->fp, fmt, argp);
 		va_end(argp);
@@ -107,8 +103,7 @@ void logger_log(logger_level_t const level, char const * const file,
 	};
 
 	get_datetime(fp);
-	fprintf(fp, "%s%-10s%s", colors[level], log_level_strings[level],
-		colors[RESET]);
+	fprintf(fp, "%s%-10s%s", colors[level], log_level_strings[level], colors[RESET]);
 	fprintf(fp, "%s: %lu: ", file, line);
 	va_start(argp, fmt);
 	vfprintf(fp, fmt, argp);

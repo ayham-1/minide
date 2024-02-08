@@ -3,9 +3,11 @@
 #include "minide/logger.h"
 
 #include <assert.h>
+#include <fontconfig/fontconfig.h>
 #include <malloc.h>
 
 #define INITIAL_PATS_SIZE 10
+#define MAX_FONT_SET_SIZE 5
 
 static fc_state fc;
 
@@ -17,8 +19,7 @@ void fc_init()
 	fc.sz = 0;
 	fc.capacity = 0;
 
-	log_info("initialized fontconfig library of version %i",
-		 FcGetVersion());
+	log_info("initialized fontconfig library of version %i", FcGetVersion());
 }
 
 void fc_clean()
@@ -26,8 +27,7 @@ void fc_clean()
 	assert(fc.config);
 
 	for (size_t i = 0; i < fc.capacity; i++) {
-		// FcPatternDestroy(fonts.list[i].pattern);
-		FcPatternDestroy(fc.list[i].matched_font);
+		FcFontSetDestroy(fc.list[i].matched_fonts);
 	}
 
 	FcConfigDestroy(fc.config);
@@ -36,12 +36,7 @@ void fc_clean()
 
 fc_holder * fc_request(char * font_name)
 {
-	if (fc.sz == 0) {
-		fc.sz = INITIAL_PATS_SIZE;
-		fc.list = malloc(sizeof(fc_holder) * fc.sz);
-	}
-
-	if (fc.capacity + 1 >= fc.sz) {
+	if (fc.sz == 0 || fc.capacity + 1 >= fc.sz) {
 		fc.sz += INITIAL_PATS_SIZE;
 		fc.list = realloc(fc.list, sizeof(fc_holder) * fc.sz);
 	}
@@ -53,8 +48,7 @@ fc_holder * fc_request(char * font_name)
 	FcDefaultSubstitute(pat);
 
 	FcResult result;
-	fc.list[fc.capacity].matched_font =
-	    FcFontMatch(fc.config, pat, &result);
+	fc.list[fc.capacity].matched_fonts = FcFontSort(fc.config, pat, FcTrue, NULL, &result);
 
 	if (result != FcResultMatch) {
 		log_error("failed to resolve font name pattern: %s", font_name);
@@ -77,14 +71,22 @@ fc_holder * fc_request(char * font_name)
 		return NULL;
 	}
 
-	FcChar8 * file = NULL;
-	if (FcPatternGetString(fc.list[fc.capacity].matched_font, FC_FILE, 0,
-			       &file) != FcResultMatch) {
-		log_error("unable to get file path from already matched file "
-			  "pattern");
-		file = NULL;
+	fc.list[fc.capacity].matched_fonts_n = (fc.list[fc.capacity].matched_fonts->nfont <= MAX_FONT_SET_SIZE)
+						   ? fc.list[fc.capacity].matched_fonts->nfont
+						   : MAX_FONT_SET_SIZE;
+
+	FcFontSet * font_set = fc.list[fc.capacity].matched_fonts;
+	size_t matched_fonts_n = fc.list[fc.capacity].matched_fonts_n;
+
+	fc.list[fc.capacity].matched_fonts_paths = calloc(matched_fonts_n, sizeof(FcChar8 *));
+	for (int i = 0; i < matched_fonts_n; i++) {
+		FcChar8 * file = NULL;
+		if (FcPatternGetString(font_set->fonts[i], FC_FILE, 0, &file) != FcResultMatch) {
+			log_error("unable to get file path from already matched file pattern");
+			file = NULL;
+		}
+		fc.list[fc.capacity].matched_fonts_paths[i] = file;
 	}
-	fc.list[fc.capacity].matched_font_path = file;
 	return &fc.list[fc.capacity++];
 }
 
@@ -92,5 +94,13 @@ char * fc_get_path_by_font(fc_holder * holder)
 {
 	assert(holder);
 
-	return (char *)holder->matched_font_path;
+	return (char *)holder->matched_fonts_paths[0];
+}
+
+char * fc_get_path_by_font_order(fc_holder * holder, size_t n)
+{
+	assert(holder);
+	assert(n < holder->matched_fonts_n);
+
+	return (char *)holder->matched_fonts_paths[n];
 }

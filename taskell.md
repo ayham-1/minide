@@ -1,9 +1,11 @@
 ## To Do
 
+- add backtraces to log_debug & log_info
+- reallocs log_info should be log_debug
 
 ## Doing
 
-- fonts: add fonts.c and use it in text_renderer
+- shaper: do emoji & text rendering
 
 ## Done
 
@@ -13,3 +15,4 @@
 - text_renderer: use UTF-8 characters for line wrapping
 - replace the variable for gl_wrappepr.c configuration with a struct
 - create emoji_cache.c w/ testing
+- fonts: add fonts.c and use it in text_renderer

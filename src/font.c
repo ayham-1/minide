@@ -3,14 +3,14 @@
 #include <assert.h>
 #include <limits.h>
 
-font_t * font_create(FT_Library ft_lib, fc_holder * fc_holder)
+font_t * font_create(FT_Library ft_lib, fc_holder * fc_holder, int fc_holder_index)
 {
 	font_t * result = malloc(sizeof(font_t));
 
 	result->fc_holder = fc_holder;
+	result->fc_holder_index = fc_holder_index;
 
-	if (FT_New_Face(ft_lib, fc_get_path_by_font(fc_holder), 0,
-			&result->face)) {
+	if (FT_New_Face(ft_lib, fc_get_path_by_font_order(fc_holder, result->fc_holder_index), 0, &result->face)) {
 		log_error("failed font creation");
 		return NULL;
 	}
@@ -32,10 +32,7 @@ void font_clean(font_t * font)
 	free(font);
 }
 
-bool font_does_have_charid(font_t * font, uint32_t charid)
-{
-	return FT_Get_Char_Index(font->face, charid);
-}
+bool font_does_have_charid(font_t * font, uint32_t charid) { return FT_Get_Char_Index(font->face, charid); }
 
 void font_set_pixel_size(font_t * font, short pixel_size)
 {
@@ -58,9 +55,7 @@ void font_set_pixel_size(font_t * font, short pixel_size)
 		short distance = SHRT_MAX;
 		int index = 0;
 		for (FT_Int i = 0; i < font->face->num_fixed_sizes; i++) {
-			short new_distance =
-			    abs(font->face->available_sizes[i].height -
-				(FT_Short)pixel_size);
+			short new_distance = abs(font->face->available_sizes[i].height - (FT_Short)pixel_size);
 			if (distance >= new_distance) {
 				distance = new_distance;
 				index = i;
@@ -68,9 +63,7 @@ void font_set_pixel_size(font_t * font, short pixel_size)
 		}
 
 		FT_Select_Size(font->face, index);
-		font->scale =
-		    ((float)pixel_size) /
-		    ((float)font->face->available_sizes[index].height);
+		font->scale = ((float)pixel_size) / ((float)font->face->available_sizes[index].height);
 		log_warn("using manual font scaling");
 	}
 
@@ -89,9 +82,7 @@ glyph_cache * font_create_glyph_cache(font_t * font, short pixel_size)
 {
 	if (font->caches_fullness + 1 >= font->caches_capacity) {
 		// resize the hash_table
-		font->caches = (glyph_cache *)realloc(
-		    font->caches,
-		    2 * font->caches_capacity * sizeof(glyph_cache));
+		font->caches = (glyph_cache *)realloc(font->caches, 2 * font->caches_capacity * sizeof(glyph_cache));
 		font->caches_capacity *= 2;
 
 		log_info("font glyphcache list full, attempted realloc");

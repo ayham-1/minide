@@ -120,12 +120,6 @@ GLuint shader_program_create(const char * vertexfile, const char * fragmentfile)
 	return program;
 }
 
-GLint shader_get_attrib(GLuint program, const char * name)
-{
-	return glGetAttribLocation(program, name);
-}
+GLint shader_get_attrib(GLuint program, const char * name) { return glGetAttribLocation(program, name); }
 
-GLint shader_get_uniform(GLuint program, const char * name)
-{
-	return glGetUniformLocation(program, name);
-}
+GLint shader_get_uniform(GLuint program, const char * name) { return glGetUniformLocation(program, name); }

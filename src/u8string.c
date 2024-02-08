@@ -37,11 +37,9 @@ size_t u8str_get_encode_seq(byte_t * ptr, u8encode * out)
 
 	size_t bytes_num = u8str_get_bytes_needed_for(MAKE_BYTE_WBYTE(*ptr));
 	if (bytes_num == 4) {
-		*out = COMBINE_BYTES_TO_WBYTE(src_ptr[0], src_ptr[1],
-					      src_ptr[2], src_ptr[3]);
+		*out = COMBINE_BYTES_TO_WBYTE(src_ptr[0], src_ptr[1], src_ptr[2], src_ptr[3]);
 	} else if (bytes_num == 3) {
-		*out = COMBINE_BYTES_TO_WBYTE(src_ptr[0], src_ptr[1],
-					      src_ptr[2], 0x0);
+		*out = COMBINE_BYTES_TO_WBYTE(src_ptr[0], src_ptr[1], src_ptr[2], 0x0);
 	} else if (bytes_num == 2) {
 		*out = COMBINE_BYTES_TO_WBYTE(src_ptr[0], src_ptr[1], 0x0, 0x0);
 	} else if (bytes_num == 1) {
@@ -114,8 +112,7 @@ bool u8str_is_utf8_valid(u8encode c)
 			break;
 	case 2:
 		// UTF8-2      = %xC2-DF UTF8-tail
-		if (!(*first >= 0xC2 && *first <= 0xDF) &&
-		    !IS_TAIL_BYTE(*second))
+		if (!(*first >= 0xC2 && *first <= 0xDF) && !IS_TAIL_BYTE(*second))
 			return false;
 		else
 			break;
@@ -124,14 +121,10 @@ bool u8str_is_utf8_valid(u8encode c)
 		 * UTF8-3      = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail )
 		 * / %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
 		 */
-		if (!((*first == 0xE0 && *second >= 0xA0 && *second <= 0xBF &&
-		       IS_TAIL_BYTE(*third)) ||
-		      (*first >= 0xE1 && *first <= 0xEC &&
-		       IS_TAIL_BYTE(*second) && IS_TAIL_BYTE(*third)) ||
-		      (*first == 0xED && *second >= 0x80 && *second <= 0x9F &&
-		       IS_TAIL_BYTE(*third)) ||
-		      (*first >= 0xEE && *first <= 0xEF &&
-		       IS_TAIL_BYTE(*second) && IS_TAIL_BYTE(*third))))
+		if (!((*first == 0xE0 && *second >= 0xA0 && *second <= 0xBF && IS_TAIL_BYTE(*third)) ||
+		      (*first >= 0xE1 && *first <= 0xEC && IS_TAIL_BYTE(*second) && IS_TAIL_BYTE(*third)) ||
+		      (*first == 0xED && *second >= 0x80 && *second <= 0x9F && IS_TAIL_BYTE(*third)) ||
+		      (*first >= 0xEE && *first <= 0xEF && IS_TAIL_BYTE(*second) && IS_TAIL_BYTE(*third))))
 			return false;
 		else
 			break;
@@ -140,13 +133,12 @@ bool u8str_is_utf8_valid(u8encode c)
 		 * UTF8-4      = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3(
 		 * UTF8-tail ) / %xF4 %x80-8F 2( UTF8-tail )
 		 */
-		if (!((*first == 0xF0 && *second >= 0x90 && *second <= 0xBF &&
-		       IS_TAIL_BYTE(*third) && IS_TAIL_BYTE(*fourth)) ||
-		      (*first >= 0xF1 && *first <= 0xF3 &&
-		       IS_TAIL_BYTE(*second) && IS_TAIL_BYTE(*third) &&
+		if (!((*first == 0xF0 && *second >= 0x90 && *second <= 0xBF && IS_TAIL_BYTE(*third) &&
 		       IS_TAIL_BYTE(*fourth)) ||
-		      (*first == 0xF4 && *second >= 0x80 && *second <= 0x8F &&
-		       IS_TAIL_BYTE(*third) && IS_TAIL_BYTE(*fourth))))
+		      (*first >= 0xF1 && *first <= 0xF3 && IS_TAIL_BYTE(*second) && IS_TAIL_BYTE(*third) &&
+		       IS_TAIL_BYTE(*fourth)) ||
+		      (*first == 0xF4 && *second >= 0x80 && *second <= 0x8F && IS_TAIL_BYTE(*third) &&
+		       IS_TAIL_BYTE(*fourth))))
 			return false;
 		else
 			break;
@@ -232,8 +224,7 @@ u8encode u8str_from_code_point(byte_t c[9])
 		seq_len = 4;
 
 	for (size_t b_index = 0; b_index < seq_len; b_index++) {
-		a[b_index] = (rawByte >> (6 * (seq_len - b_index - 1))) &
-			     (U8_CODEPOINT_MASK);
+		a[b_index] = (rawByte >> (6 * (seq_len - b_index - 1))) & (U8_CODEPOINT_MASK);
 		if (b_index == 0) {
 			/* control byte */
 			a[0] &= 0b00000111; // clear utf-8 control bits
@@ -246,8 +237,7 @@ u8encode u8str_from_code_point(byte_t c[9])
 			else if (seq_len == 1)
 				a[0] |= U8_1_BYTE_MASK;
 		} else {
-			a[b_index] &=
-			    0b00111111; // clear utf-8 sequence control bits
+			a[b_index] &= 0b00111111; // clear utf-8 sequence control bits
 			a[b_index] |= U8_CONT_BYTE_MASK;
 		}
 	}

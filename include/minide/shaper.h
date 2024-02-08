@@ -10,12 +10,8 @@
 #include <unicode/uchar.h>
 
 typedef struct {
-	int32_t logical_start;
-	int32_t logical_end;
-
 	font_t * font;
 	float scale;
-	bool is_textual_single_color;
 
 	hb_glyph_info_t * glyph_infos;
 	hb_glyph_position_t * glyph_pos;
@@ -23,6 +19,7 @@ typedef struct {
 } shaper_font_run_t;
 
 typedef struct {
+	size_t pixel_size;
 	enum FontFamilyStyle preferred_style;
 	bool do_style_falllback;
 	bool do_font_fallback;
@@ -32,18 +29,19 @@ typedef struct {
 	size_t runs_fullness;
 
 	hb_buffer_t * buffer;
+	UChar * utf16_str;
+	int32_t logical_length;
 } shaper_holder;
 
-shaper_holder shaper_do(UChar * utf16_str, int32_t logical_length,
-			enum FontFamilyStyle preferred_style, size_t pixel_size,
-			bool do_style_fallback, bool do_font_fallback);
+void shaper_do(shaper_holder * holder);
 void shaper_undo(shaper_holder * holder);
+void shaper_free(shaper_holder * holder);
+
+void shaper_do_segment(shaper_holder * holder, int32_t start, int32_t end, font_t * font);
 
 void __shaper_add_run(shaper_holder * holder, shaper_font_run_t run);
-shaper_font_run_t __shaper_make_run(int32_t logical_start, int32_t logical_end,
-				    font_t * font, hb_glyph_info_t * info_start,
-				    hb_glyph_position_t * pos_start,
-				    size_t glyph_count);
+shaper_font_run_t __shaper_make_run(font_t * font, hb_glyph_info_t * restrict info, hb_glyph_position_t * restrict pos,
+				    int glyph_count);
 void __shaper_clean_run(shaper_font_run_t * run);
 
 #endif

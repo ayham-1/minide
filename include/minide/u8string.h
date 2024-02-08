@@ -51,12 +51,9 @@ u8encode u8str_from_code_point(byte_t c[9]);
 #define U8_BOM 0xEFBBBF
 
 #define MAKE_BYTE_WBYTE(x) (x << 24)
-#define COMBINE_BYTES_TO_WBYTE(a, b, c, d)                                     \
-	(d | (c << 8) | (b << 16) | (a << 24))
+#define COMBINE_BYTES_TO_WBYTE(a, b, c, d) (d | (c << 8) | (b << 16) | (a << 24))
 
-#define IS_CONT_BYTE(b)                                                        \
-	((b & U8_CONT_BYTE_MASK) == U8_CONT_BYTE_MASK) &&                      \
-	    (((~b) & 0b01000000) == 0b01000000)
+#define IS_CONT_BYTE(b) ((b & U8_CONT_BYTE_MASK) == U8_CONT_BYTE_MASK) && (((~b) & 0b01000000) == 0b01000000)
 
 #define IS_TAIL_BYTE(b) (b >= 0x80 && b <= 0xBF)
 

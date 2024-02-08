@@ -30,8 +30,7 @@ void fps_counter_init(size_t width, size_t height)
 void fps_counter_render()
 {
 	byte_t str[21 * 2];
-	sprintf((char *)str, "%li fps | %f ms/frame", nbFrames,
-		1000.0f / nbFrames);
+	sprintf((char *)str, "%li fps | %f ms/frame", nbFrames, 1000.0f / nbFrames);
 
 	conf.str = str;
 

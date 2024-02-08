@@ -8,22 +8,15 @@
 #include <unicode/uloc.h>
 #include <unicode/ustring.h>
 
-void text_renderer_init(text_renderer_t * renderer,
-			enum FontFamilyStyle font_style, size_t width,
-			size_t height, size_t font_pixel_size)
+void text_renderer_init(text_renderer_t * renderer, enum FontFamilyStyle font_style, size_t width, size_t height,
+			size_t font_pixel_size)
 {
-	renderer->shaderProgram =
-	    shader_program_create("glsl/text.v.glsl", "glsl/text.f.glsl");
-	renderer->attributeCoord =
-	    shader_get_attrib(renderer->shaderProgram, "coord");
-	renderer->uniformTex =
-	    shader_get_uniform(renderer->shaderProgram, "tex");
-	renderer->uniformColor =
-	    shader_get_uniform(renderer->shaderProgram, "textColor");
-	renderer->uniformProjection =
-	    shader_get_uniform(renderer->shaderProgram, "projection");
-	renderer->uniformSingleColor =
-	    shader_get_uniform(renderer->shaderProgram, "singleColor");
+	renderer->shaderProgram = shader_program_create("glsl/text.v.glsl", "glsl/text.f.glsl");
+	renderer->attributeCoord = shader_get_attrib(renderer->shaderProgram, "coord");
+	renderer->uniformTex = shader_get_uniform(renderer->shaderProgram, "tex");
+	renderer->uniformColor = shader_get_uniform(renderer->shaderProgram, "textColor");
+	renderer->uniformProjection = shader_get_uniform(renderer->shaderProgram, "projection");
+	renderer->uniformSingleColor = shader_get_uniform(renderer->shaderProgram, "singleColor");
 
 	glGenVertexArrays(1, &renderer->vao);
 	glGenBuffers(1, &renderer->vbo);
@@ -40,8 +33,7 @@ void text_renderer_init(text_renderer_t * renderer,
 	renderer->scr_height = height;
 	renderer->font_pixel_size = font_pixel_size;
 
-	glm_ortho(0.0f, (float)width, 0.0f, (float)height, -1, 1,
-		  renderer->projection);
+	glm_ortho(0.0f, (float)width, 0.0f, (float)height, -1, 1, renderer->projection);
 
 	renderer->font_style = font_style;
 
@@ -81,22 +73,21 @@ void text_renderer_do(text_render_config * const conf)
 
 	if (conf->utf16_str == NULL) {
 		// ICU UBiDi requires UTF-16 strings
-		u_strFromUTF8(NULL, 0, (int32_t *)&conf->utf16_sz,
-			      (char *)conf->str, (int32_t)conf->str_sz,
+		u_strFromUTF8(NULL, 0, (int32_t *)&conf->utf16_sz, (char *)conf->str, (int32_t)conf->str_sz,
 			      &u_error_code);
 		u_error_code = U_ZERO_ERROR;
 
 		conf->utf16_str = malloc(sizeof(UChar) * (conf->utf16_sz));
 		int32_t utf16_written = 0;
-		u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written,
-			      (char *)conf->str, (int32_t)conf->str_sz,
+		u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written, (char *)conf->str, (int32_t)conf->str_sz,
 			      &u_error_code);
 		if (U_FAILURE(u_error_code)) {
-			log_error("u_strFromUTF8 failed, error_code: %i",
-				  u_error_code);
+			log_error("u_strFromUTF8 failed, error_code: %i", u_error_code);
 			return;
 		}
 		assert(conf->utf16_sz == utf16_written);
+		log_var(conf->utf16_sz);
+		log_var(utf16_written);
 	}
 
 	UBiDi * bidi = ubidi_openSized(0, 0, &u_error_code);
@@ -106,8 +97,7 @@ void text_renderer_do(text_render_config * const conf)
 		return;
 	}
 
-	ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz,
-		      conf->base_direction, NULL, &u_error_code);
+	ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz, conf->base_direction, NULL, &u_error_code);
 
 	if (U_FAILURE(u_error_code)) {
 		log_error("failed ubidi_setPara");
@@ -130,14 +120,11 @@ void text_renderer_do(text_render_config * const conf)
 		int32_t start = 0, end = 0, line_number = 0;
 		while (line_number < conf->wrap_runs_cnt) {
 			// get logical end of line to render
-			__text_renderer_get_line_break(conf, line_number,
-						       &start, &end);
+			__text_renderer_get_line_break(conf, line_number, &start, &end);
 
 			ubidi_setLine(bidi, start, end, line, &u_error_code);
 			if (U_FAILURE(u_error_code)) {
-				log_error(
-				    "failed ubidi_setLine, error_code: %i",
-				    u_error_code);
+				log_error("failed ubidi_setLine, error_code: %i", u_error_code);
 				log_debug("start: %i", start);
 				log_debug("end: %i", end);
 				log_debug("length: %i", end - start);
@@ -156,37 +143,38 @@ void text_renderer_do(text_render_config * const conf)
 	ubidi_close(bidi);
 }
 
-void __text_renderer_line(UBiDi * line, text_render_config * const conf,
-			  int32_t logical_line_offset, UErrorCode * error_code)
+void __text_renderer_line(UBiDi * line, text_render_config * const conf, int32_t logical_line_offset,
+			  UErrorCode * error_code)
 {
 	if (U_FAILURE(*error_code)) {
-		log_error(
-		    "__text_renderer_line passed-in failure error_code: %i",
-		    *error_code);
+		log_error("__text_renderer_line passed-in failure error_code: %i", *error_code);
 		return;
 	}
 
 	if (U_FAILURE(*error_code)) {
-		log_error("failed to run ubidi_getDirection, error_code: %i",
-			  *error_code);
+		log_error("failed to run ubidi_getDirection, error_code: %i", *error_code);
 		return;
 	}
 	size_t count_runs = ubidi_countRuns(line, error_code);
 	int32_t logical_start = 0, length = 0;
 	for (size_t i = 0; i < count_runs; i++) {
 		(void)ubidi_getVisualRun(line, i, &logical_start, &length);
-		__text_renderer_run(conf, logical_start + logical_line_offset,
-				    length);
+		__text_renderer_run(conf, logical_start + logical_line_offset, length);
 	}
 }
 
-void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
-			 int32_t logical_length)
+void __text_renderer_run(text_render_config * const conf, int32_t logical_start, int32_t logical_length)
 {
-	shaper_holder holder =
-	    shaper_do(conf->utf16_str + logical_start, logical_length,
-		      conf->renderer->font_style,
-		      conf->renderer->font_pixel_size, true, true);
+	shaper_holder holder = (shaper_holder){
+	    .do_font_fallback = true,
+	    .do_style_falllback = true,
+	    .pixel_size = conf->renderer->font_pixel_size,
+	    .preferred_style = conf->renderer->font_style,
+
+	    .utf16_str = conf->utf16_str + logical_start,
+	    .logical_length = logical_length,
+	};
+	shaper_do(&holder);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -195,8 +183,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 
 	glUseProgram(conf->renderer->shaderProgram);
 	glUniform3f(conf->renderer->uniformColor, 0, 1, 0);
-	glUniformMatrix4fv(conf->renderer->uniformProjection, 1, GL_FALSE,
-			   (GLfloat *)conf->renderer->projection);
+	glUniformMatrix4fv(conf->renderer->uniformProjection, 1, GL_FALSE, (GLfloat *)conf->renderer->projection);
 
 	typedef struct {
 		GLfloat x;
@@ -207,23 +194,21 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 
 	for (size_t run_num = 0; run_num < holder.runs_fullness; run_num++) {
 		shaper_font_run_t run = holder.runs[run_num];
-		glUniform1i(conf->renderer->uniformSingleColor,
-			    run.is_textual_single_color);
+		glUniform1i(conf->renderer->uniformSingleColor, !FT_HAS_COLOR(run.font->face));
 
 		point coords[6 * run.glyph_count];
 		size_t n = 0;
 
-		glyph_cache * gcache = font_get_glyph_cache(
-		    run.font, conf->renderer->font_pixel_size);
+		glyph_cache * gcache = font_get_glyph_cache(run.font, conf->renderer->font_pixel_size);
 		assert(gcache != NULL);
 
 		for (unsigned int i = 0; i < run.glyph_count; i++) {
 			hb_glyph_info_t hb_info = run.glyph_infos[i];
 			hb_glyph_position_t hb_pos = run.glyph_pos[i];
 
+			log_var(i);
 			glyph_info * info =
-			    font_get_glyph(run.font, hb_info.codepoint,
-					   conf->renderer->font_pixel_size);
+			    font_get_glyph(run.font, hb_info.codepoint, conf->renderer->font_pixel_size);
 			assert(info != NULL);
 
 			// NOTE: left-bottom origin
@@ -270,12 +255,8 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 			coords[n++] = (point){x0, y0, s0, t0};
 
 			if (run.scale != 1) {
-				conf->curr_x +=
-				    ((float)(hb_pos.x_advance >> 6)) *
-				    run.scale;
-				conf->curr_y +=
-				    ((float)(hb_pos.y_advance >> 6)) *
-				    run.scale;
+				conf->curr_x += ((float)(hb_pos.x_advance >> 6)) * run.scale;
+				conf->curr_y += ((float)(hb_pos.y_advance >> 6)) * run.scale;
 			} else {
 				conf->curr_x += hb_pos.x_advance >> 6;
 				conf->curr_y += hb_pos.y_advance >> 6;
@@ -288,8 +269,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gcache->atexOBJ);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords,
-			     GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_DYNAMIC_DRAW);
 		glDrawArrays(GL_TRIANGLES, 0, n);
 	}
 
@@ -310,12 +290,10 @@ void __text_renderer_calculate_line_wraps(text_render_config * const conf)
 	}
 
 	UErrorCode u_error = U_ZERO_ERROR;
-	UBreakIterator * it_line = ubrk_open(UBRK_LINE, NULL, conf->utf16_str,
-					     conf->utf16_sz - 1, &u_error);
+	UBreakIterator * it_line = ubrk_open(UBRK_LINE, NULL, conf->utf16_str, conf->utf16_sz - 1, &u_error);
 
 	if (U_FAILURE(u_error)) {
-		log_error("failed ubrk_open for line wrap, error_code: %i",
-			  u_error);
+		log_error("failed ubrk_open for line wrap, error_code: %i", u_error);
 	}
 
 	ubrk_first(it_line);
@@ -329,8 +307,7 @@ void __text_renderer_calculate_line_wraps(text_render_config * const conf)
 		goto calc_wrap_bidi_end;
 	}
 
-	ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz,
-		      conf->base_direction, NULL, &u_error);
+	ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz, conf->base_direction, NULL, &u_error);
 
 	if (U_FAILURE(u_error)) {
 		log_error("failed ubidi_setPara");
@@ -376,8 +353,7 @@ void __text_renderer_calculate_line_wraps(text_render_config * const conf)
 	int32_t lines = 0;
 	int32_t length = ubidi_getLength(bidi_line);
 
-	bool is_it_line_empty = ubrk_first(it_line) == 0 &&
-				ubrk_next(it_line) == conf->utf16_sz - 1;
+	bool is_it_line_empty = ubrk_first(it_line) == 0 && ubrk_next(it_line) == conf->utf16_sz - 1;
 
 calc_wrap_run_start:
 	lines = 0;
@@ -389,8 +365,7 @@ calc_wrap_run_start:
 		int32_t final_logical_start = logical_start;
 		int32_t final_logical_end = logical_end;
 
-		int32_t margin_visual_end =
-		    log2vis_map[logical_start] + conf->max_line_width_chars;
+		int32_t margin_visual_end = log2vis_map[logical_start] + conf->max_line_width_chars;
 		int32_t margin_logical_end = vis2log_map[margin_visual_end];
 
 		if (length <= margin_visual_end) {
@@ -404,17 +379,14 @@ calc_wrap_run_start:
 			int32_t cand_visual_end = margin_visual_end;
 
 			// skip whitespace
-			while (cand_visual_end < length &&
-			       (u_isspace(c) ||
-				u_charType(c) == U_CONTROL_CHAR ||
-				u_charType(c) == U_NON_SPACING_MARK)) {
+			while (cand_visual_end < length && (u_isspace(c) || u_charType(c) == U_CONTROL_CHAR ||
+							    u_charType(c) == U_NON_SPACING_MARK)) {
 				cand_visual_end++;
 				cand_logical_end = vis2log_map[cand_visual_end];
 				c = conf->utf16_str[cand_logical_end];
 			}
 			cand_visual_end++;
-			cand_logical_end =
-			    ubrk_preceding(it_line, cand_visual_end);
+			cand_logical_end = ubrk_preceding(it_line, cand_visual_end);
 
 			if (logical_start >= cand_logical_end)
 				final_logical_end = margin_logical_end;
@@ -424,8 +396,7 @@ calc_wrap_run_start:
 
 		// ensure final_logical_end is not way too far back
 		//
-		if (log2vis_map[final_logical_end] -
-			    log2vis_map[final_logical_start] <
+		if (log2vis_map[final_logical_end] - log2vis_map[final_logical_start] <
 			(int32_t)(0.75f * (float)conf->max_line_width_chars) &&
 		    !is_it_line_empty && !reached_end)
 			final_logical_end = margin_logical_end;
@@ -442,8 +413,7 @@ calc_wrap_run_start:
 		goto calc_wrap_end;
 
 	conf->wrap_runs_cnt = lines;
-	conf->wrap_runs_dat =
-	    calloc(conf->wrap_runs_cnt, sizeof(wrap_run_indices_t));
+	conf->wrap_runs_dat = calloc(conf->wrap_runs_cnt, sizeof(wrap_run_indices_t));
 	mem_run = false;
 	goto calc_wrap_run_start;
 
@@ -461,12 +431,10 @@ void __text_renderer_calculate_line_char_width(text_render_config * const conf)
 		return;
 	UErrorCode u_error = U_ZERO_ERROR;
 
-	conf->it_char = ubrk_open(UBRK_CHARACTER, uloc_getDefault(),
-				  conf->utf16_str, conf->utf16_sz, &u_error);
+	conf->it_char = ubrk_open(UBRK_CHARACTER, uloc_getDefault(), conf->utf16_str, conf->utf16_sz, &u_error);
 
 	if (U_FAILURE(u_error)) {
-		log_error("failed ubrk_open for line width, error_code: %i",
-			  u_error);
+		log_error("failed ubrk_open for line width, error_code: %i", u_error);
 		// goto no_wrap; // just continue and pray it doesn't break,
 		// can't think of a situation where this may be an issue,
 		// except maybe malloc problems, and i am not going to handle
@@ -482,9 +450,7 @@ void __text_renderer_calculate_line_char_width(text_render_config * const conf)
 	(void)ubrk_first(conf->it_char);
 }
 
-void __text_renderer_get_line_break(text_render_config * const conf,
-				    int32_t line_number,
-				    int32_t * out_logical_start,
+void __text_renderer_get_line_break(text_render_config * const conf, int32_t line_number, int32_t * out_logical_start,
 				    int32_t * out_logical_end)
 {
 	if (conf->wrap_runs_cnt == 0) {
@@ -498,18 +464,14 @@ void __text_renderer_get_line_break(text_render_config * const conf,
 
 void __text_renderer_new_line(text_render_config * const conf)
 {
-	conf->curr_y -= fonts_man_get_font_by_type(conf->renderer->font_style)
-			    ->face->size->metrics.height >>
-			6;
+	conf->curr_y -= fonts_man_get_font_by_type(conf->renderer->font_style, 0)->face->size->metrics.height >> 6;
 	conf->curr_x = conf->origin_x;
 }
 
-void text_renderer_update_window_size(text_renderer_t * renderer, int width,
-				      int height)
+void text_renderer_update_window_size(text_renderer_t * renderer, int width, int height)
 {
 	renderer->scr_width = width;
 	renderer->scr_height = height;
 
-	glm_ortho(0.0f, (float)width, 0.0f, (float)height, -1, 1,
-		  renderer->projection);
+	glm_ortho(0.0f, (float)width, 0.0f, (float)height, -1, 1, renderer->projection);
 }

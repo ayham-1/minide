@@ -33,8 +33,7 @@ void gl_wrapper_init()
 	path_create(&p, PATH_BYTES_NUM);
 	memcpy(p.fullPath.bytes, PATH, PATH_BYTES_NUM);
 
-	assert(glyph_cache_create(&cache, fonts_man_get()->monospace->face, 512,
-				  24));
+	assert(glyph_cache_create(&cache, fonts_man_get()->monospace[0]->face, 512, 24));
 }
 
 void gl_wrapper_render() { config.gl_wrapper_do_close = true; }

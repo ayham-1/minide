@@ -25,31 +25,30 @@ gl_wrapper_config_t config = (gl_wrapper_config_t){
     .gl_wrapper_do_close = false,
 };
 
-#define TEST_DATA                                                              \
-	"~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}" \
-	"\\|;"                                                                 \
-	":'"                                                                   \
+#define TEST_DATA                                                                                                      \
+	"~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}"                                         \
+	"\\|;"                                                                                                         \
+	":'"                                                                                                           \
 	"\",.<>/?\0"
 
 #define TEST_DATA_ENGLISH_MIXED "hello عالم world"
 #define TEST_DATA_ARABIC_MIXED "مرحبا world بالعالم"
 #define TEST_DATA_ARABIC_ONLY "مرحبا بالعالم"
 
-#define TEST_DATA_LINE_WRAPPING_STANDARD                                       \
-	"WRAP TEST STANDARD 1 WRAP TEST STANDARD 2 WRAP TEST STANDARD 3 #END#"
-#define TEST_DATA_LINE_WRAPPING_OVERFLOW                                       \
-	"12345678901234567890 12345678901234567890# WRAP TEST STANDARD 1 "     \
-	"WRAP "                                                                \
-	"TEST "                                                                \
+#define TEST_DATA_LINE_WRAPPING_STANDARD "WRAP TEST STANDARD 1 WRAP TEST STANDARD 2 WRAP TEST STANDARD 3 #END#"
+#define TEST_DATA_LINE_WRAPPING_OVERFLOW                                                                               \
+	"12345678901234567890 12345678901234567890# WRAP TEST STANDARD 1 "                                             \
+	"WRAP "                                                                                                        \
+	"TEST "                                                                                                        \
 	"STANDARD 2 WRAP TEST STANDARD 3 #END#"
-#define TEST_DATA_LINE_WRAPPING_WRAP_ON_WORD                                   \
-	"HELLOWORLDTHISISAWRAPONWORDTEST OTHERWISE KNOWN AS A LINE WRAPPING "  \
-	"TEST "                                                                \
+#define TEST_DATA_LINE_WRAPPING_WRAP_ON_WORD                                                                           \
+	"HELLOWORLDTHISISAWRAPONWORDTEST OTHERWISE KNOWN AS A LINE WRAPPING "                                          \
+	"TEST "                                                                                                        \
 	"#END#"
-#define TEST_DATA_LINE_WRAPPING_FORCEFUL                                       \
-	"HELLOWORLDTHISISAFORCEFULWRAPHELLOWORLDTHISISAFORCEFULWRAPHELLOWORLD" \
-	"THIS"                                                                 \
-	"IS"                                                                   \
+#define TEST_DATA_LINE_WRAPPING_FORCEFUL                                                                               \
+	"HELLOWORLDTHISISAFORCEFULWRAPHELLOWORLDTHISISAFORCEFULWRAPHELLOWORLD"                                         \
+	"THIS"                                                                                                         \
+	"IS"                                                                                                           \
 	"AFORCEFULWRAP#END#"
 
 #define TEST_DATA_CACHE_EXPANSION "HELLO ᙭ WORLD ФϴШՋᏍᓉᔩᗅ˩˨ʯʶΩǞŮŠǅƵҦфъ҂ה੦"
@@ -67,8 +66,7 @@ text_render_config conf9;
 
 void gl_wrapper_init()
 {
-	text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width,
-			   config.scr_height, 18);
+	text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 18);
 
 	conf1 = (text_render_config){
 	    .renderer = &renderer,
@@ -203,7 +201,7 @@ void gl_wrapper_render()
 	text_renderer_do(&conf8);
 	text_renderer_do(&conf9);
 
-	config.gl_wrapper_do_close = true;
+	// config.gl_wrapper_do_close = true;
 }
 
 void gl_wrapper_clean()
@@ -222,7 +220,4 @@ void gl_wrapper_clean()
 	text_renderer_cleanup(&renderer);
 }
 
-void glfw_size_callback(int width, int height)
-{
-	text_renderer_update_window_size(&renderer, width, height);
-}
+void glfw_size_callback(int width, int height) { text_renderer_update_window_size(&renderer, width, height); }

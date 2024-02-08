@@ -6,4 +6,5 @@ UseTab: ForContinuationAndIndentation
 BreakBeforeBraces: Linux
 AllowShortIfStatementsOnASingleLine: false
 PointerAlignment: Middle
+ColumnLimit: 120
 ---

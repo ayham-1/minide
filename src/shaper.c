@@ -2,49 +2,77 @@
 
 #include <assert.h>
 
-shaper_holder shaper_do(UChar * utf16_str, int32_t logical_length,
-			enum FontFamilyStyle preferred_style, size_t pixel_size,
-			bool do_style_fallback, bool do_font_fallback)
+void shaper_do(shaper_holder * holder)
 {
-	shaper_holder holder;
-	assert(utf16_str);
+	assert(holder);
+	assert(holder->pixel_size);
+	assert(holder->utf16_str);
+	assert(holder->logical_length);
 
-	holder.preferred_style = preferred_style;
-	holder.do_style_falllback = do_style_fallback;
-	holder.do_font_fallback = do_font_fallback;
+	holder->runs_capacity = 3;
+	holder->runs_fullness = 0;
+	holder->runs = calloc(holder->runs_capacity, sizeof(shaper_font_run_t));
 
-	holder.runs_capacity = 3;
-	holder.runs_fullness = 0;
-	holder.runs = calloc(holder.runs_capacity, sizeof(shaper_font_run_t));
+	holder->buffer = hb_buffer_create();
+	assert(hb_buffer_allocation_successful(holder->buffer));
 
-	font_t * primary_font = fonts_man_get_font_by_type(preferred_style);
-	holder.buffer = hb_buffer_create();
-	assert(hb_buffer_allocation_successful(holder.buffer));
+	// TODO(ayham-1): possible optimization is to lower the amount of
+	// switching between fonts for each run, by doing glyph positioning
+	// calculations here and combining different runs together. This is
+	// probably done by creating a new struct 'glyph_position'
 
-	hb_buffer_reset(holder.buffer);
-	hb_buffer_clear_contents(holder.buffer);
-	hb_buffer_add_utf16(holder.buffer, (uint16_t *)utf16_str,
-			    logical_length, 0, -1);
+	hb_buffer_reset(holder->buffer);
+	hb_buffer_clear_contents(holder->buffer);
 
-	hb_buffer_guess_segment_properties(holder.buffer);
+	int min_notdefs = INT_MAX;
+	font_t * best_font = fonts_man_get_font_by_type(holder->preferred_style, 0);
+	for (int i = 0; i < fonts_man_get_font_num_by_type(holder->preferred_style); i++) {
+		font_t * subrun_font = fonts_man_get_font_by_type(holder->preferred_style, i);
+		font_set_pixel_size(subrun_font, holder->pixel_size);
 
-	font_set_pixel_size(primary_font, pixel_size);
-	hb_shape(primary_font->hb, holder.buffer, NULL, 0);
+		hb_buffer_reset(holder->buffer);
+		hb_buffer_clear_contents(holder->buffer);
 
-	// do primary font runs
-	//
+		hb_buffer_add_utf16(holder->buffer, (uint16_t *)holder->utf16_str, holder->logical_length, 0,
+				    holder->logical_length);
+
+		hb_buffer_guess_segment_properties(holder->buffer);
+
+		hb_shape(subrun_font->hb, holder->buffer, NULL, 0);
+
+		unsigned int glyph_count;
+		hb_glyph_info_t * glyph_infos = hb_buffer_get_glyph_infos(holder->buffer, &glyph_count);
+
+		int current_notdef = 0;
+		for (int j = 0; j < glyph_count; j++) {
+			if (glyph_infos[j].codepoint == 0)
+				current_notdef++;
+		}
+
+		if (current_notdef < min_notdefs) {
+			min_notdefs = current_notdef;
+			best_font = subrun_font;
+		}
+
+		if (current_notdef == 0)
+			break;
+	}
+
+	hb_buffer_reset(holder->buffer);
+	hb_buffer_clear_contents(holder->buffer);
+	hb_buffer_add_utf16(holder->buffer, (uint16_t *)holder->utf16_str, holder->logical_length, 0,
+			    holder->logical_length);
+	hb_buffer_guess_segment_properties(holder->buffer);
+	hb_shape(best_font->hb, holder->buffer, NULL, 0);
+	log_error("%s", best_font->fc_holder->matched_fonts_paths[best_font->fc_holder_index]);
+
 	unsigned int glyph_count;
-	hb_glyph_info_t * glyph_infos =
-	    hb_buffer_get_glyph_infos(holder.buffer, &glyph_count);
-	hb_glyph_position_t * glyph_pos =
-	    hb_buffer_get_glyph_positions(holder.buffer, &glyph_count);
+	hb_glyph_info_t * best_glyph_infos = hb_buffer_get_glyph_infos(holder->buffer, &glyph_count);
 
-	__shaper_add_run(&holder,
-			 __shaper_make_run(0, glyph_count, primary_font,
-					   &glyph_infos[0], &glyph_pos[0],
-					   glyph_count));
+	hb_glyph_position_t * best_glyph_pos = hb_buffer_get_glyph_positions(holder->buffer, &glyph_count);
+	log_var(glyph_count);
 
-	return holder;
+	__shaper_add_run(holder, __shaper_make_run(best_font, best_glyph_infos, best_glyph_pos, glyph_count));
 }
 
 void shaper_undo(shaper_holder * holder)
@@ -53,6 +81,17 @@ void shaper_undo(shaper_holder * holder)
 		__shaper_clean_run(&holder->runs[i]);
 	}
 
+	// free(holder->runs);
+	holder->runs_fullness = 0;
+	// holder->runs_capacity = 0;
+	hb_buffer_destroy(holder->buffer);
+}
+
+void shaper_free(shaper_holder * holder)
+{
+	for (size_t i = 0; i < holder->runs_fullness; i++) {
+		__shaper_clean_run(&holder->runs[i]);
+	}
 	free(holder->runs);
 	holder->runs_fullness = 0;
 	holder->runs_capacity = 0;
@@ -62,9 +101,8 @@ void shaper_undo(shaper_holder * holder)
 void __shaper_add_run(shaper_holder * holder, shaper_font_run_t run)
 {
 	if (holder->runs_fullness + 1 >= holder->runs_capacity) {
-		holder->runs = (shaper_font_run_t *)realloc(
-		    holder->runs,
-		    2 * holder->runs_capacity * sizeof(shaper_font_run_t));
+		holder->runs =
+		    (shaper_font_run_t *)realloc(holder->runs, 2 * holder->runs_capacity * sizeof(shaper_font_run_t));
 		holder->runs_capacity *= 2;
 		log_info("shaper runs full, attempted realloc");
 	}
@@ -72,30 +110,20 @@ void __shaper_add_run(shaper_holder * holder, shaper_font_run_t run)
 	holder->runs[holder->runs_fullness++] = run;
 }
 
-shaper_font_run_t __shaper_make_run(int32_t logical_start, int32_t logical_end,
-				    font_t * font, hb_glyph_info_t * info_start,
-				    hb_glyph_position_t * pos_start,
-				    size_t glyph_count)
+shaper_font_run_t __shaper_make_run(font_t * font, hb_glyph_info_t * restrict info, hb_glyph_position_t * restrict pos,
+				    int glyph_count)
 {
 	shaper_font_run_t run;
 
-	run.logical_start = logical_start;
-	run.logical_end = logical_end;
 	run.font = font;
 	run.scale = font->scale;
-	run.is_textual_single_color =
-	    font != fonts_man_get_font_by_type(FONT_FAMILY_Emoji);
 	run.glyph_count = glyph_count;
 
-	run.glyph_infos =
-	    (hb_glyph_info_t *)calloc(run.glyph_count, sizeof(hb_glyph_info_t));
-	run.glyph_pos = (hb_glyph_position_t *)calloc(
-	    run.glyph_count, sizeof(hb_glyph_position_t));
+	run.glyph_infos = (hb_glyph_info_t *)calloc(run.glyph_count, sizeof(hb_glyph_info_t));
+	run.glyph_pos = (hb_glyph_position_t *)calloc(run.glyph_count, sizeof(hb_glyph_position_t));
 
-	memcpy(run.glyph_infos, info_start,
-	       glyph_count * sizeof(hb_glyph_info_t));
-	memcpy(run.glyph_pos, pos_start,
-	       glyph_count * sizeof(hb_glyph_position_t));
+	memcpy(run.glyph_infos, info, run.glyph_count * sizeof(hb_glyph_info_t));
+	memcpy(run.glyph_pos, pos, run.glyph_count * sizeof(hb_glyph_position_t));
 
 	return run;
 }
@@ -105,6 +133,4 @@ void __shaper_clean_run(shaper_font_run_t * run)
 	free(run->glyph_infos);
 	free(run->glyph_pos);
 	run->glyph_count = 0;
-	run->logical_start = 0;
-	run->logical_end = 0;
 }

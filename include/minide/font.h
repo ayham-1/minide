@@ -18,6 +18,7 @@ typedef struct {
 	hb_font_t * hb;
 
 	fc_holder * fc_holder;
+	int fc_holder_index;
 
 	glyph_cache * caches;
 	size_t caches_capacity;
@@ -26,7 +27,7 @@ typedef struct {
 	float scale;
 } font_t;
 
-font_t * font_create(FT_Library ft_lib, fc_holder * fc_holder);
+font_t * font_create(FT_Library ft_lib, fc_holder * fc_holder, int fc_holder_index);
 void font_clean(font_t * font);
 
 glyph_info * font_get_glyph(font_t * font, uint32_t glyphid, short pixel_size);

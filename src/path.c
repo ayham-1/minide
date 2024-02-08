@@ -15,8 +15,7 @@ bool path_expand(path_t * p)
 #ifdef __linux__
 	byte_t * new_path = (byte_t *)realpath((char *)p->fullPath.bytes, NULL);
 	if (new_path == NULL) {
-		log_error("path: %s, couldn't be expanded by system. error: %s",
-			  p->fullPath.bytes, strerror(errno));
+		log_error("path: %s, couldn't be expanded by system. error: %s", p->fullPath.bytes, strerror(errno));
 		return false;
 	} else {
 		u8str_cleanup(&p->fullPath);
@@ -26,8 +25,8 @@ bool path_expand(path_t * p)
 		u8str_create(&p->fullPath, ptr - new_path);
 		memcpy(new_path, p->fullPath.bytes,
 		       ptr - new_path); // maybe this can be done easier
-		free(new_path); // man 3 realpath says PATH_MAX is allocated on
-				// return, cpy and free
+		free(new_path);         // man 3 realpath says PATH_MAX is allocated on
+					// return, cpy and free
 		return true;
 	}
 #else

@@ -12,10 +12,7 @@ uint64_t hash(const uint8_t * const key)
 
 bool cleanup(hash_table_entry_t * entry) { return true; }
 
-bool eql(const uint8_t * const key1, const uint8_t * const key2)
-{
-	return *key1 == *key2;
-}
+bool eql(const uint8_t * const key1, const uint8_t * const key2) { return *key1 == *key2; }
 
 int main(int argc, char * argv[])
 {

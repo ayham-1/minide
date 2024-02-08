@@ -29,16 +29,14 @@ int main(int argc, char * argv[])
 	UErrorCode u_version_error_code = U_ZERO_ERROR;
 
 	u_getVersion(u_info);
-	log_info("ICU version: %i.%i.%i.%i", u_info[0], u_info[1], u_info[2],
-		 u_info[3]);
+	log_info("ICU version: %i.%i.%i.%i", u_info[0], u_info[1], u_info[2], u_info[3]);
 
 	ulocdata_getCLDRVersion(u_info, &u_version_error_code);
 	if (U_FAILURE(u_version_error_code)) {
 		log_error("ICU did not find unicode data");
 		return -1;
 	} else {
-		log_info("ICU unicode data version: %i.%i.%i.%i", u_info[0],
-			 u_info[1], u_info[2], u_info[3]);
+		log_info("ICU unicode data version: %i.%i.%i.%i", u_info[0], u_info[1], u_info[2], u_info[3]);
 	}
 
 	GLFWwindow * window;
@@ -51,8 +49,7 @@ int main(int argc, char * argv[])
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(config.scr_width, config.scr_height,
-				  config.scr_title, NULL, NULL);
+	window = glfwCreateWindow(config.scr_width, config.scr_height, config.scr_title, NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
@@ -100,11 +97,8 @@ int main(int argc, char * argv[])
 		glfwSwapBuffers(window);
 		glfwWaitEvents();
 
-		if (config.scr_target_fps &&
-		    glfwGetTime() <
-			frameStartTime + 1.0 / config.scr_target_fps) {
-			sleep(glfwGetTime() -
-			      (frameStartTime + 1.0 / config.scr_target_fps));
+		if (config.scr_target_fps && glfwGetTime() < frameStartTime + 1.0 / config.scr_target_fps) {
+			sleep(glfwGetTime() - (frameStartTime + 1.0 / config.scr_target_fps));
 		}
 
 		if (config.gl_wrapper_do_close)
@@ -113,8 +107,7 @@ int main(int argc, char * argv[])
 		nbFrames++;
 		if (glfwGetTime() - lastSecondTime >= 1) {
 			if (config.do_print_frame_ms)
-				log_info("fps: %d\t%f ms/frame", nbFrames,
-					 1000.0f / nbFrames);
+				log_info("fps: %d\t%f ms/frame", nbFrames, 1000.0f / nbFrames);
 			if (config.do_render_frame_ms)
 				fps_counter_update(nbFrames);
 			nbFrames = 0;
@@ -133,12 +126,10 @@ int main(int argc, char * argv[])
 
 void __glfw_error_callback(int error, const char * description)
 {
-	log_error("GLFW Error Callback: \t\nname:\t%s\n\tdescription:\t%s",
-		  error, description);
+	log_error("GLFW Error Callback: \t\nname:\t%s\n\tdescription:\t%s", error, description);
 }
 
-void __glfw_key_callback(GLFWwindow * window, int key, int scancode, int action,
-			 int mods)
+void __glfw_key_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
 	(void)window;
 	(void)mods;
@@ -160,8 +151,7 @@ void __glfw_size_callback(GLFWwindow * window, int width, int height)
 	glfw_size_callback(width, height);
 }
 
-void __gl_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
-		   GLsizei length, const GLchar * message,
+void __gl_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * message,
 		   const void * userParam)
 {
 	if (GL_DEBUG_TYPE_ERROR) {

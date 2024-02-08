@@ -70,29 +70,23 @@ typedef struct {
 	GLfloat curr_x, curr_y;
 } text_render_config;
 
-void text_renderer_init(text_renderer_t * renderer,
-			enum FontFamilyStyle font_style, size_t width,
-			size_t height, size_t font_pixel_size);
+void text_renderer_init(text_renderer_t * renderer, enum FontFamilyStyle font_style, size_t width, size_t height,
+			size_t font_pixel_size);
 void text_renderer_cleanup(text_renderer_t * renderer);
 
-void text_renderer_update_window_size(text_renderer_t * renderer, int width,
-				      int height);
+void text_renderer_update_window_size(text_renderer_t * renderer, int width, int height);
 
 void text_renderer_do(text_render_config * const conf);
 void text_renderer_undo(text_render_config * const conf);
 
-void __text_renderer_line(UBiDi * line, text_render_config * const conf,
-			  int32_t logical_line_start_offset,
+void __text_renderer_line(UBiDi * line, text_render_config * const conf, int32_t logical_line_start_offset,
 			  UErrorCode * error_code);
-void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
-			 int32_t logical_limit);
+void __text_renderer_run(text_render_config * const conf, int32_t logical_start, int32_t logical_limit);
 void __text_renderer_new_line(text_render_config * const conf);
 
 void __text_renderer_calculate_line_wraps(text_render_config * const conf);
 void __text_renderer_calculate_line_char_width(text_render_config * const conf);
 
-void __text_renderer_get_line_break(text_render_config * const conf,
-				    int32_t line_number,
-				    int32_t * out_logical_start,
+void __text_renderer_get_line_break(text_render_config * const conf, int32_t line_number, int32_t * out_logical_start,
 				    int32_t * out_logical_end);
 #endif

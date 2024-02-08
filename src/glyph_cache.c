@@ -10,8 +10,7 @@
 #define KEY_TYPE uint32_t
 #define DATA_TYPE glyph_info
 
-bool glyph_cache_create(glyph_cache * cache, FT_Face font_face, size_t capacity,
-			size_t pixelSize)
+bool glyph_cache_create(glyph_cache * cache, FT_Face font_face, size_t capacity, size_t pixelSize)
 {
 	FT_Reference_Face(font_face);
 	cache->font_face = font_face;
@@ -27,10 +26,8 @@ bool glyph_cache_create(glyph_cache * cache, FT_Face font_face, size_t capacity,
 		cache->capacity = capacity;
 	}
 
-	hash_table_create((hash_table_t * const)&cache->table, cache->capacity,
-			  __glyph_cache_table_hash,
-			  __glyph_cache_table_eql_func,
-			  __glyph_cache_table_entry_cleanup);
+	hash_table_create((hash_table_t * const)&cache->table, cache->capacity, __glyph_cache_table_hash,
+			  __glyph_cache_table_eql_func, __glyph_cache_table_entry_cleanup);
 
 	cache->keys = malloc(cache->capacity * sizeof(KEY_TYPE));
 	cache->data = malloc(cache->capacity * sizeof(DATA_TYPE));
@@ -76,8 +73,7 @@ DATA_TYPE * glyph_cache_retrieve(glyph_cache * cache, KEY_TYPE glyphid)
 
 	if (!hash_table_get(&cache->table, (uint8_t *)&glyphid, &entry)) {
 		info = glyph_cache_append(cache, glyphid);
-		log_warn("glyphid %li was not in cache, attempted to cache",
-			 glyphid);
+		log_warn("glyphid %li was not in cache, attempted to cache", glyphid);
 		__glyph_cache_atlas_append(cache, info);
 	} else {
 		info = (DATA_TYPE *)entry->data;
@@ -99,22 +95,16 @@ DATA_TYPE * glyph_cache_append(glyph_cache * cache, KEY_TYPE glyphid)
 {
 	if (cache->fullness + 1 >= cache->capacity) {
 		// resize the hash_table
-		cache->keys = (KEY_TYPE *)realloc(
-		    cache->keys, 2 * cache->capacity * sizeof(KEY_TYPE));
-		cache->data = (DATA_TYPE *)realloc(
-		    cache->data, 2 * cache->capacity * sizeof(DATA_TYPE));
+		cache->keys = (KEY_TYPE *)realloc(cache->keys, 2 * cache->capacity * sizeof(KEY_TYPE));
+		cache->data = (DATA_TYPE *)realloc(cache->data, 2 * cache->capacity * sizeof(DATA_TYPE));
 		cache->capacity *= 2;
 
 		hash_table_cleanup(&cache->table);
-		hash_table_create((hash_table_t * const)&cache->table,
-				  cache->capacity, __glyph_cache_table_hash,
-				  __glyph_cache_table_eql_func,
-				  __glyph_cache_table_entry_cleanup);
+		hash_table_create((hash_table_t * const)&cache->table, cache->capacity, __glyph_cache_table_hash,
+				  __glyph_cache_table_eql_func, __glyph_cache_table_entry_cleanup);
 
 		for (size_t i = 0; i < cache->fullness; i++) {
-			hash_table_insert(&cache->table,
-					  (void *)&cache->keys[i],
-					  (void *)&cache->data[i]);
+			hash_table_insert(&cache->table, (void *)&cache->keys[i], (void *)&cache->data[i]);
 		}
 
 		log_info("cache full, attempted realloc");
@@ -123,20 +113,20 @@ DATA_TYPE * glyph_cache_append(glyph_cache * cache, KEY_TYPE glyphid)
 	cache->keys[cache->fullness] = glyphid;
 
 	FT_Int32 load_flags = FT_LOAD_DEFAULT | FT_LOAD_COLOR;
-	FT_Error err = FT_Load_Glyph(cache->font_face,
-				     cache->keys[cache->fullness], load_flags);
-	if (err != 0) {
-		log_error("unable to load glyph with glyphid %li \n\terror: ",
-			  glyphid);
-		log_var(FT_Error_String(err));
+	FT_Error err = FT_Load_Glyph(cache->font_face, cache->keys[cache->fullness], load_flags);
+	if (0 != err) {
+		log_warn("unable to load glyph with glyphid %li \n\terror: ", glyphid);
+		log_warn("FT_Error_String(err): %s", FT_Error_String(err));
+		log_warn("not fatal, attempting to use notdef for failed glyphid");
 		log_var(err);
-		return NULL;
 	}
 
 	// ensure bitmap is present
-	if (FT_Render_Glyph(cache->font_face->glyph, FT_RENDER_MODE_NORMAL)) {
-		log_error("unable to render glyph's bitmap of glyphid %li",
-			  glyphid);
+	err = FT_Render_Glyph(cache->font_face->glyph, FT_RENDER_MODE_NORMAL);
+	if (0 != err) {
+		log_error("unable to render glyph's bitmap of glyphid %li", glyphid);
+		log_error("FT_Error_String(err): %s", FT_Error_String(err));
+		log_var(err);
 	}
 
 	FT_Glyph tglyph;
@@ -153,8 +143,7 @@ DATA_TYPE * glyph_cache_append(glyph_cache * cache, KEY_TYPE glyphid)
 	info->bearing_x = cache->font_face->glyph->bitmap_left;
 	info->bearing_y = cache->font_face->glyph->bitmap_top;
 
-	hash_table_insert(&cache->table, (void *)&cache->keys[cache->fullness],
-			  (void *)&cache->data[cache->fullness]);
+	hash_table_insert(&cache->table, (void *)&cache->keys[cache->fullness], (void *)&cache->data[cache->fullness]);
 	cache->fullness++;
 
 	return info;
@@ -175,8 +164,7 @@ void __glyph_cache_atlas_build(glyph_cache * cache)
 		while (curr_entry != NULL) {
 			DATA_TYPE * info = (DATA_TYPE *)(*curr_entry).data;
 
-			if (row_width + info->bglyph->bitmap.width >
-			    ATLAS_MAX_WIDTH) {
+			if (row_width + info->bglyph->bitmap.width > ATLAS_MAX_WIDTH) {
 				cache->aheight += row_height;
 				row_width = 0;
 				row_height = 0;
@@ -197,8 +185,7 @@ void __glyph_cache_atlas_build(glyph_cache * cache)
 	glGenTextures(1, &cache->atexOBJ);
 	glBindTexture(GL_TEXTURE_2D, cache->atexOBJ);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cache->awidth, cache->aheight,
-		     0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cache->awidth, cache->aheight, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -230,22 +217,16 @@ void __glyph_cache_atlas_refill_gpu(glyph_cache * cache)
 					 key);
 				continue;
 			}
-			if (offset_x + info->bglyph->bitmap.width >
-			    ATLAS_MAX_WIDTH) {
+			if (offset_x + info->bglyph->bitmap.width > ATLAS_MAX_WIDTH) {
 				offset_y += row_height;
 				row_height = 0;
 				offset_x = 0;
 			}
 
-			glTexSubImage2D(GL_TEXTURE_2D, 0, offset_x, offset_y,
-					info->bglyph->bitmap.width,
+			glTexSubImage2D(GL_TEXTURE_2D, 0, offset_x, offset_y, info->bglyph->bitmap.width,
 					info->bglyph->bitmap.rows,
-					(info->bglyph->bitmap.pixel_mode ==
-					 FT_PIXEL_MODE_BGRA)
-					    ? GL_BGRA
-					    : GL_RED,
-					GL_UNSIGNED_BYTE,
-					info->bglyph->bitmap.buffer);
+					(info->bglyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) ? GL_BGRA : GL_RED,
+					GL_UNSIGNED_BYTE, info->bglyph->bitmap.buffer);
 
 			info->texture_x = offset_x / (float)cache->awidth;
 			info->texture_y = offset_y / (float)cache->aheight;
@@ -271,8 +252,7 @@ void __glyph_cache_atlas_append(glyph_cache * cache, DATA_TYPE * info)
 		return;
 	}
 
-	if (cache->alast_offset_x + info->bglyph->bitmap.width >=
-	    ATLAS_MAX_WIDTH) {
+	if (cache->alast_offset_x + info->bglyph->bitmap.width >= ATLAS_MAX_WIDTH) {
 		__glyph_cache_atlas_build(cache);
 		__glyph_cache_atlas_refill_gpu(cache);
 		return;
@@ -280,12 +260,10 @@ void __glyph_cache_atlas_append(glyph_cache * cache, DATA_TYPE * info)
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, cache->atexOBJ);
-	glTexSubImage2D(
-	    GL_TEXTURE_2D, 0, cache->alast_offset_x, cache->alast_offset_y,
-	    info->bglyph->bitmap.width, info->bglyph->bitmap.rows,
-	    (info->bglyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) ? GL_BGRA
-								    : GL_RED,
-	    GL_UNSIGNED_BYTE, info->bglyph->bitmap.buffer);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, cache->alast_offset_x, cache->alast_offset_y, info->bglyph->bitmap.width,
+			info->bglyph->bitmap.rows,
+			(info->bglyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) ? GL_BGRA : GL_RED, GL_UNSIGNED_BYTE,
+			info->bglyph->bitmap.buffer);
 
 	info->texture_x = cache->alast_offset_x / (float)cache->awidth;
 	info->texture_y = cache->alast_offset_y / (float)cache->aheight;
@@ -314,8 +292,7 @@ bool __glyph_cache_table_entry_cleanup(hash_table_entry_t * entry)
 	return true;
 }
 
-bool __glyph_cache_table_eql_func(const uint8_t * const key1,
-				  const uint8_t * const key2)
+bool __glyph_cache_table_eql_func(const uint8_t * const key1, const uint8_t * const key2)
 {
 	KEY_TYPE key_1 = *(KEY_TYPE *)key1;
 	KEY_TYPE key_2 = *(KEY_TYPE *)key2;
@@ -335,8 +312,6 @@ void __glyph_cache_table_printer(const hash_table_entry_t * const entry)
 	log_debug("\t\t info.texture_x: %f", info.texture_x);
 	log_debug("\t\t info.texture_y: %f", info.texture_y);
 
-	log_debug("\t\t info.bglyph->bitmap.width: %i",
-		  info.bglyph->bitmap.width);
-	log_debug("\t\t info.bglyph->bitmap.rows: %i",
-		  info.bglyph->bitmap.rows);
+	log_debug("\t\t info.bglyph->bitmap.width: %i", info.bglyph->bitmap.width);
+	log_debug("\t\t info.bglyph->bitmap.rows: %i", info.bglyph->bitmap.rows);
 }

@@ -34,8 +34,7 @@ text_render_config conf2;
 
 void gl_wrapper_init()
 {
-	text_renderer_init(&renderer, FONT_FAMILY_Emoji, config.scr_width,
-			   config.scr_height, 24);
+	text_renderer_init(&renderer, FONT_FAMILY_Emoji, config.scr_width, config.scr_height, 24);
 
 	conf1 = (text_render_config){
 	    .renderer = &renderer,
@@ -67,19 +66,17 @@ void gl_wrapper_init()
 void gl_wrapper_render()
 {
 	text_renderer_do(&conf1);
-	text_renderer_do(&conf2);
+	// text_renderer_do(&conf2);
 
 	// config.gl_wrapper_do_close = true;
 }
 
 void gl_wrapper_clean()
 {
+	text_renderer_undo(&conf1);
 	text_renderer_undo(&conf2);
 
 	text_renderer_cleanup(&renderer);
 }
 
-void glfw_size_callback(int width, int height)
-{
-	text_renderer_update_window_size(&renderer, width, height);
-}
+void glfw_size_callback(int width, int height) { text_renderer_update_window_size(&renderer, width, height); }

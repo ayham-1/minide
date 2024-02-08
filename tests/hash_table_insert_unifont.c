@@ -64,8 +64,7 @@ int main(int argc, char * argv[])
 	FT_Select_Charmap(face, FT_ENCODING_UNICODE);
 
 	hash_table_t table;
-	hash_table_create(&table, 2 * face->num_glyphs, hash, eql_func,
-			  cleanup);
+	hash_table_create(&table, 2 * face->num_glyphs, hash, eql_func, cleanup);
 
 	FT_ULong charcode;
 	FT_UInt gid;
@@ -73,8 +72,7 @@ int main(int argc, char * argv[])
 	setlocale(LC_ALL, "");
 	charcode = FT_Get_First_Char(face, &gid);
 	while (gid != 0) {
-		log_debug("codepoint: %llu gid: %u",
-			  (unsigned long long)charcode, gid);
+		log_debug("codepoint: %llu gid: %u", (unsigned long long)charcode, gid);
 		charcode = FT_Get_Next_Char(face, charcode, &gid);
 		FT_ULong * c = malloc(sizeof(FT_ULong));
 		*c = charcode;

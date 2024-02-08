@@ -28,25 +28,24 @@
 #include <unistd.h>
 
 typedef struct vec_t vec_t;
-typedef void (*vec_resize_handler)(vec_t *v, uint8_t *data);
+typedef void (*vec_resize_handler)(vec_t * v, uint8_t * data);
 
 struct vec_t {
-  uint8_t **items;
-  size_t count;
-  size_t capacity;
+	uint8_t ** items;
+	size_t count;
+	size_t capacity;
 
-  vec_resize_handler resize_fun;
-  uint8_t *resize_data;
+	vec_resize_handler resize_fun;
+	uint8_t * resize_data;
 };
 
-void vec_create(vec_t *v, size_t capacity, vec_resize_handler resize_handler,
-                uint8_t *resize_handler_data);
-void vec_cleanup(vec_t *v);
-void vec_resize(vec_t *v, size_t new_capacity);
+void vec_create(vec_t * v, size_t capacity, vec_resize_handler resize_handler, uint8_t * resize_handler_data);
+void vec_cleanup(vec_t * v);
+void vec_resize(vec_t * v, size_t new_capacity);
 
-void vec_append(vec_t *v, uint8_t *item);
-uint8_t *vec_replace(vec_t *v, uint8_t *item, size_t index);
+void vec_append(vec_t * v, uint8_t * item);
+uint8_t * vec_replace(vec_t * v, uint8_t * item, size_t index);
 
-uint8_t *vec_get(vec_t *v, size_t index);
+uint8_t * vec_get(vec_t * v, size_t index);
 
 #endif
