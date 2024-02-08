@@ -64,13 +64,11 @@ void shaper_do(shaper_holder * holder)
 			    holder->logical_length);
 	hb_buffer_guess_segment_properties(holder->buffer);
 	hb_shape(best_font->hb, holder->buffer, NULL, 0);
-	log_error("%s", best_font->fc_holder->matched_fonts_paths[best_font->fc_holder_index]);
 
 	unsigned int glyph_count;
 	hb_glyph_info_t * best_glyph_infos = hb_buffer_get_glyph_infos(holder->buffer, &glyph_count);
 
 	hb_glyph_position_t * best_glyph_pos = hb_buffer_get_glyph_positions(holder->buffer, &glyph_count);
-	log_var(glyph_count);
 
 	__shaper_add_run(holder, __shaper_make_run(best_font, best_glyph_infos, best_glyph_pos, glyph_count));
 }

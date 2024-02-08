@@ -118,6 +118,7 @@ DATA_TYPE * glyph_cache_append(glyph_cache * cache, KEY_TYPE glyphid)
 		log_warn("unable to load glyph with glyphid %li \n\terror: ", glyphid);
 		log_warn("FT_Error_String(err): %s", FT_Error_String(err));
 		log_warn("not fatal, attempting to use notdef for failed glyphid");
+		FT_Load_Glyph(cache->font_face, 0, load_flags);
 		log_var(err);
 	}
 

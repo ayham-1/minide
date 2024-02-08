@@ -86,8 +86,6 @@ void text_renderer_do(text_render_config * const conf)
 			return;
 		}
 		assert(conf->utf16_sz == utf16_written);
-		log_var(conf->utf16_sz);
-		log_var(utf16_written);
 	}
 
 	UBiDi * bidi = ubidi_openSized(0, 0, &u_error_code);
@@ -206,7 +204,6 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 			hb_glyph_info_t hb_info = run.glyph_infos[i];
 			hb_glyph_position_t hb_pos = run.glyph_pos[i];
 
-			log_var(i);
 			glyph_info * info =
 			    font_get_glyph(run.font, hb_info.codepoint, conf->renderer->font_pixel_size);
 			assert(info != NULL);
