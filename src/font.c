@@ -64,7 +64,6 @@ void font_set_pixel_size(font_t * font, short pixel_size)
 
 		FT_Select_Size(font->face, index);
 		font->scale = ((float)pixel_size) / ((float)font->face->available_sizes[index].height);
-		log_warn("using manual font scaling");
 	}
 
 	hb_font_changed(font->hb);

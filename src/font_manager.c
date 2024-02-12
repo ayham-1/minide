@@ -53,7 +53,7 @@ bool fonts_man_init()
 	log_info("first priority sans-serif: %s", fc_get_path_by_font(sans_serif));
 	log_info("sans-serif count: %i", fonts_man.sans_count);
 	log_info("first priority emoji: %s", fc_get_path_by_font(emoji));
-	log_info("emoji count: %i", fonts_man.emoji);
+	log_info("emoji count: %i", fonts_man.emoji_count);
 
 	return true;
 }

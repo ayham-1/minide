@@ -165,7 +165,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 {
 	shaper_holder holder = (shaper_holder){
 	    .do_font_fallback = true,
-	    .do_style_falllback = true,
+	    .do_emoji_fallback = true,
 	    .pixel_size = conf->renderer->font_pixel_size,
 	    .preferred_style = conf->renderer->font_style,
 
@@ -223,8 +223,15 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 			}
 
 			// char quad ccw
-			GLfloat x0 = conf->curr_x + info->bearing_x;
-			GLfloat y0 = conf->curr_y + info->bearing_y;
+			GLfloat x0 = conf->curr_x;
+			GLfloat y0 = conf->curr_y;
+			if (run.scale != 1) {
+				x0 += info->bearing_x * run.scale;
+				y0 += info->bearing_y * run.scale;
+			} else {
+				x0 += info->bearing_x;
+				y0 += info->bearing_y;
+			}
 			GLfloat s0 = info->texture_x;
 			GLfloat t0 = info->texture_y;
 

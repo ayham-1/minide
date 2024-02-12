@@ -201,7 +201,7 @@ void gl_wrapper_render()
 	text_renderer_do(&conf8);
 	text_renderer_do(&conf9);
 
-	// config.gl_wrapper_do_close = true;
+	config.gl_wrapper_do_close = true;
 }
 
 void gl_wrapper_clean()

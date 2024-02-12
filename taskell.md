@@ -2,10 +2,10 @@
 
 - add backtraces to log_debug & log_info
 - reallocs log_info should be log_debug
+- add threading to font rendering
 
 ## Doing
 
-- shaper: do emoji & text rendering
 
 ## Done
 
@@ -16,3 +16,4 @@
 - replace the variable for gl_wrappepr.c configuration with a struct
 - create emoji_cache.c w/ testing
 - fonts: add fonts.c and use it in text_renderer
+- shaper: do emoji & text rendering

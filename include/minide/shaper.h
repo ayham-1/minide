@@ -21,8 +21,8 @@ typedef struct {
 typedef struct {
 	size_t pixel_size;
 	enum FontFamilyStyle preferred_style;
-	bool do_style_falllback;
 	bool do_font_fallback;
+	bool do_emoji_fallback;
 
 	shaper_font_run_t * runs;
 	size_t runs_capacity;
@@ -37,11 +37,13 @@ void shaper_do(shaper_holder * holder);
 void shaper_undo(shaper_holder * holder);
 void shaper_free(shaper_holder * holder);
 
-void shaper_do_segment(shaper_holder * holder, int32_t start, int32_t end, font_t * font);
+void __shaper_do_segment_best(shaper_holder * holder, int32_t start, int32_t end);
 
 void __shaper_add_run(shaper_holder * holder, shaper_font_run_t run);
 shaper_font_run_t __shaper_make_run(font_t * font, hb_glyph_info_t * restrict info, hb_glyph_position_t * restrict pos,
 				    int glyph_count);
 void __shaper_clean_run(shaper_font_run_t * run);
+
+bool __shaper_is_char_emoji(UChar * c, size_t offset, size_t length);
 
 #endif
