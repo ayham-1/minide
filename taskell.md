@@ -1,6 +1,5 @@
 ## To Do
 
-- add backtraces to log_debug & log_info
 - reallocs log_info should be log_debug
 - add threading to font rendering
 
@@ -17,3 +16,4 @@
 - create emoji_cache.c w/ testing
 - fonts: add fonts.c and use it in text_renderer
 - shaper: do emoji & text rendering
+- add backtraces to log_error

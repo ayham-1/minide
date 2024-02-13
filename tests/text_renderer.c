@@ -201,6 +201,8 @@ void gl_wrapper_render()
 	text_renderer_do(&conf8);
 	text_renderer_do(&conf9);
 
+	log_error("test 123");
+
 	config.gl_wrapper_do_close = true;
 }
 

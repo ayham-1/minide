@@ -14,7 +14,7 @@ typedef struct {
 
 void std_file_init(std_file_t * const std_file);
 
-typedef enum { OFF, DEBUG, INFO, WARNING, ERROR } logger_level_t;
+typedef enum { OFF, DEBUG, INFO, WARNING, ERROR, STACK } logger_level_t;
 
 typedef struct {
 	logger_level_t level;
@@ -23,9 +23,11 @@ typedef struct {
 } logger_t;
 
 int logger_init(logger_level_t const level, char const * const filename, bool const write_to_file);
-void logger_cleanup();
+void logger_cleanup(void);
 
 void logger_log(logger_level_t const level, char const * const file, size_t const line, char const * const fmt, ...);
+
+void __print_trace(void);
 
 extern logger_t * g_logger;
 
@@ -33,7 +35,12 @@ extern logger_t * g_logger;
 #define log_debug(...) logger_log(DEBUG, __FILE_NAME__, __LINE__, __VA_ARGS__)
 #define log_info(...) logger_log(INFO, __FILE_NAME__, __LINE__, __VA_ARGS__)
 #define log_warn(...) logger_log(WARNING, __FILE_NAME__, __LINE__, __VA_ARGS__)
-#define log_error(...) logger_log(ERROR, __FILE_NAME__, __LINE__, __VA_ARGS__)
+#define log_error(...)                                                                                                 \
+	{                                                                                                              \
+		logger_log(ERROR, __FILE_NAME__, __LINE__, __VA_ARGS__);                                               \
+		__print_trace();                                                                                       \
+	}
+#define log_stack(...) logger_log(STACK, __FILE_NAME__, __LINE__, __VA_ARGS__)
 
 #define log_var(var) logger_log(DEBUG, __FILE_NAME__, __LINE__, "%s: %i", #var, var)
 #endif

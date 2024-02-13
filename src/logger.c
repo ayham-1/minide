@@ -1,5 +1,6 @@
 #include "minide/logger.h"
 
+#include <execinfo.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -35,7 +36,7 @@ int logger_init(logger_level_t const level, char const * const filename, bool co
 
 	return 0;
 }
-void logger_cleanup()
+void logger_cleanup(void)
 {
 	log_info("cleaning logger...");
 	free(g_logger->std_file);
@@ -45,14 +46,10 @@ void logger_cleanup()
 	free(g_logger);
 }
 
-static const char * log_level_strings[] = {
-    "OFF", "[DEBUG]", "[INFO]", "[WARNING]", "[ERROR]",
-};
+static const char * log_level_strings[] = {"OFF", "[DEBUG]", "[INFO]", "[WARNING]", "[ERROR]", "[STACK]"};
 
 #define RESET 0
-const char * colors[] = {
-    "\x1B[0m", "\x1B[34m", "\x1B[32m", "\x1B[33m", "\x1B[31m",
-};
+const char * colors[] = {"\x1B[0m", "\x1B[34m", "\x1B[32m", "\x1B[33m", "\x1B[31m", "\x1B[36m"};
 
 static void get_datetime(FILE * fptr)
 {
@@ -98,6 +95,7 @@ void logger_log(logger_level_t const level, char const * const file, size_t cons
 	case INFO:
 	case WARNING:
 	case ERROR:
+	case STACK:
 		fp = stdout; // logging by ">" or "|" (for some weird reason,
 			     // idk)
 	};
@@ -108,4 +106,22 @@ void logger_log(logger_level_t const level, char const * const file, size_t cons
 	va_start(argp, fmt);
 	vfprintf(fp, fmt, argp);
 	fprintf(fp, "\n");
+}
+
+void __print_trace(void)
+{
+	void * array[10];
+	char ** strings;
+	int size;
+
+	size = backtrace(array, 10);
+	strings = backtrace_symbols(array, size);
+	if (strings != NULL) {
+
+		log_stack("Obtained %d stack frames.", size);
+		for (int i = 0; i < size; i++)
+			log_stack("%s", strings[i]);
+	}
+
+	free(strings);
 }

@@ -43,7 +43,7 @@ incdir = include_directories('include/')
 
 libmin = static_library('min', sources, dependencies: dep_list, include_directories: incdir)
 
-executable('minide', [sources, 'src/main.c'], link_with: [libmin], dependencies: dep_list, include_directories: incdir)
+executable('minide', [sources, 'src/main.c'], link_with: [libmin], link_args: '-rdynamic', dependencies: dep_list, include_directories: incdir)
 
 # tests
 
@@ -69,6 +69,6 @@ unit_tests = ['u8str_get_bytes_needed_for',
 foreach unit_test : unit_tests
   e = executable('test_' + unit_test, 'tests/' + unit_test + '.c',
     link_with: libmin, dependencies: dep_list, d_unittest: true,
-    override_options: ['b_pie=true'], include_directories: incdir)
+    override_options: ['b_pie=true'], link_args: '-rdynamic', include_directories: incdir)
   test(unit_test, e)
 endforeach
