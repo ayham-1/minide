@@ -1,6 +1,5 @@
 ## To Do
 
-- reallocs log_info should be log_debug
 - add threading to font rendering
 
 ## Doing
@@ -17,3 +16,4 @@
 - fonts: add fonts.c and use it in text_renderer
 - shaper: do emoji & text rendering
 - add backtraces to log_error
+- reallocs log_info should be log_debug

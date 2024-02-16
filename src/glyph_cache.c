@@ -48,7 +48,6 @@ bool glyph_cache_create(glyph_cache * cache, FT_Face font_face, size_t capacity,
 	__glyph_cache_atlas_refill_gpu(cache);
 
 	cache->atexID = texture_lender_request();
-	log_info("created new glyph_cache, atexID: %d", cache->atexID);
 
 	// hash_table_debug(&cache->table, __glyph_cache_table_printer);
 
@@ -73,7 +72,7 @@ DATA_TYPE * glyph_cache_retrieve(glyph_cache * cache, KEY_TYPE glyphid)
 
 	if (!hash_table_get(&cache->table, (uint8_t *)&glyphid, &entry)) {
 		info = glyph_cache_append(cache, glyphid);
-		log_warn("glyphid %li was not in cache, attempted to cache", glyphid);
+		log_debug("glyphid %li was not in cache, attempted to cache", glyphid);
 		__glyph_cache_atlas_append(cache, info);
 	} else {
 		info = (DATA_TYPE *)entry->data;
@@ -106,8 +105,6 @@ DATA_TYPE * glyph_cache_append(glyph_cache * cache, KEY_TYPE glyphid)
 		for (size_t i = 0; i < cache->fullness; i++) {
 			hash_table_insert(&cache->table, (void *)&cache->keys[i], (void *)&cache->data[i]);
 		}
-
-		log_info("cache full, attempted realloc");
 	}
 	DATA_TYPE * info = &cache->data[cache->fullness];
 	cache->keys[cache->fullness] = glyphid;
