@@ -1,9 +1,11 @@
 ## To Do
 
 - add threading to font rendering
+- add INPUT_H
 
 ## Doing
 
+- fix emoji detection
 
 ## Done
 

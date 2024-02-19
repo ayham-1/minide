@@ -282,7 +282,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 
 void __text_renderer_calculate_line_wraps(text_render_config * const conf)
 {
-	// TODO(ayham): requires character length and not UTF16 codepoint length
+	// TODO(ayham): take into consideration newlines and newlinefeeds
 
 	if (conf->wrap_runs_dat && conf->wrap_runs_cnt)
 		return; // already computed
@@ -311,19 +311,19 @@ void __text_renderer_calculate_line_wraps(text_render_config * const conf)
 		goto calc_wrap_bidi_end;
 	}
 
-	ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz, conf->base_direction, NULL, &u_error);
+	ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz + 1, conf->base_direction, NULL, &u_error);
 
 	if (U_FAILURE(u_error)) {
 		log_error("failed ubidi_setPara");
 		goto calc_wrap_bidi_end;
 	}
 
-	UBiDi * bidi_line = ubidi_openSized(conf->str_sz, 0, &u_error);
-	if (bidi_line == NULL) {
+	UBiDi * bidi_line = ubidi_openSized(conf->utf16_sz, 0, &u_error);
+	if (U_FAILURE(u_error)) {
 		log_error("ubidi_openSized failed");
 		goto calc_wrap_bidi_end;
 	}
-	ubidi_setLine(bidi, 0, conf->utf16_sz, bidi_line, &u_error);
+	ubidi_setLine(bidi, 0, conf->utf16_sz - 1, bidi_line, &u_error);
 	if (U_FAILURE(u_error)) {
 		log_error("failed ubidi_setLine, error_code: %i", u_error);
 		goto calc_wrap_bidi_end;

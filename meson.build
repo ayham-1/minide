@@ -64,7 +64,8 @@ unit_tests = ['u8str_get_bytes_needed_for',
   'hash_table_get',
 
   'text_renderer',
-  'text_renderer_emoji']
+  'text_renderer_emoji',
+  'unicode_emoji']
 
 foreach unit_test : unit_tests
   e = executable('test_' + unit_test, 'tests/' + unit_test + '.c',

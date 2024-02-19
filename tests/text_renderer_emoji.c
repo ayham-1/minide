@@ -26,15 +26,20 @@ gl_wrapper_config_t config = (gl_wrapper_config_t){
 
 #define TEST_DATA "😘😘😘🤐🤔🫡🫨😌😔😴"
 #define TEST_DATA2 "hello 😘😘😘🤐 hello world 🤔🫡🫨😌😔😴 world"
-#define TEST_DATA_SEQ "##️⃣**️⃣00️⃣11️⃣22️⃣33️⃣44️⃣55️⃣66️⃣77️⃣88️⃣99️⃣10🔟"
-#define TEST_DATA_FLAGS "🇩🇪germany 🇬🇧uk 🇵🇸🏁🇸🇯🇹🇷🇸🇾"
-#define TEST_DATA_COMBO "🤣😂👩🏻‍🦱🖖🏾👧🏽👩🏻‍🦲"
+#define TEST_DATA_MODIFIERS "🖖🏾👧🏽🖖🏾"
+#define TEST_DATA_KEYCAPS "##️⃣**️⃣00️⃣11️⃣22️⃣33️⃣44️⃣55️⃣66️⃣77️⃣88️⃣99️⃣10🔟"
+#define TEST_DATA_FLAGS "🇩🇪germany 🇬🇧uk 🇵🇸🏁🇸🇯🇹🇷🇸🇾🇾"
+#define TEST_DATA_EMOJI_AS_TEXT "☂︎☂️"
+#define TEST_DATA_ZWJ "👋🏼🤚🏿🫷🏿🖕🏿"
 
 text_renderer_t renderer;
 text_render_config conf1;
 text_render_config conf2;
 text_render_config conf3;
 text_render_config conf4;
+text_render_config conf5;
+text_render_config conf6;
+text_render_config conf7;
 
 void gl_wrapper_init()
 {
@@ -78,21 +83,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_SEQ,
-
-	    .origin_x = offset_x,
-	    .origin_y = offset_y,
-	};
-
-	offset_y -= 25;
-	conf3 = (text_render_config){
-	    .renderer = &renderer,
-
-	    .wrappable = false,
-	    .max_line_width_chars = 100,
-	    .base_direction = UBIDI_DEFAULT_LTR,
-
-	    .str = (byte_t *)&TEST_DATA_FLAGS,
+	    .str = (byte_t *)&TEST_DATA_MODIFIERS,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,
@@ -106,7 +97,49 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_COMBO,
+	    .str = (byte_t *)&TEST_DATA_KEYCAPS,
+
+	    .origin_x = offset_x,
+	    .origin_y = offset_y,
+	};
+
+	offset_y -= 25;
+	conf5 = (text_render_config){
+	    .renderer = &renderer,
+
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
+
+	    .str = (byte_t *)&TEST_DATA_FLAGS,
+
+	    .origin_x = offset_x,
+	    .origin_y = offset_y,
+	};
+
+	offset_y -= 25;
+	conf6 = (text_render_config){
+	    .renderer = &renderer,
+
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
+
+	    .str = (byte_t *)&TEST_DATA_EMOJI_AS_TEXT,
+
+	    .origin_x = offset_x,
+	    .origin_y = offset_y,
+	};
+
+	offset_y -= 25;
+	conf7 = (text_render_config){
+	    .renderer = &renderer,
+
+	    .wrappable = false,
+	    .max_line_width_chars = 100,
+	    .base_direction = UBIDI_DEFAULT_LTR,
+
+	    .str = (byte_t *)&TEST_DATA_ZWJ,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,
@@ -120,8 +153,11 @@ void gl_wrapper_render()
 	text_renderer_do(&conf3);
 	text_renderer_do(&conf3);
 	text_renderer_do(&conf4);
+	text_renderer_do(&conf5);
+	text_renderer_do(&conf6);
+	text_renderer_do(&conf7);
 
-	config.gl_wrapper_do_close = true;
+	// config.gl_wrapper_do_close = true;
 }
 
 void gl_wrapper_clean()
@@ -130,6 +166,9 @@ void gl_wrapper_clean()
 	text_renderer_undo(&conf2);
 	text_renderer_undo(&conf3);
 	text_renderer_undo(&conf4);
+	text_renderer_undo(&conf5);
+	text_renderer_undo(&conf6);
+	text_renderer_undo(&conf7);
 
 	text_renderer_cleanup(&renderer);
 }

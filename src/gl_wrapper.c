@@ -137,6 +137,9 @@ void __glfw_key_callback(GLFWwindow * window, int key, int scancode, int action,
 
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+	if (key == GLFW_KEY_Z && action == GLFW_PRESS)
+		log_info("GLFW_KEY_Z");
 }
 
 void __glfw_size_callback(GLFWwindow * window, int width, int height)

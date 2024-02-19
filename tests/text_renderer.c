@@ -34,6 +34,7 @@ gl_wrapper_config_t config = (gl_wrapper_config_t){
 #define TEST_DATA_ENGLISH_MIXED "hello عالم world"
 #define TEST_DATA_ARABIC_MIXED "مرحبا world بالعالم"
 #define TEST_DATA_ARABIC_ONLY "مرحبا بالعالم"
+#define TEST_DATA_NEW_LINE "hello world\?nhello ? world?"
 
 #define TEST_DATA_LINE_WRAPPING_STANDARD "WRAP TEST STANDARD 1 WRAP TEST STANDARD 2 WRAP TEST STANDARD 3 #END#"
 #define TEST_DATA_LINE_WRAPPING_OVERFLOW                                                                               \
@@ -63,6 +64,7 @@ text_render_config conf6;
 text_render_config conf7;
 text_render_config conf8;
 text_render_config conf9;
+text_render_config conf10;
 
 void gl_wrapper_init()
 {
@@ -185,6 +187,19 @@ void gl_wrapper_init()
 	    .origin_x = 750,
 	    .origin_y = begin_y,
 	};
+
+	conf10 = (text_render_config){
+	    .renderer = &renderer,
+
+	    .wrappable = false,
+	    .max_line_width_chars = 20,
+	    .base_direction = UBIDI_DEFAULT_LTR,
+
+	    .str = (byte_t *)&TEST_DATA_NEW_LINE,
+
+	    .origin_x = 950,
+	    .origin_y = begin_y,
+	};
 }
 
 void gl_wrapper_render()
@@ -201,7 +216,9 @@ void gl_wrapper_render()
 	text_renderer_do(&conf8);
 	text_renderer_do(&conf9);
 
-	config.gl_wrapper_do_close = true;
+	text_renderer_do(&conf10);
+
+	// config.gl_wrapper_do_close = true;
 }
 
 void gl_wrapper_clean()

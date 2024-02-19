@@ -44,6 +44,6 @@ shaper_font_run_t __shaper_make_run(font_t * font, hb_glyph_info_t * restrict in
 				    int glyph_count);
 void __shaper_clean_run(shaper_font_run_t * run);
 
-bool __shaper_is_char_emoji(UChar * c, size_t offset, size_t length);
+bool __shaper_is_char_emoji(UChar * c, size_t offset, size_t length, size_t * new_offset);
 
 #endif

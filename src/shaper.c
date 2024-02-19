@@ -21,13 +21,16 @@ void shaper_do(shaper_holder * holder)
 
 	size_t run_end = 0;
 	while (run_end < holder->logical_length) {
-		bool is_emoji_run = __shaper_is_char_emoji(holder->utf16_str, run_end, holder->logical_length);
 		int run_start = run_end;
+		bool is_emoji_run = __shaper_is_char_emoji(holder->utf16_str, run_end, holder->logical_length, NULL);
 
+		size_t new_run_end = 0;
 		while (run_end < holder->logical_length &&
-		       __shaper_is_char_emoji(holder->utf16_str, run_end, holder->logical_length) == is_emoji_run) {
-			UChar32 cpoint;
-			U16_NEXT(holder->utf16_str, run_end, holder->logical_length, cpoint);
+		       __shaper_is_char_emoji(holder->utf16_str, run_end, holder->logical_length, &new_run_end) ==
+			   is_emoji_run) {
+			// __shaper_is_char_emoji() modifies run_end, advancing it,
+			// this makes it so that emoji sequences are not mid-sliced into segments
+			run_end = new_run_end;
 		}
 
 		if (is_emoji_run) {
@@ -126,7 +129,6 @@ void __shaper_add_run(shaper_holder * holder, shaper_font_run_t run)
 		holder->runs =
 		    (shaper_font_run_t *)realloc(holder->runs, 2 * holder->runs_capacity * sizeof(shaper_font_run_t));
 		holder->runs_capacity *= 2;
-		log_info("shaper runs full, attempted realloc");
 	}
 
 	holder->runs[holder->runs_fullness++] = run;
@@ -157,89 +159,91 @@ void __shaper_clean_run(shaper_font_run_t * run)
 	run->glyph_count = 0;
 }
 
-bool __shaper_is_char_emoji(UChar * c, size_t offset, size_t length)
+#define EMOJI_AS_TEXT_SELECTOR 0xFE0E
+#define EMOJI_AS_EMOJI_SELECTOR 0xFE0F
+
+#define EMOJI_KEYCAP_MOD_1 EMOJI_AS_EMOJI_SELECTOR
+#define EMOJI_KEYCAP_MOD_2 0x20E3
+
+bool __shaper_is_char_emoji(UChar * c, size_t offset, size_t length, size_t * new_offset)
 {
-	UChar32 cpoint;
-	U16_NEXT(c, offset, length, cpoint);
+	/*
+	 * (ayham-1):
+	 * this function tests against multiple characters for emoji sequences,
+	 * as such U16_NEXT() will be called multiple times. However, this function
+	 * returns the valid offset right after the last emoji in the string. As such,
+	 * U16_NEXT()'s operation on the offset *will* need to be "reverted".
+	 * new_offset only used if it is not NULL, and is set to the latest emoji
+	 * logical item
+	 * */
 
-	// log_var(cpoint);
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_EMOJI));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_BASIC_EMOJI));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_EMOJI_COMPONENT));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_EMOJI_PRESENTATION));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_EMOJI_MODIFIER));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_EMOJI_MODIFIER_BASE));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_EMOJI_KEYCAP_SEQUENCE));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_EXTENDED_PICTOGRAPHIC));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_REGIONAL_INDICATOR));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI_MODIFIER_SEQUENCE));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI_TAG_SEQUENCE));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI_ZWJ_SEQUENCE));
-	// log_var(u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI_FLAG_SEQUENCE));
+	bool answer = false;
+	bool emoji_character = false;
+	bool emoji_modifier_sequence = false;
+	bool emoji_presentation_sequence = false;
 
-	if (u_hasBinaryProperty(cpoint, UCHAR_EMOJI_KEYCAP_SEQUENCE)) {
-		return true;
+	UChar32 c1, c2;
+	U16_NEXT(c, offset, length, c1);
+
+	if (u_hasBinaryProperty(c1, UCHAR_BASIC_EMOJI) || u_hasBinaryProperty(c1, UCHAR_EXTENDED_PICTOGRAPHIC)) {
+		U16_GET(c, 0, offset, length, c2);
+		if (EMOJI_AS_TEXT_SELECTOR == c2) {
+			U16_NEXT(c, offset, length, c2);
+			answer = false;
+		} else {
+			if (EMOJI_AS_EMOJI_SELECTOR == c2) {
+				U16_NEXT(c, offset, length, c2);
+				emoji_presentation_sequence = true;
+			}
+			answer = true;
+			emoji_character = true;
+		}
+	} else if (u_hasBinaryProperty(c1, UCHAR_EMOJI_MODIFIER_BASE)) {
+		U16_GET(c, 0, offset, length, c2);
+		if (u_hasBinaryProperty(c2, UCHAR_EMOJI_MODIFIER)) {
+			answer = true;
+			emoji_modifier_sequence = true;
+			do {
+				U16_NEXT(c, offset, length, c2);
+				// U16_GET(c, 0, offset, length, c2);
+			} while (u_hasBinaryProperty(c2, UCHAR_EMOJI_MODIFIER));
+		}
+	} else if ((c1 <= 0x39 && c1 >= 0x30) || c1 == 0x2a || c1 == 0x23) {
+		U16_GET(c, 0, offset, length, c2);
+		if (EMOJI_KEYCAP_MOD_1 == c2) {
+			U16_GET(c, 0, offset + 1, length, c2);
+			if (EMOJI_KEYCAP_MOD_2 == c2) {
+				U16_NEXT(c, offset, length, c2);
+				U16_NEXT(c, offset, length, c2);
+				answer = true;
+			}
+		}
+	} else if (u_hasBinaryProperty(c1, UCHAR_REGIONAL_INDICATOR)) {
+		U16_GET(c, 0, offset, length, c2);
+		if (u_hasBinaryProperty(c2, UCHAR_REGIONAL_INDICATOR)) {
+			U16_NEXT(c, offset, length, c2);
+		}
+		answer = true;
 	}
 
-	if (u_hasBinaryProperty(cpoint, UCHAR_EMOJI_PRESENTATION)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_EMOJI_MODIFIER_BASE)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_EMOJI_MODIFIER)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_EXTENDED_PICTOGRAPHIC)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI_FLAG_SEQUENCE)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI_MODIFIER_SEQUENCE)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI_ZWJ_SEQUENCE)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI_TAG_SEQUENCE)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_RGI_EMOJI)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_REGIONAL_INDICATOR)) {
-		return true;
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_EMOJI) && u_hasBinaryProperty(cpoint, UCHAR_BASIC_EMOJI) &&
-	    !u_hasBinaryProperty(cpoint, UCHAR_EMOJI_COMPONENT)) {
-		return true; // basic emoji
-	}
-
-	if (u_hasBinaryProperty(cpoint, UCHAR_EMOJI) && u_hasBinaryProperty(cpoint, UCHAR_EMOJI_COMPONENT) &&
-	    !u_hasBinaryProperty(cpoint, UCHAR_BASIC_EMOJI)) {
-		U16_NEXT(c, offset, length, cpoint);
-		if (u_hasBinaryProperty(cpoint,
-					UCHAR_EMOJI_COMPONENT) /*&& !u_hasBinaryProperty(cpoint, UCHAR_EMOJI)*/) {
-			return true; // sequence emoji start
+	if (emoji_character || emoji_modifier_sequence || emoji_presentation_sequence) {
+#define TAG_SPEC_BEGIN 0xE0020
+#define TAG_SPEC_END 0xE007E
+#define ZWJ_ELEM 0x200d
+		U16_GET(c, 0, offset, length, c2);
+		answer = true;
+		if (0xE007F == c2 || (c2 <= TAG_SPEC_END && c2 >= TAG_SPEC_BEGIN)) {
+			// tag sequences
+			do {
+				U16_NEXT(c, offset, length, c2);
+			} while (0xE007F == c2 || (c2 <= TAG_SPEC_END && c2 >= TAG_SPEC_BEGIN));
+		} else if (ZWJ_ELEM == c2) {
+			// ZWJ sequences
+			U16_NEXT(c, offset, length, c2);
 		}
 	}
 
-	if (u_hasBinaryProperty(cpoint, UCHAR_EMOJI_COMPONENT) && !u_hasBinaryProperty(cpoint, UCHAR_EMOJI) &&
-	    !u_hasBinaryProperty(cpoint, UCHAR_BASIC_EMOJI)) {
-		return true; // subsequent code points in a sequence
-	}
-
-	return false;
+	if (NULL != new_offset)
+		*new_offset = offset;
+	return answer;
 }
