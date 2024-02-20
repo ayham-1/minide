@@ -5,7 +5,6 @@
 
 ## Doing
 
-- fix emoji detection
 
 ## Done
 
@@ -19,3 +18,5 @@
 - shaper: do emoji & text rendering
 - add backtraces to log_error
 - reallocs log_info should be log_debug
+- fix emoji detection
+- add new line wrapping

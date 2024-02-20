@@ -2,6 +2,8 @@
 
 #include "minide/texture_lender.h"
 
+#include "minide/helpers/icu_checker.h"
+
 #include <assert.h>
 
 #include <unicode/ubrk.h>
@@ -51,9 +53,9 @@ void text_renderer_undo(text_render_config * const conf)
 	free(conf->utf16_str);
 	conf->utf16_str = NULL;
 
-	free(conf->wrap_runs_dat);
-	conf->wrap_runs_cnt = 0;
-	conf->wrap_runs_dat = NULL;
+	free(conf->lines);
+	conf->lines = NULL;
+	conf->lines_cnt = 0;
 
 	free(conf->it_char);
 	conf->it_char = NULL;
@@ -69,90 +71,86 @@ void text_renderer_do(text_render_config * const conf)
 		conf->str_sz = strlen((char *)conf->str);
 	}
 
-	UErrorCode u_error_code = U_ZERO_ERROR;
+	UErrorCode u_error = U_ZERO_ERROR;
 
 	if (conf->utf16_str == NULL) {
 		// ICU UBiDi requires UTF-16 strings
-		u_strFromUTF8(NULL, 0, (int32_t *)&conf->utf16_sz, (char *)conf->str, (int32_t)conf->str_sz,
-			      &u_error_code);
-		u_error_code = U_ZERO_ERROR;
+		u_strFromUTF8(NULL, 0, (int32_t *)&conf->utf16_sz, (char *)conf->str, (int32_t)conf->str_sz, &u_error);
+		u_error = U_ZERO_ERROR;
 
 		conf->utf16_str = malloc(sizeof(UChar) * (conf->utf16_sz));
 		int32_t utf16_written = 0;
-		u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written, (char *)conf->str, (int32_t)conf->str_sz,
-			      &u_error_code);
-		if (U_FAILURE(u_error_code)) {
-			log_error("u_strFromUTF8 failed, error_code: %i", u_error_code);
-			return;
-		}
+		// u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written, (char *)conf->str,
+		// (int32_t)conf->str_sz, &u_error_code);
+		// if (U_FAILURE(u_error_code)) {
+		//	log_error("u_strFromUTF8 failed, error_code: %i", u_error_code);
+		//	return;
+		// }
+		ICU_CHECK_FAIL(u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written, (char *)conf->str,
+					     (int32_t)conf->str_sz, &u_error),
+			       clean_utf16_str);
 		assert(conf->utf16_sz == utf16_written);
 	}
 
-	UBiDi * bidi = ubidi_openSized(0, 0, &u_error_code);
+	UBiDi * bidi = ICU_CHECK_FAIL(ubidi_openSized(0, 0, &u_error), clean_utf16_str);
 
-	if (bidi == NULL) {
-		log_error("ubidi_openSized failed");
-		return;
-	}
+	// if (U_FAILURE(u_error)) {
+	//	log_error("ubidi_openSized failed");
+	//	return;
+	// }
 
-	ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz, conf->base_direction, NULL, &u_error_code);
+	ICU_CHECK_FAIL(
+	    ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz, conf->base_direction, NULL, &u_error),
+	    clean_bidi);
 
-	if (U_FAILURE(u_error_code)) {
-		log_error("failed ubidi_setPara");
-		return;
-	}
+	//	if (U_FAILURE(u_error)) {
+	//		log_error("failed ubidi_setPara");
+	//		return;
+	//	}
+	//
+	//__text_renderer_calculate_line_char_width(conf);
+	//__text_renderer_calculate_line_wraps(conf);
+	__text_renderer_calculate_lines(conf);
 
-	// UBiDiLevel level = ubidi_getParaLevel(bidi);
-	__text_renderer_calculate_line_char_width(conf);
-	__text_renderer_calculate_line_wraps(conf);
+	int32_t start = 0, end = 0, line_number = 0;
+	while (line_number < conf->lines_cnt) {
+		// get logical end of line to render
+		__text_renderer_get_line_break(conf, line_number, &start, &end);
 
-	if (conf->char_num <= conf->max_line_width_chars) {
-		__text_renderer_line(bidi, conf, 0, &u_error_code);
-	} else {
-		UBiDi * line = ubidi_openSized(conf->str_sz, 0, &u_error_code);
-		if (line == NULL) {
-			log_error("ubidi_openSized failed");
-			return;
+		UBiDi * line = ICU_CHECK_FAIL(ubidi_openSized(0, 0, &u_error), clean_bidi);
+		ICU_CHECK_FAIL(ubidi_setLine(bidi, start, end, line, &u_error), setLine_debug);
+		if (U_FAILURE(u_error)) {
+		setLine_debug:
+			log_debug("start: %i", start);
+			log_debug("end: %i", end);
+			log_debug("length: %i", end - start);
+			log_debug("line number: %i", line_number);
+			log_debug("max lines: %i", conf->lines_cnt);
+			log_var(conf->utf16_sz);
+			goto clean_bidi;
 		}
+		__text_renderer_line(line, conf, start, &u_error);
+		__text_renderer_new_line(conf);
 
-		int32_t start = 0, end = 0, line_number = 0;
-		while (line_number < conf->wrap_runs_cnt) {
-			// get logical end of line to render
-			__text_renderer_get_line_break(conf, line_number, &start, &end);
-
-			ubidi_setLine(bidi, start, end, line, &u_error_code);
-			if (U_FAILURE(u_error_code)) {
-				log_error("failed ubidi_setLine, error_code: %i", u_error_code);
-				log_debug("start: %i", start);
-				log_debug("end: %i", end);
-				log_debug("length: %i", end - start);
-				log_debug("line number: %i", line_number);
-				break;
-			}
-			__text_renderer_line(line, conf, start, &u_error_code);
-			__text_renderer_new_line(conf);
-
-			start = end;
-			line_number++;
-		}
-		ubidi_close(line);
+		start = end;
+		line_number++;
 	}
 
+clean_bidi:
 	ubidi_close(bidi);
+
+	return;
+
+clean_utf16_str:
+	free(conf->utf16_str);
+	conf->utf16_sz = 0;
 }
 
 void __text_renderer_line(UBiDi * line, text_render_config * const conf, int32_t logical_line_offset,
 			  UErrorCode * error_code)
 {
-	if (U_FAILURE(*error_code)) {
-		log_error("__text_renderer_line passed-in failure error_code: %i", *error_code);
-		return;
-	}
+	assert(U_SUCCESS(*error_code));
 
-	if (U_FAILURE(*error_code)) {
-		log_error("failed to run ubidi_getDirection, error_code: %i", *error_code);
-		return;
-	}
 	size_t count_runs = ubidi_countRuns(line, error_code);
 	int32_t logical_start = 0, length = 0;
 	for (size_t i = 0; i < count_runs; i++) {
@@ -280,56 +278,78 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 	shaper_undo(&holder);
 }
 
-void __text_renderer_calculate_line_wraps(text_render_config * const conf)
+void __text_renderer_calculate_lines(text_render_config * const conf)
 {
 	// TODO(ayham): take into consideration newlines and newlinefeeds
-
-	if (conf->wrap_runs_dat && conf->wrap_runs_cnt)
+	if (conf->lines && conf->lines_cnt)
 		return; // already computed
 
-	if (conf->max_line_width_chars >= conf->char_num) {
-		conf->wrap_runs_cnt = 0;
-		conf->wrap_runs_dat = NULL;
-		return;
-	}
-
 	UErrorCode u_error = U_ZERO_ERROR;
-	UBreakIterator * it_line = ubrk_open(UBRK_LINE, NULL, conf->utf16_str, conf->utf16_sz - 1, &u_error);
+	conf->para = ICU_CHECK_FAIL(ubidi_openSized(0, 0, &u_error), no_clean);
 
-	if (U_FAILURE(u_error)) {
-		log_error("failed ubrk_open for line wrap, error_code: %i", u_error);
-	}
-
-	ubrk_first(it_line);
-	int32_t logical_start = 0, logical_end = 0;
-
-	// ubidi for counting conf->max_line_width_chars as visual chars
-	UBiDi * bidi = ubidi_openSized(0, 0, &u_error);
-
-	if (bidi == NULL) {
-		log_error("ubidi_openSized failed");
-		goto calc_wrap_bidi_end;
-	}
-
-	ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz + 1, conf->base_direction, NULL, &u_error);
-
-	if (U_FAILURE(u_error)) {
-		log_error("failed ubidi_setPara");
-		goto calc_wrap_bidi_end;
-	}
-
-	UBiDi * bidi_line = ubidi_openSized(conf->utf16_sz, 0, &u_error);
-	if (U_FAILURE(u_error)) {
-		log_error("ubidi_openSized failed");
-		goto calc_wrap_bidi_end;
-	}
-	ubidi_setLine(bidi, 0, conf->utf16_sz - 1, bidi_line, &u_error);
-	if (U_FAILURE(u_error)) {
-		log_error("failed ubidi_setLine, error_code: %i", u_error);
-		goto calc_wrap_bidi_end;
-	}
+	ICU_CHECK_FAIL(ubidi_setPara(conf->para, conf->utf16_str, conf->utf16_sz, conf->base_direction, NULL, &u_error),
+		       clean_para);
 
 	bool mem_run = true;
+	int32_t total_count = 0;
+	int32_t current_line = 0;
+line_calcs_start:
+	for (int32_t line_start = 0; line_start < conf->utf16_sz;) {
+		int32_t line_end = line_start;
+		while (line_end < conf->utf16_sz && '\n' != conf->utf16_str[line_end++])
+			;
+
+		line_indices_t line;
+		line.start = line_start;
+		line.end = ('\n' == conf->utf16_str[line_end - 1]) ? line_end - 1 : line_end;
+		int32_t cnt = 0;
+
+		if (mem_run) {
+			__text_renderer_calculate_soft_wraps(conf, line, &cnt, NULL);
+		} else {
+			__text_renderer_calculate_soft_wraps(conf, line, &cnt, &conf->lines[current_line]);
+			current_line += cnt;
+		}
+
+		if (0 == cnt) {
+			log_error("something bad happened");
+			exit(1);
+		}
+		total_count += cnt;
+
+		line_start = line_end;
+	}
+
+	if (mem_run) {
+		conf->lines_cnt = total_count;
+		conf->lines = calloc(conf->lines_cnt, sizeof(line_indices_t));
+
+		mem_run = false;
+		goto line_calcs_start;
+	}
+
+clean_para:
+	ubidi_close(conf->para);
+
+no_clean:;
+}
+
+void __text_renderer_calculate_soft_wraps(text_render_config * const conf, line_indices_t line, int32_t * cnt,
+					  line_indices_t * arr_start)
+{
+	assert(cnt);
+	int32_t sz = line.end - line.start;
+
+	UErrorCode u_error = U_ZERO_ERROR;
+	UBreakIterator * it_line =
+	    ICU_CHECK_FAIL(ubrk_open(UBRK_LINE, NULL, conf->utf16_str + line.start, sz, &u_error), no_clean);
+
+	ubrk_first(it_line);
+
+	UBiDi * bidi_line = ICU_CHECK_FAIL(ubidi_openSized(0, 0, &u_error), clean_it_bidi);
+	ICU_CHECK_FAIL(ubidi_setLine(conf->para, line.start, line.end, bidi_line, &u_error), clean_wrap_bidi);
+
+	bool mem_run = (arr_start == NULL);
 	int32_t bidi_result_length = ubidi_getResultLength(bidi_line);
 	int32_t * vis2log_map = calloc(bidi_result_length, sizeof(int32_t));
 	int32_t * log2vis_map = calloc(bidi_result_length, sizeof(int32_t));
@@ -339,30 +359,17 @@ void __text_renderer_calculate_line_wraps(text_render_config * const conf)
 		exit(1);
 	}
 
-	ubidi_getVisualMap(bidi_line, vis2log_map, &u_error);
-	if (U_FAILURE(u_error)) {
-		log_var(vis2log_map);
-		log_error("failed ubidi_getVisualMap");
-		log_var(u_error);
-		goto calc_wrap_end;
-	}
-	ubidi_getLogicalMap(bidi_line, log2vis_map, &u_error);
-	if (U_FAILURE(u_error)) {
-		log_var(log2vis_map);
-		log_error("failed ubidi_getIndexMap");
-		log_var(u_error);
-		goto calc_wrap_end;
-	}
+	ICU_CHECK_FAIL(ubidi_getVisualMap(bidi_line, vis2log_map, &u_error), clean_wrap_mem);
+	ICU_CHECK_FAIL(ubidi_getLogicalMap(bidi_line, log2vis_map, &u_error), clean_wrap_mem);
 
 	int32_t lines = 0;
 	int32_t length = ubidi_getLength(bidi_line);
 
-	bool is_it_line_empty = ubrk_first(it_line) == 0 && ubrk_next(it_line) == conf->utf16_sz - 1;
+	bool is_it_line_empty = ubrk_first(it_line) == 0 && ubrk_next(it_line) == (sz - 1);
 
-calc_wrap_run_start:
 	lines = 0;
-	logical_start = 0;
-	logical_end = 0;
+	int32_t logical_start = 0;
+	int32_t logical_end = 0;
 	bool reached_end = false;
 	while (!reached_end) {
 		ubrk_first(it_line);
@@ -373,7 +380,7 @@ calc_wrap_run_start:
 		int32_t margin_logical_end = vis2log_map[margin_visual_end];
 
 		if (length <= margin_visual_end) {
-			final_logical_end = conf->utf16_sz;
+			final_logical_end = line.end - line.start;
 			reached_end = true;
 		} else if (is_it_line_empty) {
 			final_logical_end = margin_logical_end;
@@ -406,27 +413,25 @@ calc_wrap_run_start:
 			final_logical_end = margin_logical_end;
 
 		if (!mem_run) {
-			conf->wrap_runs_dat[lines].start = final_logical_start;
-			conf->wrap_runs_dat[lines].end = final_logical_end;
+			arr_start[lines].start = line.start + final_logical_start;
+			arr_start[lines].end = line.start + final_logical_end;
 		}
 		logical_start = final_logical_end;
 		logical_end = final_logical_end;
 		lines++;
 	}
-	if (!mem_run)
-		goto calc_wrap_end;
 
-	conf->wrap_runs_cnt = lines;
-	conf->wrap_runs_dat = calloc(conf->wrap_runs_cnt, sizeof(wrap_run_indices_t));
-	mem_run = false;
-	goto calc_wrap_run_start;
+	*cnt = lines;
 
-calc_wrap_end:
+clean_wrap_mem:
 	free(vis2log_map);
 	free(log2vis_map);
-calc_wrap_bidi_end:
+
+clean_wrap_bidi:
+	ubidi_close(bidi_line);
+clean_it_bidi:
 	ubrk_close(it_line);
-	return;
+no_clean:;
 }
 
 void __text_renderer_calculate_line_char_width(text_render_config * const conf)
@@ -457,13 +462,13 @@ void __text_renderer_calculate_line_char_width(text_render_config * const conf)
 void __text_renderer_get_line_break(text_render_config * const conf, int32_t line_number, int32_t * out_logical_start,
 				    int32_t * out_logical_end)
 {
-	if (conf->wrap_runs_cnt == 0) {
+	if (0 == conf->lines_cnt) {
 		*out_logical_start = 0;
 		*out_logical_end = conf->utf16_sz;
 		return;
 	}
-	*out_logical_start = conf->wrap_runs_dat[line_number].start;
-	*out_logical_end = conf->wrap_runs_dat[line_number].end;
+	*out_logical_start = conf->lines[line_number].start;
+	*out_logical_end = conf->lines[line_number].end;
 }
 
 void __text_renderer_new_line(text_render_config * const conf)

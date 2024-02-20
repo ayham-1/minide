@@ -34,7 +34,6 @@ gl_wrapper_config_t config = (gl_wrapper_config_t){
 #define TEST_DATA_ENGLISH_MIXED "hello عالم world"
 #define TEST_DATA_ARABIC_MIXED "مرحبا world بالعالم"
 #define TEST_DATA_ARABIC_ONLY "مرحبا بالعالم"
-#define TEST_DATA_NEW_LINE "hello world\?nhello ? world?"
 
 #define TEST_DATA_LINE_WRAPPING_STANDARD "WRAP TEST STANDARD 1 WRAP TEST STANDARD 2 WRAP TEST STANDARD 3 #END#"
 #define TEST_DATA_LINE_WRAPPING_OVERFLOW                                                                               \
@@ -53,6 +52,8 @@ gl_wrapper_config_t config = (gl_wrapper_config_t){
 	"AFORCEFULWRAP#END#"
 
 #define TEST_DATA_CACHE_EXPANSION "HELLO ᙭ WORLD ФϴШՋᏍᓉᔩᗅ˩˨ʯʶΩǞŮŠǅƵҦфъ҂ה੦"
+
+#define TEST_DATA_NEW_LINE "hello world? \nanyone?\nhello ? world?"
 
 text_renderer_t renderer;
 text_render_config conf1;
