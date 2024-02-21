@@ -267,7 +267,6 @@ void __glyph_cache_atlas_append(glyph_cache * cache, DATA_TYPE * info)
 	info->texture_y = cache->alast_offset_y / (float)cache->aheight;
 
 	cache->alast_offset_x += info->bglyph->bitmap.width;
-	// cache->alast_offset_y += info->bglyph->bitmap.rows;
 }
 
 uint64_t __glyph_cache_table_hash(const uint8_t * const key)

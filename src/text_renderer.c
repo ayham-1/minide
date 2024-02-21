@@ -80,12 +80,7 @@ void text_renderer_do(text_render_config * const conf)
 
 		conf->utf16_str = malloc(sizeof(UChar) * (conf->utf16_sz));
 		int32_t utf16_written = 0;
-		// u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written, (char *)conf->str,
-		// (int32_t)conf->str_sz, &u_error_code);
-		// if (U_FAILURE(u_error_code)) {
-		//	log_error("u_strFromUTF8 failed, error_code: %i", u_error_code);
-		//	return;
-		// }
+
 		ICU_CHECK_FAIL(u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written, (char *)conf->str,
 					     (int32_t)conf->str_sz, &u_error),
 			       clean_utf16_str);
@@ -94,22 +89,10 @@ void text_renderer_do(text_render_config * const conf)
 
 	UBiDi * bidi = ICU_CHECK_FAIL(ubidi_openSized(0, 0, &u_error), clean_utf16_str);
 
-	// if (U_FAILURE(u_error)) {
-	//	log_error("ubidi_openSized failed");
-	//	return;
-	// }
-
 	ICU_CHECK_FAIL(
 	    ubidi_setPara(bidi, (UChar *)conf->utf16_str, conf->utf16_sz, conf->base_direction, NULL, &u_error),
 	    clean_bidi);
 
-	//	if (U_FAILURE(u_error)) {
-	//		log_error("failed ubidi_setPara");
-	//		return;
-	//	}
-	//
-	//__text_renderer_calculate_line_char_width(conf);
-	//__text_renderer_calculate_line_wraps(conf);
 	__text_renderer_calculate_lines(conf);
 
 	int32_t start = 0, end = 0, line_number = 0;
@@ -280,7 +263,6 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 
 void __text_renderer_calculate_lines(text_render_config * const conf)
 {
-	// TODO(ayham): take into consideration newlines and newlinefeeds
 	if (conf->lines && conf->lines_cnt)
 		return; // already computed
 
@@ -304,17 +286,19 @@ line_calcs_start:
 		line.end = ('\n' == conf->utf16_str[line_end - 1]) ? line_end - 1 : line_end;
 		int32_t cnt = 0;
 
-		if (mem_run) {
-			__text_renderer_calculate_soft_wraps(conf, line, &cnt, NULL);
-		} else {
-			__text_renderer_calculate_soft_wraps(conf, line, &cnt, &conf->lines[current_line]);
-			current_line += cnt;
+		if (line.end - line.start != 0) {
+			if (mem_run) {
+				__text_renderer_calculate_soft_wraps(conf, line, &cnt, NULL);
+			} else {
+				__text_renderer_calculate_soft_wraps(conf, line, &cnt, &conf->lines[current_line]);
+				current_line += cnt;
+			}
 		}
 
-		if (0 == cnt) {
-			log_error("something bad happened");
-			exit(1);
-		}
+		// if (0 == cnt) {
+		//	log_error("something bad happened");
+		//	exit(1);
+		// }
 		total_count += cnt;
 
 		line_start = line_end;
@@ -341,6 +325,9 @@ void __text_renderer_calculate_soft_wraps(text_render_config * const conf, line_
 	int32_t sz = line.end - line.start;
 
 	UErrorCode u_error = U_ZERO_ERROR;
+	log_var(line.start);
+	log_var(line.end);
+	log_var(sz);
 	UBreakIterator * it_line =
 	    ICU_CHECK_FAIL(ubrk_open(UBRK_LINE, NULL, conf->utf16_str + line.start, sz, &u_error), no_clean);
 
@@ -353,6 +340,7 @@ void __text_renderer_calculate_soft_wraps(text_render_config * const conf, line_
 	int32_t bidi_result_length = ubidi_getResultLength(bidi_line);
 	int32_t * vis2log_map = calloc(bidi_result_length, sizeof(int32_t));
 	int32_t * log2vis_map = calloc(bidi_result_length, sizeof(int32_t));
+	log_var(bidi_result_length);
 
 	if (!vis2log_map || !log2vis_map) {
 		log_error("wow no more memory, sad");
@@ -376,11 +364,14 @@ void __text_renderer_calculate_soft_wraps(text_render_config * const conf, line_
 		int32_t final_logical_start = logical_start;
 		int32_t final_logical_end = logical_end;
 
-		int32_t margin_visual_end = log2vis_map[logical_start] + conf->max_line_width_chars;
+		int32_t margin_visual_end =
+		    log2vis_map[logical_start] + conf->max_line_width_chars; // todo: cap margin_visual_end
+		if (margin_visual_end > sz)
+			margin_visual_end = sz;
 		int32_t margin_logical_end = vis2log_map[margin_visual_end];
 
 		if (length <= margin_visual_end) {
-			final_logical_end = line.end - line.start;
+			final_logical_end = sz;
 			reached_end = true;
 		} else if (is_it_line_empty) {
 			final_logical_end = margin_logical_end;
@@ -440,15 +431,8 @@ void __text_renderer_calculate_line_char_width(text_render_config * const conf)
 		return;
 	UErrorCode u_error = U_ZERO_ERROR;
 
-	conf->it_char = ubrk_open(UBRK_CHARACTER, uloc_getDefault(), conf->utf16_str, conf->utf16_sz, &u_error);
-
-	if (U_FAILURE(u_error)) {
-		log_error("failed ubrk_open for line width, error_code: %i", u_error);
-		// goto no_wrap; // just continue and pray it doesn't break,
-		// can't think of a situation where this may be an issue,
-		// except maybe malloc problems, and i am not going to handle
-		// that :D hopefully won't come back to bite. goodluck!
-	}
+	conf->it_char = ICU_CHECK_FAIL(
+	    ubrk_open(UBRK_CHARACTER, uloc_getDefault(), conf->utf16_str, conf->utf16_sz, &u_error), no_clean);
 
 	conf->char_num = 0;
 	int32_t logical = 0;
@@ -457,6 +441,8 @@ void __text_renderer_calculate_line_char_width(text_render_config * const conf)
 		conf->char_num++;
 	}
 	(void)ubrk_first(conf->it_char);
+
+no_clean:;
 }
 
 void __text_renderer_get_line_break(text_render_config * const conf, int32_t line_number, int32_t * out_logical_start,

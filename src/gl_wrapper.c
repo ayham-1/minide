@@ -2,6 +2,7 @@
 
 #include "minide/font_manager.h"
 #include "minide/fps_counter.h"
+#include "minide/input.h"
 #include "minide/texture_lender.h"
 
 #include <GL/glew.h>
@@ -55,7 +56,7 @@ int main(int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	glfwSetKeyCallback(window, __glfw_key_callback);
+	glfwSetKeyCallback(window, __input_glfw_key_callback);
 	glfwSetWindowSizeCallback(window, __glfw_size_callback);
 
 	glfwMakeContextCurrent(window);
@@ -95,7 +96,7 @@ int main(int argc, char * argv[])
 			fps_counter_render();
 
 		glfwSwapBuffers(window);
-		glfwWaitEvents();
+		glfwPollEvents();
 
 		if (config.scr_target_fps && glfwGetTime() < frameStartTime + 1.0 / config.scr_target_fps) {
 			sleep(glfwGetTime() - (frameStartTime + 1.0 / config.scr_target_fps));
@@ -161,6 +162,7 @@ void __gl_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
 		log_error("__gl_callback: %s type = 0x%x, severity = 0x%x, "
 			  "message = %s\n",
 			  "** GL ERROR **", type, severity, message);
+		exit(1);
 	} else {
 		log_warn("__gl_callback: %s type = 0x%x, severity = 0x%x, "
 			 "message = %s\n",

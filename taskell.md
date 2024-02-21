@@ -1,10 +1,10 @@
 ## To Do
 
 - add threading to font rendering
-- add INPUT_H
 
 ## Doing
 
+- add INPUT_H
 
 ## Done
 
@@ -20,3 +20,4 @@
 - reallocs log_info should be log_debug
 - fix emoji detection
 - add new line wrapping
+- add unicode emoji test

@@ -3,6 +3,7 @@ project('minide', 'c',
 
 sources = files([
   'src/gl_wrapper.c',
+  'src/input.c',
   'src/texture_lender.c',
 
   'src/logger.c',

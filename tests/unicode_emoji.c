@@ -62,8 +62,8 @@ void gl_wrapper_init()
 
 	size_t file_size;
 	byte_t * file_contents = read_file("assets/emoji-test-15.1.txt", &file_size);
-	printf("%s", file_contents);
-	file_contents[100] = 0;
+	// printf("%s", file_contents);
+	file_contents[55100] = 0; // currently not optimized for large amounts of text
 
 	int offset_x = 10;
 	int offset_y = config.scr_height - 35;
@@ -85,7 +85,7 @@ void gl_wrapper_init()
 void gl_wrapper_render()
 {
 	text_renderer_do(&conf1);
-	// conf1.origin_y += 5;
+	// conf1.origin_y += 10;
 
 	// config.gl_wrapper_do_close = true;
 }

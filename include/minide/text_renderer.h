@@ -54,7 +54,7 @@ typedef struct {
 	int32_t max_line_width_chars;
 
 	line_indices_t * lines;
-	int32_t lines_cnt;
+	size_t lines_cnt;
 
 	UBiDiDirection base_direction;
 	UBiDi * para;
