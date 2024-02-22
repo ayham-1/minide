@@ -56,7 +56,8 @@ int main(int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	glfwSetKeyCallback(window, __input_glfw_key_callback);
+	input_man_init(window);
+
 	glfwSetWindowSizeCallback(window, __glfw_size_callback);
 
 	glfwMakeContextCurrent(window);

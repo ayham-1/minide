@@ -1,10 +1,12 @@
 ## To Do
 
 - add threading to font rendering
+- optimize text_renderer for paragraph rendering
+- add buffer interface
+- add file_buffer interface
 
 ## Doing
 
-- add INPUT_H
 
 ## Done
 
@@ -21,3 +23,4 @@
 - fix emoji detection
 - add new line wrapping
 - add unicode emoji test
+- add INPUT_H
