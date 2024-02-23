@@ -2,11 +2,11 @@
 
 - add threading to font rendering
 - optimize text_renderer for paragraph rendering
-- add buffer interface
 - add file_buffer interface
 
 ## Doing
 
+- add buffer interface
 
 ## Done
 
