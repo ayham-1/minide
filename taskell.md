@@ -6,7 +6,7 @@
 
 ## Doing
 
-- add buffer interface
+- add file interface
 
 ## Done
 
@@ -24,3 +24,4 @@
 - add new line wrapping
 - add unicode emoji test
 - add INPUT_H
+- add buffer interface
