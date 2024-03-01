@@ -5,7 +5,6 @@
 #include "path.h"
 #include "shaders_util.h"
 #include "types/vector.h"
-#include "u8string.h"
 
 #include "font.h"
 #include "font_manager.h"
@@ -59,8 +58,8 @@ typedef struct {
 	UBiDiDirection base_direction;
 	UBiDi * para;
 
-	byte_t * str;
-	int32_t str_sz;
+	char * utf8_str;
+	int32_t utf8_sz;
 
 	UChar * utf16_str;
 	int32_t utf16_sz;

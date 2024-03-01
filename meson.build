@@ -1,4 +1,4 @@
-project('minide', 'c',
+project('minide', ['c', 'cpp'],
   version: '0.0.1')
 
 sources = files([
@@ -8,7 +8,7 @@ sources = files([
 
   'src/logger.c',
   'src/u8string.c',
-  'src/path.c',
+  'src/path.cpp',
 
   'src/types/hash_table.c',
 
@@ -56,7 +56,7 @@ unit_tests = ['u8str_get_bytes_needed_for',
   'u8str_from_code_point',
   'u8str_is_utf8_valid',
 
-  #'path_expand', this is not needed rn, and needs revisiting
+  'path',
   'fontconfig',
   'glyph_cache',
 

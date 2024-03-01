@@ -16,7 +16,7 @@ static text_render_config conf = {
     .max_line_width_chars = 80,
     .base_direction = UBIDI_RTL,
 
-    .str = NULL,
+    .utf8_str = NULL,
 
     .origin_x = 0,
     .origin_y = 0,
@@ -29,10 +29,10 @@ void fps_counter_init(size_t width, size_t height)
 
 void fps_counter_render()
 {
-	byte_t str[21 * 2];
-	sprintf((char *)str, "%li fps | %f ms/frame", nbFrames, 1000.0f / nbFrames);
+	char str[21 * 2];
+	sprintf(str, "%li fps | %f ms/frame", nbFrames, 1000.0f / nbFrames);
 
-	conf.str = str;
+	conf.utf8_str = str;
 
 	text_renderer_do(&conf);
 }

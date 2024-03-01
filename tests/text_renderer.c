@@ -78,7 +78,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA,
+	    .utf8_str = TEST_DATA,
 
 	    .origin_x = 100,
 	    .origin_y = 100,
@@ -91,7 +91,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_ARABIC_ONLY,
+	    .utf8_str = TEST_DATA_ARABIC_ONLY,
 
 	    .origin_x = 100,
 	    .origin_y = 130,
@@ -104,7 +104,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_ARABIC_MIXED,
+	    .utf8_str = TEST_DATA_ARABIC_MIXED,
 
 	    .origin_x = 100,
 	    .origin_y = 150,
@@ -117,7 +117,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_ENGLISH_MIXED,
+	    .utf8_str = TEST_DATA_ENGLISH_MIXED,
 
 	    .origin_x = 100,
 	    .origin_y = 170,
@@ -130,7 +130,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_CACHE_EXPANSION,
+	    .utf8_str = TEST_DATA_CACHE_EXPANSION,
 
 	    .origin_x = 100,
 	    .origin_y = 190,
@@ -144,7 +144,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 20,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_STANDARD,
+	    .utf8_str = TEST_DATA_LINE_WRAPPING_STANDARD,
 
 	    .origin_x = 50,
 	    .origin_y = begin_y,
@@ -157,7 +157,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 20,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_OVERFLOW,
+	    .utf8_str = TEST_DATA_LINE_WRAPPING_OVERFLOW,
 
 	    .origin_x = 300,
 	    .origin_y = begin_y,
@@ -170,7 +170,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 20,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_WRAP_ON_WORD,
+	    .utf8_str = TEST_DATA_LINE_WRAPPING_WRAP_ON_WORD,
 
 	    .origin_x = 500,
 	    .origin_y = begin_y,
@@ -183,7 +183,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 20,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_LINE_WRAPPING_FORCEFUL,
+	    .utf8_str = TEST_DATA_LINE_WRAPPING_FORCEFUL,
 
 	    .origin_x = 750,
 	    .origin_y = begin_y,
@@ -196,7 +196,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 20,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_NEW_LINE,
+	    .utf8_str = TEST_DATA_NEW_LINE,
 
 	    .origin_x = 950,
 	    .origin_y = begin_y,

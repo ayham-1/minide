@@ -55,7 +55,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA,
+	    .utf8_str = TEST_DATA,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,
@@ -69,7 +69,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA2,
+	    .utf8_str = TEST_DATA2,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,
@@ -83,7 +83,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_MODIFIERS,
+	    .utf8_str = TEST_DATA_MODIFIERS,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,
@@ -97,7 +97,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_KEYCAPS,
+	    .utf8_str = TEST_DATA_KEYCAPS,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,
@@ -111,7 +111,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_FLAGS,
+	    .utf8_str = TEST_DATA_FLAGS,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,
@@ -125,7 +125,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_EMOJI_AS_TEXT,
+	    .utf8_str = TEST_DATA_EMOJI_AS_TEXT,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,
@@ -139,7 +139,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .str = (byte_t *)&TEST_DATA_ZWJ,
+	    .utf8_str = TEST_DATA_ZWJ,
 
 	    .origin_x = offset_x,
 	    .origin_y = offset_y,

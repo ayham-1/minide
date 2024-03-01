@@ -27,7 +27,7 @@ void logger_cleanup(void);
 
 void logger_log(logger_level_t const level, char const * const file, size_t const line, char const * const fmt, ...);
 
-void __print_trace(void);
+void __print_trace();
 
 extern logger_t * g_logger;
 

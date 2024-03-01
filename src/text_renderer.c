@@ -67,22 +67,29 @@ void text_renderer_do(text_render_config * const conf)
 	conf->curr_x = conf->origin_x;
 	conf->curr_y = conf->origin_y;
 
-	if (conf->str_sz == 0) {
-		conf->str_sz = strlen((char *)conf->str);
+	assert(conf->utf8_str || conf->utf16_str);
+
+	if (conf->utf8_str && conf->utf8_sz == 0) {
+		conf->utf8_sz = strlen((char *)conf->utf8_str);
+	}
+
+	if (conf->utf16_str && conf->utf16_sz == 0) {
+		conf->utf16_sz = u_strlen(conf->utf16_str);
 	}
 
 	UErrorCode u_error = U_ZERO_ERROR;
 
 	if (conf->utf16_str == NULL) {
 		// ICU UBiDi requires UTF-16 strings
-		u_strFromUTF8(NULL, 0, (int32_t *)&conf->utf16_sz, (char *)conf->str, (int32_t)conf->str_sz, &u_error);
+		u_strFromUTF8(NULL, 0, (int32_t *)&conf->utf16_sz, (char *)conf->utf8_str, (int32_t)conf->utf8_sz,
+			      &u_error);
 		u_error = U_ZERO_ERROR;
 
 		conf->utf16_str = malloc(sizeof(UChar) * (conf->utf16_sz));
 		int32_t utf16_written = 0;
 
-		ICU_CHECK_FAIL(u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written, (char *)conf->str,
-					     (int32_t)conf->str_sz, &u_error),
+		ICU_CHECK_FAIL(u_strFromUTF8(conf->utf16_str, conf->utf16_sz, &utf16_written, (char *)conf->utf8_str,
+					     (int32_t)conf->utf8_sz, &u_error),
 			       clean_utf16_str);
 		assert(conf->utf16_sz == utf16_written);
 	}
@@ -325,9 +332,6 @@ void __text_renderer_calculate_soft_wraps(text_render_config * const conf, line_
 	int32_t sz = line.end - line.start;
 
 	UErrorCode u_error = U_ZERO_ERROR;
-	log_var(line.start);
-	log_var(line.end);
-	log_var(sz);
 	UBreakIterator * it_line =
 	    ICU_CHECK_FAIL(ubrk_open(UBRK_LINE, NULL, conf->utf16_str + line.start, sz, &u_error), no_clean);
 
@@ -340,7 +344,6 @@ void __text_renderer_calculate_soft_wraps(text_render_config * const conf, line_
 	int32_t bidi_result_length = ubidi_getResultLength(bidi_line);
 	int32_t * vis2log_map = calloc(bidi_result_length, sizeof(int32_t));
 	int32_t * log2vis_map = calloc(bidi_result_length, sizeof(int32_t));
-	log_var(bidi_result_length);
 
 	if (!vis2log_map || !log2vis_map) {
 		log_error("wow no more memory, sad");

@@ -3,10 +3,11 @@
 - add threading to font rendering
 - optimize text_renderer for paragraph rendering
 - add file_buffer interface
+- add path expanding and variable resolving
 
 ## Doing
 
-- add file interface
+- add file manager
 
 ## Done
 
@@ -25,3 +26,4 @@
 - add unicode emoji test
 - add INPUT_H
 - add buffer interface
+- add file interface

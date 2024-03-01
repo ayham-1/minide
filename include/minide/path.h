@@ -5,22 +5,29 @@
 #ifndef PATH_H
 #define PATH_H
 
-#include "logger.h"
-#include "u8string.h"
+#include "minide/logger.h"
 
-typedef struct {
-	string_t fullPath;
-} path_t;
+typedef enum {
+	file_type_none,
+	file_type_not_found,
+	file_type_regular,
+	file_type_directory,
+	file_type_symlink,
+	file_type_block,
+	file_type_character,
+	file_type_fifo,
+	file_type_socket,
+	file_type_unknown,
+} file_type_t;
 
-void path_create(path_t * p, size_t size);
-void path_cleanup(path_t * p);
+bool path_create_file(char * p);
+bool path_create_dir(char * p);
 
-bool path_expand(path_t * p);
-
-bool path_is_real(path_t * p);
-bool path_can_access(path_t * p);
-string_t * path_get_name(path_t * p);
-string_t * path_get_extension(path_t * p);
-string_t * path_get_type(path_t * p);
+bool path_is_real(char * p);
+bool path_can_read(char * p);
+char * path_get_name(char * p);
+char * path_get_extension(char * p);
+char * path_get_absolute(char * p);
+file_type_t path_get_type(char * p);
 
 #endif
