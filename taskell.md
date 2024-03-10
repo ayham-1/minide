@@ -7,7 +7,6 @@
 
 ## Doing
 
-- add file manager
 
 ## Done
 
@@ -27,3 +26,4 @@
 - add INPUT_H
 - add buffer interface
 - add file interface
+- add file manager

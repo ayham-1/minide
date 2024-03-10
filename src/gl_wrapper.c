@@ -1,5 +1,6 @@
 #include "minide/gl_wrapper.h"
 
+#include "minide/file_manager.h"
 #include "minide/font_manager.h"
 #include "minide/fps_counter.h"
 #include "minide/input.h"
@@ -76,6 +77,7 @@ int main(int argc, char * argv[])
 	glDebugMessageCallback(__gl_callback, 0);
 	// #endif
 
+	file_manager_init();
 	texture_lender_init(config.max_textures_available);
 	fonts_man_init();
 
@@ -120,6 +122,7 @@ int main(int argc, char * argv[])
 	gl_wrapper_clean();
 
 	log_info("closing %s...", config.scr_title);
+	file_manager_cleanup();
 	logger_cleanup();
 	glfwDestroyWindow(window);
 	glfwTerminate();
