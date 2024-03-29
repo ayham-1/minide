@@ -4,9 +4,12 @@
 - optimize text_renderer for paragraph rendering
 - add file_buffer interface
 - add path expanding and variable resolving
+- rename text_renderer_t to text_renderer
+- design widget renderer system
 
 ## Doing
 
+- add node buffer viewer
 
 ## Done
 
@@ -27,3 +30,5 @@
 - add buffer interface
 - add file interface
 - add file manager
+- design widget renderer system
+- add vector type

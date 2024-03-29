@@ -5,12 +5,14 @@ sources = files([
   'src/gl_wrapper.c',
   'src/input.c',
   'src/texture_lender.c',
+  'src/file_manager.c',
 
   'src/logger.c',
   'src/u8string.c',
   'src/path.cpp',
 
   'src/types/hash_table.c',
+  'src/types/vector.c',
 
   'src/glyph_cache.c',
   'src/fontconfig.c',
@@ -22,7 +24,10 @@ sources = files([
   'src/shaders_util.c',
   'src/text_renderer.c',
 
-  'src/fps_counter.c'
+  'src/fps_counter.c',
+
+  'src/buffers/meta.c',
+  'src/buffers/node.c'
   ])
 
 dep_list = [

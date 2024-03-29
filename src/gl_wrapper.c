@@ -51,7 +51,13 @@ int main(int argc, char * argv[])
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(config.scr_width, config.scr_height, config.scr_title, NULL, NULL);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+
+	// windows should somehow be dynamically titled?
+	// window = glfwCreateWindow(config.scr_width, config.scr_height, config.scr_title, NULL, NULL);
+	// currently just use minide as title so that the wm can float it correctly
+	window = glfwCreateWindow(config.scr_width, config.scr_height, "minide", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
