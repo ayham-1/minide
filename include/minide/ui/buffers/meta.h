@@ -1,9 +1,11 @@
 #ifndef BUFFER_META_H
 #define BUFFER_META_H
 
-#include "minide/buffers/node.h"
 #include "minide/text_renderer.h"
+#include "minide/ui/buffers/node.h"
+#include "minide/ui/view.h"
 
+#include <GL/glew.h>
 #include <unicode/uchar.h>
 
 typedef struct {
@@ -34,8 +36,7 @@ typedef struct {
 	buffer_lnode * lnodes;
 	size_t lnodes_capacity;
 
-	GLfloat scr_x;
-	GLfloat scr_y;
+	view_t ui;
 
 	// TODO(ayham-1): limit size of view
 	// maybe have a view struct which holds basic "view" UI data

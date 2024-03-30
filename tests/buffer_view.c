@@ -1,5 +1,5 @@
-#include "minide/buffers/meta.h"
 #include "minide/text_renderer.h"
+#include "minide/ui/buffers/meta.h"
 
 #define PATH "assets/unifont.ttf"
 #define PATH_BYTES_NUM sizeof(PATH)
@@ -59,8 +59,11 @@ void gl_wrapper_init()
 	view = (buffer_view){
 	    .renderer = &renderer,
 
-	    .scr_x = 100,
-	    .scr_y = 100,
+	    .ui =
+		(view_t){
+		    .x1 = 200,
+		    .y1 = 200,
+		},
 	};
 
 	buffer_init(&view);

@@ -1,4 +1,4 @@
-#include "minide/buffers/node.h"
+#include "minide/ui/buffers/node.h"
 
 #include <assert.h>
 

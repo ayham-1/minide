@@ -1,4 +1,4 @@
-#include "minide/buffers/meta.h"
+#include "minide/ui/buffers/meta.h"
 
 #include <assert.h>
 
@@ -65,8 +65,8 @@ buffer_lnode * buffer_append_line(buffer_view * view, text_render_config config)
 
 void buffer_render_all(buffer_view * view)
 {
-	GLfloat current_x = view->scr_x;
-	GLfloat current_y = view->scr_y;
+	GLfloat current_x = view->ui.x1;
+	GLfloat current_y = view->ui.y1;
 
 	if (view->nlines && view->lnodes[0].count) {
 		view->lnodes[0].nodes[0].config.origin_x = current_x;
@@ -84,7 +84,7 @@ void buffer_render_all(buffer_view * view)
 			text_renderer_do(&current_node->config);
 			current_x = current_node->config.curr_x;
 		}
-		current_x = view->scr_x;
+		current_x = view->ui.x1;
 		current_y = current_node->config.curr_y;
 	}
 }

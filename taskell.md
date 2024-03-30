@@ -14,7 +14,6 @@
 ## Doing
 
 - fix spacing between lines
-- add view struct
 
 ## Done
 
@@ -40,3 +39,4 @@
 - add node buffer viewer
 - add buffer settings struct
 - fix file_manager double free on closing application
+- add view struct

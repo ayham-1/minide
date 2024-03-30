@@ -26,8 +26,8 @@ sources = files([
 
   'src/fps_counter.c',
 
-  'src/buffers/meta.c',
-  'src/buffers/node.c'
+  'src/ui/buffers/meta.c',
+  'src/ui/buffers/node.c'
   ])
 
 dep_list = [
