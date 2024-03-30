@@ -4,6 +4,7 @@
 
 #define LINES_REALLOC_FACTOR 1.5
 #define LINES_INITIAL_CAPACITY 3
+#define LINES_DEFAULT_WRAP 80
 
 void buffer_init(buffer_view * view)
 {
@@ -13,11 +14,23 @@ void buffer_init(buffer_view * view)
 	view->nlines = 0;
 	view->lnodes_capacity = LINES_INITIAL_CAPACITY;
 	view->lnodes = malloc(sizeof(buffer_lnode) * view->lnodes_capacity);
+
+	if (view->settings.line_wrap_chars == 0) {
+		view->settings.line_wrap_chars = LINES_DEFAULT_WRAP;
+	}
 };
 
 void buffer_clean(buffer_view * view)
 {
-	for (size_t i = 0; i < view->nlines; i++) {
+	for (size_t line_index = 0; line_index < view->nlines; line_index++) {
+		buffer_lnode * current_lnode = &view->lnodes[line_index];
+		for (size_t node_index = 0; node_index < current_lnode->count; node_index++) {
+			buffer_node * current_node = &current_lnode->nodes[node_index];
+			text_renderer_undo(&current_node->config);
+		}
+		free(current_lnode->nodes);
+		current_lnode->count = 0;
+		current_lnode->capacity = 0;
 	}
 	free(view->lnodes);
 }
@@ -55,9 +68,6 @@ void buffer_render_all(buffer_view * view)
 	GLfloat current_x = view->scr_x;
 	GLfloat current_y = view->scr_y;
 
-	// TODO(ayham-1): configs need to be automatically all set to the same max_line_width_chars
-	// this is a setting of the buffer, and not individual lines
-
 	if (view->nlines && view->lnodes[0].count) {
 		view->lnodes[0].nodes[0].config.origin_x = current_x;
 		view->lnodes[0].nodes[0].config.origin_y = current_y;
@@ -70,6 +80,7 @@ void buffer_render_all(buffer_view * view)
 			current_node = &current_lnode->nodes[node_index];
 			current_node->config.origin_x = current_x;
 			current_node->config.origin_y = current_y;
+			current_node->config.max_line_width_chars = view->settings.line_wrap_chars;
 			text_renderer_do(&current_node->config);
 			current_x = current_node->config.curr_x;
 		}

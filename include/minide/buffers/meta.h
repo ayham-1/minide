@@ -15,11 +15,18 @@ typedef struct {
 } buffer_abilities;
 
 typedef struct {
+	int32_t line_wrap_chars;
+	int32_t line_spacing;
+} buffer_settings;
+
+typedef struct {
 	UChar * name;
 	size_t nlines;
+	buffer_abilities abilities;
+	buffer_settings settings;
+
 	size_t current_line;
 	size_t current_coln;
-	buffer_abilities abilities;
 
 	// vec_t v_renderers;
 	text_renderer_t * renderer;

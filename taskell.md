@@ -8,14 +8,15 @@
 - design widget renderer system
 - add text_renderer_manager
 - add multiple text_renderers handling for buffer_viewer
+- buffer_view: use prev & next to optimize
+- bufffer_view: render specific section of text based on the buffer_view dimensions
 
 ## Doing
 
-- add node buffer viewer
+- fix spacing between lines
+- add view struct
 - fix file_manager double free on closing application
 - add buffer settings struct
-- add view struct
-- fix spacing between lines
 
 ## Done
 
@@ -38,3 +39,4 @@
 - add file manager
 - design widget renderer system
 - add vector type
+- add node buffer viewer
