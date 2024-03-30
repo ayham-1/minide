@@ -78,9 +78,13 @@ void buffer_render_all(buffer_view * view)
 		buffer_node * current_node = NULL;
 		for (size_t node_index = 0; node_index < current_lnode->count; node_index++) {
 			current_node = &current_lnode->nodes[node_index];
+
+			// reconfigure settings for current node
 			current_node->config.origin_x = current_x;
 			current_node->config.origin_y = current_y;
 			current_node->config.max_line_width_chars = view->settings.line_wrap_chars;
+			current_node->config.spacing = view->settings.line_spacing;
+
 			text_renderer_do(&current_node->config);
 			current_x = current_node->config.curr_x;
 		}

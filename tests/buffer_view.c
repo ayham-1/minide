@@ -34,7 +34,7 @@ buffer_view view;
 
 void gl_wrapper_init()
 {
-	text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 18);
+	text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 24);
 
 	conf1 = (text_render_config){
 	    .renderer = &renderer,
@@ -59,6 +59,12 @@ void gl_wrapper_init()
 	view = (buffer_view){
 	    .renderer = &renderer,
 
+	    .settings =
+		(buffer_settings){
+		    .line_spacing = 0,
+		    .line_wrap_chars = 0,
+		},
+
 	    .ui =
 		(view_t){
 		    .x1 = 200,
@@ -67,7 +73,7 @@ void gl_wrapper_init()
 	};
 
 	buffer_init(&view);
-	buffer_append_line(&view, conf1);
+	// buffer_append_line(&view, conf1);
 	buffer_append_line(&view, conf2);
 }
 

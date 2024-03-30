@@ -44,6 +44,7 @@ typedef struct {
 
 	bool wrappable;
 	int32_t max_line_width_chars;
+	GLfloat spacing;
 
 	line_indices_t * lines;
 	size_t lines_cnt;

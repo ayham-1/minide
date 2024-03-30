@@ -111,6 +111,9 @@ void text_renderer_do(text_render_config * const conf)
 		// get logical end of line to render
 		__text_renderer_get_line_break(conf, line_number, &start, &end);
 
+		if (start == end)
+			break;
+
 		UBiDi * line = ICU_CHECK_FAIL(ubidi_openSized(0, 0, &u_error), clean_bidi);
 		ICU_CHECK_FAIL(ubidi_setLine(bidi, start, end, line, &u_error), setLine_debug);
 		if (U_FAILURE(u_error)) {
@@ -466,7 +469,10 @@ void __text_renderer_get_line_break(text_render_config * const conf, int32_t lin
 
 void __text_renderer_new_line(text_render_config * const conf)
 {
-	conf->curr_y -= fonts_man_get_font_by_type(conf->renderer->font_style, 0)->face->size->metrics.height >> 6;
+	// log_var(fonts_man_get_font_by_type(conf->renderer->font_style, 0)->face->size->metrics.height >> 6);
+	conf->curr_y -= (fonts_man_get_font_by_type(conf->renderer->font_style, 0)->face->size->metrics.height >> 6) +
+			conf->spacing;
+	// conf->curr_y -= conf->renderer->font_pixel_size + conf->spacing;
 	conf->curr_x = conf->origin_x;
 }
 

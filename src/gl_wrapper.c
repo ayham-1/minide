@@ -51,8 +51,8 @@ int main(int argc, char * argv[])
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 	// windows should somehow be dynamically titled?
 	// window = glfwCreateWindow(config.scr_width, config.scr_height, config.scr_title, NULL, NULL);
