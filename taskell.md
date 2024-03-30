@@ -15,8 +15,6 @@
 
 - fix spacing between lines
 - add view struct
-- fix file_manager double free on closing application
-- add buffer settings struct
 
 ## Done
 
@@ -40,3 +38,5 @@
 - design widget renderer system
 - add vector type
 - add node buffer viewer
+- add buffer settings struct
+- fix file_manager double free on closing application

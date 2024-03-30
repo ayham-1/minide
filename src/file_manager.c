@@ -25,7 +25,6 @@ void file_manager_cleanup()
 
 	free(__f_man.handles);
 	free(__f_man.registered);
-	free(__f_man.handles);
 }
 
 void file_manager_clean_file_handle(file_handle * handle)
