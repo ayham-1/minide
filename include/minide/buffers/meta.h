@@ -4,8 +4,6 @@
 #include "minide/buffers/node.h"
 #include "minide/text_renderer.h"
 
-#include "minide/types/vector.h"
-
 #include <unicode/uchar.h>
 
 typedef struct {
@@ -23,21 +21,26 @@ typedef struct {
 	size_t current_coln;
 	buffer_abilities abilities;
 
-	vec_t v_renderers;
+	// vec_t v_renderers;
+	text_renderer_t * renderer;
 
-	vec_t v_lines;
+	buffer_lnode * lnodes;
+	size_t lnodes_capacity;
 
-	double scr_x;
-	double scr_y;
+	GLfloat scr_x;
+	GLfloat scr_y;
+
+	// TODO(ayham-1): limit size of view
+	// maybe have a view struct which holds basic "view" UI data
 } buffer_view;
 
-bool buffer_init(buffer_view *, text_renderer_t initial, double x, double y);
+void buffer_init(buffer_view *);
 void buffer_clean(buffer_view *);
 
 void buffer_add_renderer(buffer_view *, text_renderer_t);
 
-bool buffer_append_line(buffer_view *, text_render_config config);
+buffer_lnode * buffer_append_line(buffer_view *, text_render_config config);
 
-void buffer_render(buffer_view *);
+void buffer_render_all(buffer_view *);
 
 #endif

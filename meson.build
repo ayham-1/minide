@@ -73,6 +73,8 @@ unit_tests = ['u8str_get_bytes_needed_for',
   'text_renderer_emoji',
   'unicode_emoji',
 
+  'buffer_view',
+
   'input']
 
 foreach unit_test : unit_tests

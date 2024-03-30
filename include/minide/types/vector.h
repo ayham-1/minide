@@ -13,7 +13,7 @@ typedef struct {
 } vec_t;
 
 void vec_create(vec_t * v, size_t capacity, size_t szof_item);
-void vec_cleanup(vec_t * v);
+void vec_clean(vec_t * v);
 void vec_resize(vec_t * v, size_t new_capacity);
 
 void vec_append(vec_t * v, uint8_t * item);

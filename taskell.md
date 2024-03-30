@@ -6,10 +6,16 @@
 - add path expanding and variable resolving
 - rename text_renderer_t to text_renderer
 - design widget renderer system
+- add text_renderer_manager
+- add multiple text_renderers handling for buffer_viewer
 
 ## Doing
 
 - add node buffer viewer
+- fix file_manager double free on closing application
+- add buffer settings struct
+- add view struct
+- fix spacing between lines
 
 ## Done
 

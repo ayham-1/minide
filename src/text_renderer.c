@@ -1,5 +1,7 @@
 #include "minide/text_renderer.h"
 
+#include "minide/shaper.h"
+
 #include "minide/texture_lender.h"
 
 #include "minide/helpers/icu_checker.h"
@@ -64,6 +66,8 @@ void text_renderer_undo(text_render_config * const conf)
 
 void text_renderer_do(text_render_config * const conf)
 {
+	assert(conf);
+
 	conf->curr_x = conf->origin_x;
 	conf->curr_y = conf->origin_y;
 

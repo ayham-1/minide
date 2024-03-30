@@ -1,16 +1,9 @@
 #ifndef TEXT_RENDERER_H
 #define TEXT_RENDERER_H
 
-#include "logger.h"
-#include "path.h"
 #include "shaders_util.h"
-#include "types/vector.h"
 
-#include "font.h"
 #include "font_manager.h"
-#include "glyph_cache.h"
-
-#include "shaper.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

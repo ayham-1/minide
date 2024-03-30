@@ -16,7 +16,7 @@ void vec_create(vec_t * v, size_t capacity, size_t szof_item)
 	v->sizeof_item = szof_item;
 }
 
-void vec_cleanup(vec_t * v)
+void vec_clean(vec_t * v)
 {
 	free(v->items);
 	free(v->data);
