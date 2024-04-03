@@ -9,9 +9,9 @@
 #include "minide/text_renderer.h"
 #include "minide/u8string.h"
 
-#include "minide/gl_wrapper.h"
+#include "minide/app.h"
 
-gl_wrapper_config_t config = (gl_wrapper_config_t){
+app_config_t app_config = (app_config_t){
     .max_textures_available = 10,
     .scr_width = 1000,
     .scr_height = 700,
@@ -58,7 +58,7 @@ char * read_file(const char * filename, size_t * size)
 
 void gl_wrapper_init()
 {
-	text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 24);
+	text_renderer_init(&renderer, FONT_FAMILY_Monospace, app_config.scr_width, app_config.scr_height, 24);
 
 	size_t file_size;
 	char * file_contents = read_file("assets/emoji-test-15.1.txt", &file_size);
@@ -66,7 +66,7 @@ void gl_wrapper_init()
 	file_contents[55100] = 0; // currently not optimized for large amounts of text
 
 	int offset_x = 10;
-	int offset_y = config.scr_height - 35;
+	int offset_y = 0;
 
 	conf1 = (text_render_config){
 	    .renderer = &renderer,
@@ -97,4 +97,4 @@ void gl_wrapper_clean()
 	text_renderer_cleanup(&renderer);
 }
 
-void glfw_size_callback(int width, int height) { text_renderer_update_window_size(&renderer, width, height); }
+void glfw_size_callback(int width, int height) {}

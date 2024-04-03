@@ -5,9 +5,9 @@
 #include "minide/input.h"
 #include "minide/logger.h"
 
-#include "minide/gl_wrapper.h"
+#include "minide/app.h"
 
-gl_wrapper_config_t config = (gl_wrapper_config_t){
+app_config_t app_config = (app_config_t){
     .max_textures_available = 10,
     .scr_width = 1000,
     .scr_height = 700,
@@ -24,7 +24,7 @@ input_keys_hook_id key_id;
 bool example_key_input_hook(int key, int scancode, int action, int mods)
 {
 	if (GLFW_KEY_Q == key && GLFW_PRESS == action)
-		config.gl_wrapper_do_close = true;
+		app_config.gl_wrapper_do_close = true;
 
 	return false;
 }
@@ -43,7 +43,7 @@ void gl_wrapper_init()
 	mouse_id = input_man_register_mouse_hook(example_mouse_input_hook);
 }
 
-void gl_wrapper_render() { config.gl_wrapper_do_close = true; }
+void gl_wrapper_render() { app_config.gl_wrapper_do_close = true; }
 
 void gl_wrapper_clean()
 {

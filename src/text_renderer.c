@@ -1,5 +1,6 @@
 #include "minide/text_renderer.h"
 
+#include "minide/app.h"
 #include "minide/shaper.h"
 
 #include "minide/texture_lender.h"
@@ -26,18 +27,14 @@ void text_renderer_init(text_renderer_t * renderer, enum FontFamilyStyle font_st
 	glGenBuffers(1, &renderer->vbo);
 	glBindVertexArray(renderer->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+	glEnableVertexAttribArray(renderer->attributeCoord);
+	glVertexAttribPointer(renderer->attributeCoord, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	glGenBuffers(1, &renderer->ibo);
 
-	renderer->scr_width = width;
-	renderer->scr_height = height;
 	renderer->font_pixel_size = font_pixel_size;
-
-	glm_ortho(0.0f, (float)width, 0.0f, (float)height, -1, 1, renderer->projection);
 
 	renderer->font_style = font_style;
 
@@ -70,6 +67,7 @@ void text_renderer_do(text_render_config * const conf)
 
 	conf->curr_x = conf->origin_x;
 	conf->curr_y = conf->origin_y;
+	conf->curr_new_line_y_offset = 0;
 
 	assert(conf->utf8_str || conf->utf16_str);
 
@@ -176,7 +174,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 
 	glUseProgram(conf->renderer->shaderProgram);
 	glUniform3f(conf->renderer->uniformColor, 0, 1, 0);
-	glUniformMatrix4fv(conf->renderer->uniformProjection, 1, GL_FALSE, (GLfloat *)conf->renderer->projection);
+	glUniformMatrix4fv(conf->renderer->uniformProjection, 1, GL_FALSE, (GLfloat *)app_config.gl_projection);
 
 	typedef struct {
 		GLfloat x;
@@ -195,6 +193,11 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 		glyph_cache * gcache = font_get_glyph_cache(run.font, conf->renderer->font_pixel_size);
 		assert(gcache != NULL);
 
+		// remember maximum new_line_y_offset for new line calculations in __text_renderer_new_line
+		if (conf->curr_new_line_y_offset < run.font->face->size->metrics.height >> 6) {
+			conf->curr_new_line_y_offset = run.font->face->size->metrics.height >> 6;
+		}
+
 		for (unsigned int i = 0; i < run.glyph_count; i++) {
 			hb_glyph_info_t hb_info = run.glyph_infos[i];
 			hb_glyph_position_t hb_pos = run.glyph_pos[i];
@@ -204,6 +207,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 			assert(info != NULL);
 
 			// NOTE: left-bottom origin
+			// changed to top left
 			uint32_t awidth = gcache->awidth;
 			uint32_t aheight = gcache->aheight;
 			uint32_t w = info->bglyph->bitmap.width;
@@ -222,16 +226,16 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 			GLfloat y0 = conf->curr_y;
 			if (run.scale != 1) {
 				x0 += info->bearing_x * run.scale;
-				y0 += info->bearing_y * run.scale;
+				y0 -= info->bearing_y * run.scale;
 			} else {
 				x0 += info->bearing_x;
-				y0 += info->bearing_y;
+				y0 -= info->bearing_y;
 			}
 			GLfloat s0 = info->texture_x;
 			GLfloat t0 = info->texture_y;
 
 			GLfloat x1 = x0;
-			GLfloat y1 = y0 - h;
+			GLfloat y1 = y0 + h;
 			GLfloat s1 = s0;
 			GLfloat t1 = t0 + ratio_h;
 
@@ -470,15 +474,8 @@ void __text_renderer_get_line_break(text_render_config * const conf, int32_t lin
 void __text_renderer_new_line(text_render_config * const conf)
 {
 	// https://stackoverflow.com/questions/28009564/new-line-pixel-distance-in-freetype
-	conf->curr_y -= (fonts_man_get_font_by_type(conf->renderer->font_style, 0)->face->size->metrics.height >> 6) +
-			conf->spacing;
+	// conf->curr_y -= (fonts_man_get_font_by_type(conf->renderer->font_style, 0)->face->size->metrics.height >> 6)
+	// + conf->spacing;
+	conf->curr_y += conf->curr_new_line_y_offset + conf->spacing;
 	conf->curr_x = conf->origin_x;
-}
-
-void text_renderer_update_window_size(text_renderer_t * renderer, int width, int height)
-{
-	renderer->scr_width = width;
-	renderer->scr_height = height;
-
-	glm_ortho(0.0f, (float)width, 0.0f, (float)height, -1, 1, renderer->projection);
 }

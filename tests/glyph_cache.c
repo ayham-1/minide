@@ -6,10 +6,10 @@
 #include "minide/logger.h"
 #include "minide/path.h"
 
+#include "minide/app.h"
 #include "minide/font_manager.h"
-#include "minide/gl_wrapper.h"
 
-gl_wrapper_config_t config = (gl_wrapper_config_t){
+app_config_t app_config = (app_config_t){
     .max_textures_available = 10,
     .scr_width = 1000,
     .scr_height = 700,
@@ -26,7 +26,7 @@ glyph_cache cache;
 
 void gl_wrapper_init() { assert(glyph_cache_create(&cache, fonts_man_get()->monospace[0]->face, 512, 24)); }
 
-void gl_wrapper_render() { config.gl_wrapper_do_close = true; }
+void gl_wrapper_render() { app_config.gl_wrapper_do_close = true; }
 
 void gl_wrapper_clean() { glyph_cache_cleanup(&cache); }
 

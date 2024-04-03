@@ -6,17 +6,18 @@
 - add path expanding and variable resolving
 - rename text_renderer_t to text_renderer
 - design widget renderer system
-- add chunking to the buffer
+- add rendering file to the buffer_view
+- add chunking to the buffer_view
+- buffers: fix reallocs & TODOs
 - add line numbers
 - add text_renderer_manager
 - add multiple text_renderers handling for buffer_viewer
 - buffer_view: use prev & next to optimize
 - text_renderer: allow for 0 wrappable line width
-- text_renderer: take into consideration off-screen rendering, somehow find a way to stop the execution of further segments
-- buffer_view: render specific section of text based on the buffer_view dimensions
 
 ## Doing
 
+- text_renderer: take into consideration off-screen rendering, somehow find a way to stop the execution of further segments
 
 ## Done
 
@@ -44,3 +45,7 @@
 - fix file_manager double free on closing application
 - add view struct
 - add spacing between lines setting
+- text_renderer: localize heights of the line spacing per line for the maximum line height metric
+- make coords consistent everywhere (top-left origin)
+- buffer_view: render specific section of text based on the buffer_view dimensions
+- add box debug rendering

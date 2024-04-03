@@ -7,9 +7,9 @@
 #include "minide/path.h"
 #include "minide/u8string.h"
 
-#include "minide/gl_wrapper.h"
+#include "minide/app.h"
 
-gl_wrapper_config_t config = (gl_wrapper_config_t){
+app_config_t app_config = (app_config_t){
     .max_textures_available = 10,
     .scr_width = 1000,
     .scr_height = 700,
@@ -35,7 +35,7 @@ void gl_wrapper_init()
 	log_debug("monospace-1: %s", fc_get_path_by_font_order(holder, 1));
 }
 
-void gl_wrapper_render() { config.gl_wrapper_do_close = true; }
+void gl_wrapper_render() { app_config.gl_wrapper_do_close = true; }
 
 void gl_wrapper_clean() {}
 

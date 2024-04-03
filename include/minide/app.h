@@ -4,8 +4,13 @@
 #define GLFW_INCLUDE_NONE
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <cglm/cglm.h>
 
-#include "logger.h"
+#include <stdbool.h>
+
+typedef struct {
+	bool buffer_scissor_border;
+} gl_debug_rendering;
 
 typedef struct {
 	GLsizei max_textures_available;
@@ -18,9 +23,11 @@ typedef struct {
 	bool do_render_frame_ms;
 
 	bool gl_wrapper_do_close;
-} gl_wrapper_config_t;
+	gl_debug_rendering gl_debug;
+	mat4 gl_projection;
+} app_config_t;
 
-extern gl_wrapper_config_t config;
+extern app_config_t app_config;
 
 extern void gl_wrapper_init();
 extern void gl_wrapper_render();

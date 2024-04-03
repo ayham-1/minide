@@ -2,7 +2,7 @@ project('minide', ['c', 'cpp'],
   version: '0.0.1')
 
 sources = files([
-  'src/gl_wrapper.c',
+  'src/app.c',
   'src/input.c',
   'src/texture_lender.c',
   'src/file_manager.c',
@@ -27,7 +27,9 @@ sources = files([
   'src/fps_counter.c',
 
   'src/ui/buffers/meta.c',
-  'src/ui/buffers/node.c'
+  'src/ui/buffers/node.c',
+
+  'src/debug/border.c'
   ])
 
 dep_list = [

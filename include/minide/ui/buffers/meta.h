@@ -48,7 +48,8 @@ void buffer_clean(buffer_view *);
 void buffer_add_renderer(buffer_view *, text_renderer_t);
 
 buffer_lnode * buffer_append_line(buffer_view *, text_render_config config);
+buffer_lnode * buffer_append_line_str(buffer_view *, char *);
 
-void buffer_render_all(buffer_view *);
+void buffer_render(buffer_view *);
 
 #endif

@@ -1,10 +1,13 @@
 #include "minide/ui/buffers/meta.h"
+#include "minide/app.h"
+
+#include "minide/debug/border.h"
 
 #include <assert.h>
 
-#define LINES_REALLOC_FACTOR 1.5
 #define LINES_INITIAL_CAPACITY 3
 #define LINES_DEFAULT_WRAP 80
+#define LINES_REALLOC_FACTOR 2
 
 void buffer_init(buffer_view * view)
 {
@@ -63,16 +66,50 @@ buffer_lnode * buffer_append_line(buffer_view * view, text_render_config config)
 	return current;
 }
 
-void buffer_render_all(buffer_view * view)
+buffer_lnode * buffer_append_line_str(buffer_view * view, char * utf8_str)
 {
+	text_render_config config = (text_render_config){
+	    .renderer = view->renderer,
+	    .utf8_str = utf8_str,
+	};
+
+	return buffer_append_line(view, config);
+}
+
+void buffer_render(buffer_view * view)
+{
+	// assert(view->ui.x1 != view->ui.x2);
+	// assert(view->ui.y1 != view->ui.y2);
+
 	GLfloat current_x = view->ui.x1;
-	GLfloat current_y = view->ui.y1;
+	// forced to use fonts_man_get_font_by_type because no text_renderer_do is called yet
+	// this will cause visual inaccuracies if the preferred font is not the applicable to the first line,
+	// it is not clear if there is any use in doing anything special here, your fontconfig setup should accomodate
+	// correctly to the majority of text you want to renderer
+	GLfloat current_y =
+	    view->ui.y1 +
+	    (GLfloat)(fonts_man_get_font_by_type(view->renderer->font_style, 0)->face->size->metrics.height >> 6);
 
 	if (view->nlines && view->lnodes[0].count) {
 		view->lnodes[0].nodes[0].config.origin_x = current_x;
 		view->lnodes[0].nodes[0].config.origin_y = current_y;
 	}
 
+	// strictly limit the rendering of the text to the quad using opengl scissor test
+	GLsizei scissor_width = view->ui.x2 - view->ui.x1;
+	GLsizei scissor_height = view->ui.y2 - view->ui.y1;
+	if (scissor_width > 0 && scissor_height > 0) {
+		glEnable(GL_SCISSOR_TEST);
+
+		// ah yes, glScissor considers x,y from bottom-left
+		// https://www.khronos.org/opengl/wiki/Scissor_Test
+		// GLsizei y = config.scr_height - view->ui.y1;
+		// glScissor(view->ui.x1, y, scissor_width, scissor_height);
+		GLsizei y = app_config.scr_height - view->ui.y2;
+		glScissor(view->ui.x1, y - 1, scissor_width + 1, scissor_height + 1);
+	}
+
+	bool only_one_more_line = false;
 	for (size_t line_index = 0; line_index < view->nlines; line_index++) {
 		buffer_lnode * current_lnode = &view->lnodes[line_index];
 		buffer_node * current_node = NULL;
@@ -80,6 +117,7 @@ void buffer_render_all(buffer_view * view)
 			current_node = &current_lnode->nodes[node_index];
 
 			// reconfigure settings for current node
+			current_node->config.renderer = view->renderer;
 			current_node->config.origin_x = current_x;
 			current_node->config.origin_y = current_y;
 			current_node->config.max_line_width_chars = view->settings.line_wrap_chars;
@@ -90,5 +128,17 @@ void buffer_render_all(buffer_view * view)
 		}
 		current_x = view->ui.x1;
 		current_y = current_node->config.curr_y;
+		if (current_y > view->ui.y2) {
+			only_one_more_line = true;
+			continue;
+		}
+		if (only_one_more_line) {
+			break;
+		}
 	}
+	if (app_config.gl_debug.buffer_scissor_border) {
+		// Render border
+		debug_border(view->ui.x1, view->ui.y1, view->ui.x2, view->ui.y2);
+	}
+	glDisable(GL_SCISSOR_TEST);
 }

@@ -9,9 +9,9 @@
 #define PATH "assets/FreeSans.ttf"
 #define PATH_BYTES_NUM sizeof(PATH)
 
-#include "minide/gl_wrapper.h"
+#include "minide/app.h"
 
-gl_wrapper_config_t config = (gl_wrapper_config_t){
+app_config_t app_config = (app_config_t){
     .max_textures_available = 10,
     .scr_width = 1000,
     .scr_height = 700,

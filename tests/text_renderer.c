@@ -10,9 +10,9 @@
 #define PATH "assets/unifont.ttf"
 #define PATH_BYTES_NUM sizeof(PATH)
 
-#include "minide/gl_wrapper.h"
+#include "minide/app.h"
 
-gl_wrapper_config_t config = (gl_wrapper_config_t){
+app_config_t app_config = (app_config_t){
     .max_textures_available = 10,
     .scr_width = 1000,
     .scr_height = 700,
@@ -69,7 +69,7 @@ text_render_config conf10;
 
 void gl_wrapper_init()
 {
-	text_renderer_init(&renderer, FONT_FAMILY_Monospace, config.scr_width, config.scr_height, 18);
+	text_renderer_init(&renderer, FONT_FAMILY_Monospace, app_config.scr_width, app_config.scr_height, 18);
 
 	conf1 = (text_render_config){
 	    .renderer = &renderer,
@@ -238,4 +238,4 @@ void gl_wrapper_clean()
 	text_renderer_cleanup(&renderer);
 }
 
-void glfw_size_callback(int width, int height) { text_renderer_update_window_size(&renderer, width, height); }
+void glfw_size_callback(int width, int height) {}

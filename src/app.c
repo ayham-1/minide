@@ -1,4 +1,4 @@
-#include "minide/gl_wrapper.h"
+#include "minide/app.h"
 
 #include "minide/file_manager.h"
 #include "minide/font_manager.h"
@@ -8,8 +8,6 @@
 
 #include <GL/glew.h>
 #include <unistd.h>
-
-#include <assert.h>
 
 #include <unicode/putil.h>
 #include <unicode/ulocdata.h>
@@ -57,7 +55,7 @@ int main(int argc, char * argv[])
 	// windows should somehow be dynamically titled?
 	// window = glfwCreateWindow(config.scr_width, config.scr_height, config.scr_title, NULL, NULL);
 	// currently just use minide as title so that the wm can float it correctly
-	window = glfwCreateWindow(config.scr_width, config.scr_height, "minide", NULL, NULL);
+	window = glfwCreateWindow(app_config.scr_width, app_config.scr_height, "minide", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
@@ -78,20 +76,22 @@ int main(int argc, char * argv[])
 		log_info("GLEW: version %s", glewGetString(GLEW_VERSION));
 	}
 
-	// #ifdef NDEBUG
+#ifndef NDEBUG
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(__gl_callback, 0);
-	// #endif
+#endif
 
 	file_manager_init();
-	texture_lender_init(config.max_textures_available);
+	texture_lender_init(app_config.max_textures_available);
 	fonts_man_init();
+
+	glm_ortho(0.0f, (float)app_config.scr_width, (float)app_config.scr_height, 0, -1, 1, app_config.gl_projection);
 
 	gl_wrapper_init();
 	log_info("ran gl_wrapper_init");
 
-	if (config.do_render_frame_ms)
-		fps_counter_init(config.scr_width, config.scr_height);
+	if (app_config.do_render_frame_ms)
+		fps_counter_init(app_config.scr_width, app_config.scr_height);
 
 	double lastSecondTime = glfwGetTime();
 	while (!glfwWindowShouldClose(window)) {
@@ -101,24 +101,24 @@ int main(int argc, char * argv[])
 
 		gl_wrapper_render();
 
-		if (config.do_render_frame_ms)
+		if (app_config.do_render_frame_ms)
 			fps_counter_render();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		if (config.scr_target_fps && glfwGetTime() < frameStartTime + 1.0 / config.scr_target_fps) {
-			sleep(glfwGetTime() - (frameStartTime + 1.0 / config.scr_target_fps));
+		if (app_config.scr_target_fps && glfwGetTime() < frameStartTime + 1.0 / app_config.scr_target_fps) {
+			sleep(glfwGetTime() - (frameStartTime + 1.0 / app_config.scr_target_fps));
 		}
 
-		if (config.gl_wrapper_do_close)
+		if (app_config.gl_wrapper_do_close)
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 
 		nbFrames++;
 		if (glfwGetTime() - lastSecondTime >= 1) {
-			if (config.do_print_frame_ms)
+			if (app_config.do_print_frame_ms)
 				log_info("fps: %d\t%f ms/frame", nbFrames, 1000.0f / nbFrames);
-			if (config.do_render_frame_ms)
+			if (app_config.do_render_frame_ms)
 				fps_counter_update(nbFrames);
 			nbFrames = 0;
 			lastSecondTime = glfwGetTime();
@@ -127,7 +127,7 @@ int main(int argc, char * argv[])
 
 	gl_wrapper_clean();
 
-	log_info("closing %s...", config.scr_title);
+	log_info("closing %s...", app_config.scr_title);
 	file_manager_cleanup();
 	logger_cleanup();
 	glfwDestroyWindow(window);
@@ -157,10 +157,12 @@ void __glfw_size_callback(GLFWwindow * window, int width, int height)
 {
 	(void)window;
 
-	config.scr_width = width;
-	config.scr_height = height;
+	app_config.scr_width = width;
+	app_config.scr_height = height;
 
 	glViewport(0, 0, width, height);
+
+	glm_ortho(0.0f, (float)app_config.scr_width, (float)app_config.scr_height, 0, -1, 1, app_config.gl_projection);
 
 	glfw_size_callback(width, height);
 }
