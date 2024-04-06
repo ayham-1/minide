@@ -120,15 +120,16 @@ void buffer_render(buffer_view * view)
 			current_node->config.renderer = view->renderer;
 			current_node->config.origin_x = current_x;
 			current_node->config.origin_y = current_y;
+			current_node->config.max_x = view->ui.x2;
 			current_node->config.max_line_width_chars = view->settings.line_wrap_chars;
 			current_node->config.spacing = view->settings.line_spacing;
 
 			text_renderer_do(&current_node->config);
 			current_x = current_node->config.curr_x;
+			current_y = current_node->config.curr_y;
 		}
 		current_x = view->ui.x1;
-		current_y = current_node->config.curr_y;
-		if (current_y > view->ui.y2) {
+		if (!only_one_more_line && current_y > view->ui.y2) {
 			only_one_more_line = true;
 			continue;
 		}

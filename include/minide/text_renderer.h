@@ -57,9 +57,10 @@ typedef struct {
 	UBreakIterator * it_char;
 	int32_t char_num;
 
-	GLfloat origin_x, origin_y;
+	GLfloat origin_x, origin_y, max_x;
 	GLfloat curr_x, curr_y;
 	GLfloat curr_new_line_y_offset;
+
 } text_render_config;
 
 void text_renderer_init(text_renderer_t * renderer, enum FontFamilyStyle font_style, size_t width, size_t height,

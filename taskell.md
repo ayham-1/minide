@@ -17,7 +17,6 @@
 
 ## Doing
 
-- text_renderer: take into consideration off-screen rendering, somehow find a way to stop the execution of further segments
 
 ## Done
 
@@ -49,3 +48,4 @@
 - make coords consistent everywhere (top-left origin)
 - buffer_view: render specific section of text based on the buffer_view dimensions
 - add box debug rendering
+- text_renderer: take into consideration off-screen rendering, somehow find a way to stop the execution of further segments

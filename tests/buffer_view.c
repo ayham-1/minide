@@ -19,11 +19,6 @@ app_config_t app_config = (app_config_t){
     .gl_wrapper_do_close = false,
 };
 
-#define TEST_DATA                                                                                                      \
-	"~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrstvwxyz!@#$%^&*()_-=+[]{}"                                         \
-	"\\|;"                                                                                                         \
-	":'"                                                                                                           \
-	"\",.<>/?\0"
 #define TEST_DATA_NEW_LINE "hello world? \nanyone?\nhello ? world?"
 
 text_renderer_t renderer;
@@ -42,7 +37,7 @@ void gl_wrapper_init()
 	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
-	    .utf8_str = TEST_DATA,
+	    .utf8_str = "~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrs😃 you should see after the emoji on this line",
 	};
 
 	conf2 = (text_render_config){
@@ -73,6 +68,7 @@ void gl_wrapper_init()
 	buffer_init(&view1);
 	buffer_append_line(&view1, conf1);
 	buffer_append_line(&view1, conf2);
+	buffer_append_line_str(&view1, "hi!11");
 
 	offset_y += 150;
 	view2 = (buffer_view){
@@ -94,7 +90,8 @@ void gl_wrapper_init()
 	};
 
 	buffer_init(&view2);
-	buffer_append_line(&view2, conf1);
+	buffer_append_line_str(&view2, "~`ABCDEFGHJKLMNOPQRSTVWXYZabcdefghjklmnopqrs😃 you should *NOT* see after the "
+				       "emoji on this line, but this new line is to be seen");
 	buffer_append_line_str(&view2, "line 2");
 	buffer_append_line_str(&view2, "line 3");
 	buffer_append_line_str(&view2, "line 4: this line should not be seen fully");
@@ -106,7 +103,7 @@ void gl_wrapper_render()
 	app_config.gl_debug.buffer_scissor_border = true;
 	buffer_render(&view2);
 	app_config.gl_debug.buffer_scissor_border = false;
-	//    config.gl_wrapper_do_close = true;
+	//app_config.gl_wrapper_do_close = true;
 }
 
 void gl_wrapper_clean()

@@ -43,4 +43,5 @@ extern logger_t * g_logger;
 #define log_stack(...) logger_log(STACK, __FILE_NAME__, __LINE__, __VA_ARGS__)
 
 #define log_var(var) logger_log(DEBUG, __FILE_NAME__, __LINE__, "%s: %i", #var, var)
+#define log_varf(var) logger_log(DEBUG, __FILE_NAME__, __LINE__, "%s: %ff", #var, var)
 #endif

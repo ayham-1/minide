@@ -27,8 +27,8 @@ void text_renderer_init(text_renderer_t * renderer, enum FontFamilyStyle font_st
 	glGenBuffers(1, &renderer->vbo);
 	glBindVertexArray(renderer->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
-	glEnableVertexAttribArray(renderer->attributeCoord);
-	glVertexAttribPointer(renderer->attributeCoord, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -195,7 +195,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 
 		// remember maximum new_line_y_offset for new line calculations in __text_renderer_new_line
 		if (conf->curr_new_line_y_offset < run.font->face->size->metrics.height >> 6) {
-			conf->curr_new_line_y_offset = run.font->face->size->metrics.height >> 6;
+			conf->curr_new_line_y_offset = (run.font->face->size->metrics.height >> 6) * run.scale;
 		}
 
 		for (unsigned int i = 0; i < run.glyph_count; i++) {
@@ -222,6 +222,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 			}
 
 			// char quad ccw
+			// https://learnopengl.com/img/in-practice/glyph.png
 			GLfloat x0 = conf->curr_x;
 			GLfloat y0 = conf->curr_y;
 			if (run.scale != 1) {
@@ -264,6 +265,9 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 				conf->curr_x += hb_pos.x_advance >> 6;
 				conf->curr_y += hb_pos.y_advance >> 6;
 			}
+			if (conf->max_x && conf->curr_x >= conf->max_x) {
+				break;
+			}
 		}
 
 		glBindVertexArray(conf->renderer->vao);
@@ -272,7 +276,7 @@ void __text_renderer_run(text_render_config * const conf, int32_t logical_start,
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gcache->atexOBJ);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(coords), coords, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(point) * n, coords, GL_DYNAMIC_DRAW);
 		glDrawArrays(GL_TRIANGLES, 0, n);
 	}
 
