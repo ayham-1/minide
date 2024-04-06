@@ -2,7 +2,6 @@
 
 - add threading to font rendering
 - optimize text_renderer for paragraph rendering
-- add file_buffer interface
 - add path expanding and variable resolving
 - rename text_renderer_t to text_renderer
 - design widget renderer system
@@ -12,10 +11,13 @@
 - add line numbers
 - add text_renderer_manager
 - add multiple text_renderers handling for buffer_viewer
-- buffer_view: use prev & next to optimize
+- buffer_view: add arbitrary appending
+- buffer_view: add arbitrary line removal
+- add file_buffer interface w/ transaction system
 
 ## Doing
 
+- buffer_view: use prev & next to optimize horiz segs
 
 ## Done
 
@@ -49,3 +51,4 @@
 - add box debug rendering
 - text_renderer: take into consideration off-screen rendering, somehow find a way to stop the execution of further segments
 - text_renderer: allow for 0 wrappable line width
+- buffer_view: use prev & next to optimize lines

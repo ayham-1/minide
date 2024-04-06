@@ -37,9 +37,6 @@ typedef struct {
 	size_t lnodes_capacity;
 
 	view_t ui;
-
-	// TODO(ayham-1): limit size of view
-	// maybe have a view struct which holds basic "view" UI data
 } buffer_view;
 
 void buffer_init(buffer_view *);

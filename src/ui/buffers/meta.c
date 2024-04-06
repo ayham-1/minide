@@ -38,7 +38,6 @@ buffer_lnode * buffer_append_line(buffer_view * view, text_render_config config)
 	if (view->nlines + 1 >= view->lnodes_capacity) {
 		view->lnodes_capacity *= LINES_REALLOC_FACTOR;
 		view->lnodes = realloc(view->lnodes, sizeof(buffer_lnode) * view->lnodes_capacity);
-		// TODO(ayham-1): you have to reassign prev & next
 	}
 
 	buffer_lnode * current = &view->lnodes[view->nlines];
@@ -46,16 +45,22 @@ buffer_lnode * buffer_append_line(buffer_view * view, text_render_config config)
 	buffer_lnode_init(current);
 	buffer_lnode_add_config(current, config, 0);
 
-	if (view->nlines == 0) {
-		current->prev = NULL;
+	if (view->nlines == 0) { // view->lnodes[0] always is the first line
+		current->lines_index_prev = 0;
 	}
 
 	if (view->nlines >= 1) {
-		view->lnodes[view->nlines].next = (struct buffer_lnode *)current;
-		current->prev = (struct buffer_lnode *)&view->lnodes[view->nlines];
+		view->lnodes[view->nlines - 1].lines_index_next = view->nlines;
+		current->lines_index_prev = view->nlines;
 	}
 
-	current->next = NULL;
+	current->lines_index_next = 0;
+
+	// always keep last line index in the first line
+	view->lnodes[0].lines_index_prev = view->nlines;
+	// always keep line number in the currnet lnode
+	current->line_number = view->nlines + 1;
+
 	view->nlines++;
 
 	return current;
@@ -73,9 +78,6 @@ buffer_lnode * buffer_append_line_str(buffer_view * view, char * utf8_str)
 
 void buffer_render(buffer_view * view)
 {
-	// assert(view->ui.x1 != view->ui.x2);
-	// assert(view->ui.y1 != view->ui.y2);
-
 	GLfloat current_x = view->ui.x1;
 	// forced to use fonts_man_get_font_by_type because no text_renderer_do is called yet
 	// this will cause visual inaccuracies if the preferred font is not the applicable to the first line,
@@ -98,19 +100,19 @@ void buffer_render(buffer_view * view)
 
 		// ah yes, glScissor considers x,y from bottom-left
 		// https://www.khronos.org/opengl/wiki/Scissor_Test
-		// GLsizei y = config.scr_height - view->ui.y1;
-		// glScissor(view->ui.x1, y, scissor_width, scissor_height);
 		GLsizei y = app_config.scr_height - view->ui.y2;
 		glScissor(view->ui.x1, y - 1, scissor_width + 1, scissor_height + 1);
 	}
 
 	bool only_one_more_line = false;
-	for (size_t line_index = 0; line_index < view->nlines; line_index++) {
-		buffer_lnode * current_lnode = &view->lnodes[line_index];
-		buffer_node * current_node = NULL;
-		for (size_t node_index = 0; node_index < current_lnode->count; node_index++) {
-			current_node = &current_lnode->nodes[node_index];
-
+	size_t lines_rendered = 0;
+	size_t lines_to_render = view->nlines;
+	buffer_lnode * current_lnode = &view->lnodes[0];
+	while (lines_rendered < lines_to_render) {
+		buffer_node * current_node = &current_lnode->nodes[0];
+		size_t nodes_rendered = 0;
+		bool only_one_more_segment = false;
+		while (nodes_rendered < current_lnode->count) {
 			// reconfigure settings for current node
 			current_node->config.renderer = view->renderer;
 			current_node->config.origin_x = current_x;
@@ -122,8 +124,19 @@ void buffer_render(buffer_view * view)
 			text_renderer_do(&current_node->config);
 			current_x = current_node->config.curr_x;
 			current_y = current_node->config.curr_y;
+
+			current_node = &current_lnode->nodes[current_node->node_index_next];
+			nodes_rendered++;
+			if (!only_one_more_segment && current_x > view->ui.x2) {
+				only_one_more_segment = true;
+				continue;
+			}
+			if (only_one_more_segment) {
+				break;
+			}
 		}
-		current_x = view->ui.x1;
+		lines_rendered++;
+		current_lnode = &view->lnodes[current_lnode->lines_index_next];
 		if (!only_one_more_line && current_y > view->ui.y2) {
 			only_one_more_line = true;
 			continue;
@@ -132,8 +145,8 @@ void buffer_render(buffer_view * view)
 			break;
 		}
 	}
+
 	if (app_config.gl_debug.buffer_scissor_border) {
-		// Render border
 		debug_border(view->ui.x1, view->ui.y1, view->ui.x2, view->ui.y2);
 	}
 	glDisable(GL_SCISSOR_TEST);

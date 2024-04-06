@@ -8,8 +8,8 @@
 void buffer_lnode_init(buffer_lnode * lnode)
 {
 	assert(lnode);
-	lnode->next = NULL;
-	lnode->prev = NULL;
+	lnode->lines_index_next = 0;
+	lnode->lines_index_prev = 0;
 	lnode->count = 0;
 	lnode->capacity = NODES_INITIAL_CAPACITY;
 
@@ -23,22 +23,26 @@ void buffer_lnode_add_config(buffer_lnode * lnode, text_render_config config, si
 	if (lnode->count + 1 >= lnode->capacity) {
 		lnode->capacity *= NODES_REALLOC_FACTOR;
 		lnode->nodes = realloc(lnode->nodes, sizeof(buffer_node) * lnode->capacity);
-		// TODO(ayham-1): you have to reassign prev & next
 	}
 
 	buffer_node * current = &lnode->nodes[lnode->count];
 
 	if (lnode->count == 0) {
-		current->prev = NULL;
+		current->node_index_prev = 0;
 	}
 
 	if (lnode->count + 1 >= 2) {
-		lnode->nodes[lnode->count].next = (struct buffer_node *)current;
-		current->prev = (struct buffer_node *)&lnode->nodes[lnode->count];
+		lnode->nodes[lnode->count - 1].node_index_next = lnode->count;
+		current->node_index_prev = lnode->count;
 	}
 
-	current->next = NULL;
+	current->node_index_next = 0;
 	current->config = config;
+
+	// always keep last node index in the first node
+	lnode->nodes[0].node_index_prev = lnode->count;
+	// always keep node number in the current node
+	current->node_number = lnode->count + 1;
 
 	lnode->count++;
 }
