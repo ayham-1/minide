@@ -14,7 +14,7 @@
 
 app_config_t app_config = (app_config_t){
     .max_textures_available = 10,
-    .scr_width = 1000,
+    .scr_width = 1300,
     .scr_height = 700,
     .scr_target_fps = 1,
     .scr_title = "test_text_renderer",
@@ -75,7 +75,6 @@ void gl_wrapper_init()
 	    .renderer = &renderer,
 
 	    .wrappable = false,
-	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
 	    .utf8_str = TEST_DATA,
@@ -88,7 +87,6 @@ void gl_wrapper_init()
 	    .renderer = &renderer,
 
 	    .wrappable = false,
-	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
 	    .utf8_str = TEST_DATA_ARABIC_ONLY,
@@ -101,7 +99,6 @@ void gl_wrapper_init()
 	    .renderer = &renderer,
 
 	    .wrappable = false,
-	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
 	    .utf8_str = TEST_DATA_ARABIC_MIXED,
@@ -114,7 +111,6 @@ void gl_wrapper_init()
 	    .renderer = &renderer,
 
 	    .wrappable = false,
-	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
 	    .utf8_str = TEST_DATA_ENGLISH_MIXED,
@@ -127,7 +123,6 @@ void gl_wrapper_init()
 	    .renderer = &renderer,
 
 	    .wrappable = false,
-	    .max_line_width_chars = 100,
 	    .base_direction = UBIDI_DEFAULT_LTR,
 
 	    .utf8_str = TEST_DATA_CACHE_EXPANSION,
@@ -172,7 +167,7 @@ void gl_wrapper_init()
 
 	    .utf8_str = TEST_DATA_LINE_WRAPPING_WRAP_ON_WORD,
 
-	    .origin_x = 500,
+	    .origin_x = 550,
 	    .origin_y = begin_y,
 	};
 
@@ -185,7 +180,7 @@ void gl_wrapper_init()
 
 	    .utf8_str = TEST_DATA_LINE_WRAPPING_FORCEFUL,
 
-	    .origin_x = 750,
+	    .origin_x = 800,
 	    .origin_y = begin_y,
 	};
 
@@ -198,7 +193,7 @@ void gl_wrapper_init()
 
 	    .utf8_str = TEST_DATA_NEW_LINE,
 
-	    .origin_x = 950,
+	    .origin_x = 1050,
 	    .origin_y = begin_y,
 	};
 }

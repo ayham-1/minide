@@ -6,7 +6,6 @@
 #include <assert.h>
 
 #define LINES_INITIAL_CAPACITY 3
-#define LINES_DEFAULT_WRAP 80
 #define LINES_REALLOC_FACTOR 2
 
 void buffer_init(buffer_view * view)
@@ -17,10 +16,6 @@ void buffer_init(buffer_view * view)
 	view->nlines = 0;
 	view->lnodes_capacity = LINES_INITIAL_CAPACITY;
 	view->lnodes = malloc(sizeof(buffer_lnode) * view->lnodes_capacity);
-
-	if (view->settings.line_wrap_chars == 0) {
-		view->settings.line_wrap_chars = LINES_DEFAULT_WRAP;
-	}
 };
 
 void buffer_clean(buffer_view * view)

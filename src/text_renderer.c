@@ -382,9 +382,8 @@ void __text_renderer_calculate_soft_wraps(text_render_config * const conf, line_
 		int32_t final_logical_start = logical_start;
 		int32_t final_logical_end = logical_end;
 
-		int32_t margin_visual_end =
-		    log2vis_map[logical_start] + conf->max_line_width_chars; // todo: cap margin_visual_end
-		if (margin_visual_end > sz)
+		int32_t margin_visual_end = log2vis_map[logical_start] + conf->max_line_width_chars;
+		if (margin_visual_end > sz || conf->max_line_width_chars == 0)
 			margin_visual_end = sz;
 		int32_t margin_logical_end = vis2log_map[margin_visual_end];
 

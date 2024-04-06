@@ -13,7 +13,6 @@
 - add text_renderer_manager
 - add multiple text_renderers handling for buffer_viewer
 - buffer_view: use prev & next to optimize
-- text_renderer: allow for 0 wrappable line width
 
 ## Doing
 
@@ -49,3 +48,4 @@
 - buffer_view: render specific section of text based on the buffer_view dimensions
 - add box debug rendering
 - text_renderer: take into consideration off-screen rendering, somehow find a way to stop the execution of further segments
+- text_renderer: allow for 0 wrappable line width
