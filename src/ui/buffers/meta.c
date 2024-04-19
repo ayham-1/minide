@@ -16,6 +16,9 @@ void buffer_init(buffer_view * view)
 	view->nlines = 0;
 	view->lnodes_capacity = LINES_INITIAL_CAPACITY;
 	view->lnodes = malloc(sizeof(buffer_lnode) * view->lnodes_capacity);
+
+	view->index2line = malloc(sizeof(size_t) * view->lnodes_capacity);
+	view->line2index = malloc(sizeof(size_t) * view->lnodes_capacity);
 };
 
 void buffer_clean(buffer_view * view)
@@ -31,6 +34,9 @@ void buffer_clean(buffer_view * view)
 		current_lnode->capacity = 0;
 	}
 	free(view->lnodes);
+
+	free(view->index2line);
+	free(view->line2index);
 }
 
 buffer_lnode * buffer_append_line(buffer_view * view, text_render_config config)
@@ -38,6 +44,8 @@ buffer_lnode * buffer_append_line(buffer_view * view, text_render_config config)
 	if (view->nlines + 1 >= view->lnodes_capacity) {
 		view->lnodes_capacity *= LINES_REALLOC_FACTOR;
 		view->lnodes = realloc(view->lnodes, sizeof(buffer_lnode) * view->lnodes_capacity);
+		view->index2line = realloc(view->index2line, sizeof(size_t) * view->lnodes_capacity);
+		view->line2index = realloc(view->line2index, sizeof(size_t) * view->lnodes_capacity);
 	}
 
 	buffer_lnode * current = &view->lnodes[view->nlines];
@@ -58,8 +66,10 @@ buffer_lnode * buffer_append_line(buffer_view * view, text_render_config config)
 
 	// always keep last line index in the first line
 	view->lnodes[0].lines_index_prev = view->nlines;
-	// always keep line number in the currnet lnode
-	current->line_number = view->nlines + 1;
+
+	// always keep line number in the current lnode
+	view->index2line[view->nlines] = view->nlines;
+	view->line2index[view->nlines] = view->nlines;
 
 	view->nlines++;
 
@@ -75,6 +85,8 @@ buffer_lnode * buffer_append_line_str(buffer_view * view, char * utf8_str)
 
 	return buffer_append_line(view, config);
 }
+
+void buffer_move_line_index(buffer_view * view, size_t index1, size_t index2) {}
 
 void buffer_render(buffer_view * view)
 {

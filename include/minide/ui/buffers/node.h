@@ -15,7 +15,6 @@ typedef struct {
 typedef struct {
 	size_t lines_index_prev;
 	size_t lines_index_next;
-	size_t line_number;
 
 	buffer_node * nodes;
 	size_t count;

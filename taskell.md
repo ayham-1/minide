@@ -1,4 +1,4 @@
-## To Do
+## Long Term Todo 
 
 - add threading to font rendering
 - optimize text_renderer for paragraph rendering
@@ -7,17 +7,22 @@
 - design widget renderer system
 - add rendering file to the buffer_view
 - add chunking to the buffer_view
+- add file_buffer interface w/ transaction system
+- buffer_view: impl abstract of string text
+
+## Short Term Todo
+
 - buffers: fix reallocs & TODOs
 - add line numbers
 - add text_renderer_manager
 - add multiple text_renderers handling for buffer_viewer
-- buffer_view: add arbitrary appending
-- buffer_view: add arbitrary line removal
-- add file_buffer interface w/ transaction system
 
 ## Doing
-
 - buffer_view: use prev & next to optimize horiz segs
+- buffer_view: add arbitrary horizontal segment removal
+- buffer_view: add arbitrary horizontal segment addition
+- buffer_view: add arbitrary line removal
+- buffer_view: add arbitrary appending
 
 ## Done
 

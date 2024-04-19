@@ -36,6 +36,9 @@ typedef struct {
 	buffer_lnode * lnodes;
 	size_t lnodes_capacity;
 
+	size_t * index2line;
+	size_t * line2index;
+
 	view_t ui;
 } buffer_view;
 
@@ -46,6 +49,8 @@ void buffer_add_renderer(buffer_view *, text_renderer_t);
 
 buffer_lnode * buffer_append_line(buffer_view *, text_render_config config);
 buffer_lnode * buffer_append_line_str(buffer_view *, char *);
+
+void buffer_move_line_indexed(buffer_view *, size_t index1, size_t index2);
 
 void buffer_render(buffer_view *);
 
