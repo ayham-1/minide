@@ -13,6 +13,7 @@ sources = files([
 
   'src/types/hash_table.c',
   'src/types/vector.c',
+  'src/types/stack.c',
 
   'src/glyph_cache.c',
   'src/fontconfig.c',
@@ -35,7 +36,7 @@ sources = files([
 dep_list = [
   dependency('glew', version: '2.2.0'),
   dependency('freetype2', version: '>=26.1.20'),
-  dependency('cglm', version: '0.9.1'),
+  dependency('cglm', version: '>=0.9.1'),
   dependency('glfw3', version: '>=3.3.8'),
   dependency('harfbuzz', version: '>=8.3.0'),
   dependency('fontconfig', version: '>=2.14.2'),
