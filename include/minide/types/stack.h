@@ -1,5 +1,5 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef STACK_H
+#define STACK_H
 
 #include <stdint.h>
 #include <unistd.h>

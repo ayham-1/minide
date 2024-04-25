@@ -9,6 +9,7 @@
 - add chunking to the buffer_view
 - add file_buffer interface w/ transaction system
 - buffer_view: impl abstract of string text
+- realloc may fail, and maybe a fail safe needs to be set before crashing
 
 ## Short Term Todo
 
