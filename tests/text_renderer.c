@@ -1,11 +1,6 @@
 #include <assert.h>
-#include <stdio.h>
-#include <string.h>
 
-#include "minide/logger.h"
-#include "minide/path.h"
 #include "minide/text_renderer.h"
-#include "minide/u8string.h"
 
 #define PATH "assets/unifont.ttf"
 #define PATH_BYTES_NUM sizeof(PATH)

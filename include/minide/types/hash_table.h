@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include "../logger.h"
-
 typedef uint64_t (*hash_function)(const uint8_t * const key);
 typedef bool (*eql_function)(const uint8_t * const key1, const uint8_t * const key2);
 

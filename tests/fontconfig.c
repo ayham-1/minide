@@ -1,11 +1,7 @@
 #include <assert.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "minide/fontconfig.h"
 #include "minide/logger.h"
-#include "minide/path.h"
-#include "minide/u8string.h"
 
 #include "minide/app.h"
 

@@ -1,12 +1,8 @@
 #include <assert.h>
 #include <locale.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "minide/logger.h"
-#include "minide/path.h"
 #include "minide/types/hash_table.h"
-#include "minide/u8string.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

@@ -8,7 +8,6 @@ sources = files([
   'src/file_manager.c',
 
   'src/logger.c',
-  'src/u8string.c',
   'src/path.cpp',
 
   'src/types/hash_table.c',
@@ -56,14 +55,7 @@ executable('minide', [sources, 'src/main.c'], link_with: [libmin], link_args: '-
 
 # tests
 
-unit_tests = ['u8str_get_bytes_needed_for',
-  'u8str_get_wbyte_seq',
-  'u8str_clen',
-  'u8str_inc',
-  'u8str_dec',
-  'u8str_from_code_point',
-  'u8str_is_utf8_valid',
-
+unit_tests = [
   'path',
   'fontconfig',
   'glyph_cache',

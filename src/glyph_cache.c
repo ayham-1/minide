@@ -7,6 +7,8 @@
 #define _GNU_SOURCE
 #include <sys/mman.h>
 
+#include "minide/logger.h"
+
 #define KEY_TYPE uint32_t
 #define DATA_TYPE glyph_info
 

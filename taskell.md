@@ -13,17 +13,19 @@
 
 ## Short Term Todo
 
+- use path for glsl loading
 - buffers: fix reallocs & TODOs
 - add line numbers
 - add text_renderer_manager
 - add multiple text_renderers handling for buffer_viewer
-
-## Doing
 - buffer_view: use prev & next to optimize horiz segs
 - buffer_view: add arbitrary horizontal segment removal
 - buffer_view: add arbitrary horizontal segment addition
 - buffer_view: add arbitrary line removal
 - buffer_view: add arbitrary appending
+
+## Doing
+
 
 ## Done
 

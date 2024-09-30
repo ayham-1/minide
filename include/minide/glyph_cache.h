@@ -6,10 +6,6 @@
 #include <ft2build.h>
 #include FT_GLYPH_H
 
-#include "logger.h"
-#include "path.h"
-#include "u8string.h"
-
 #include "types/hash_table.h"
 
 typedef struct {

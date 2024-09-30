@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "minide/logger.h"
+
 bool hash_table_create(hash_table_t * table, size_t capacity, hash_function hashFunc, eql_function eqlFunc,
 		       hash_table_entry_cleanup entryCleanupFunc)
 {
