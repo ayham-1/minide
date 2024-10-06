@@ -13,6 +13,7 @@ sources = files([
   'src/types/hash_table.c',
   'src/types/vector.c',
   'src/types/stack.c',
+  'src/types/hocis_vector.c',
 
   'src/glyph_cache.c',
   'src/fontconfig.c',
