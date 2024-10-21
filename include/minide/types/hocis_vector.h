@@ -21,6 +21,7 @@ struct hocis_vec_item_t {
 	 * the pointer to the data belonging to the item ourselves whenever
 	 * it is needed.
 	 * */
+	// void * data_ptr;
 };
 
 typedef struct {

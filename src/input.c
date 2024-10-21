@@ -2,8 +2,8 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
-#include "minide/logger.h"
 
 input_man __input_man;
 

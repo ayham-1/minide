@@ -100,7 +100,9 @@ void hocis_vec_remove(hocis_vec_t * v, hocis_vec_item_t * item)
 		old_first_free->index_prev_free = index_to_be_freed;
 		v->ind_first_free_item = index_to_be_freed;
 	} else { // iterate till we find closest free item
-		 // iterate both ways a the same
+		 // iterate both ways the same
+		for (size_t i = 0; i < v->item_sz; i++) {
+		}
 	}
 
 	v->item_free_count += 1;
