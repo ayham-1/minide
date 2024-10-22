@@ -2,6 +2,7 @@ project('minide', ['c', 'cpp'],
   version: '0.0.1')
 
 sources = files([
+  'src/retcodes.c',
   'src/app.c',
   'src/input.c',
   'src/texture_lender.c',

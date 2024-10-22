@@ -13,6 +13,8 @@
 #include "fontconfig.h"
 #include "glyph_cache.h"
 
+#include "minide/retcodes.h"
+
 typedef struct {
 	FT_Face face;
 	hb_font_t * hb;
