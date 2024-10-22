@@ -44,6 +44,9 @@ void hocis_vec_free(hocis_vec_t * v);
  * Appends a new hocis_vec_item_t to the vector, setting it as non-free.
  *
  * Returns a pointer to the data with the agreed constant available size.
+ * The function always prefers filling the list of unused items from
+ * 'left-to-right', i.e., appends in a fragmented array fills those empty
+ * spaces
  *
  * The data is memset to 0, user is expected to further initialize it.
  * The data is freed when freeing entire vector.

@@ -29,6 +29,7 @@ void hocis_vec_create(hocis_vec_t * v, size_t initial_item_count, size_t size_of
 
 	if (!v->mem) {
 		log_error("Failed to allocate memory for hocis_vec_t");
+		exit(1);
 	}
 
 	memset(v->mem, 0, v->mem_sz);
@@ -93,15 +94,42 @@ void hocis_vec_remove(hocis_vec_t * v, hocis_vec_item_t * item)
 	assert(item->is_used);
 	HOCIS_ASSERT_ITEM_BELONGS(v, item);
 
+	// metadata sets
+	item->is_used = false;
+
+	// technically wrong, but set so that it doesn't contain just random data
+	// would be set again to correct values later on in this function
+	item->index_prev_free = v->ind_first_free_item;
+	item->index_next_free = v->ind_first_free_item;
+
 	size_t index_to_be_freed = hocis_vec_get_ind(v, item);
 	if (index_to_be_freed < v->ind_first_free_item) { // simple case of just appending to the front of the
 							  // double-linked list of free blocks
 		hocis_vec_item_t * old_first_free = hocis_vec_get_from_ind(v, v->ind_first_free_item);
+		item->index_next_free = v->ind_first_free_item;
 		old_first_free->index_prev_free = index_to_be_freed;
 		v->ind_first_free_item = index_to_be_freed;
 	} else { // iterate till we find closest free item
 		 // iterate both ways the same
 		for (size_t i = 0; i < v->item_sz; i++) {
+			hocis_vec_item_t * closest_free = NULL;
+			if (index_to_be_freed - i >= 0) {
+				closest_free = hocis_vec_get_from_ind(v, index_to_be_freed - i);
+
+			} else if (index_to_be_freed + i < v->item_sz) {
+				closest_free = hocis_vec_get_from_ind(v, index_to_be_freed + i);
+			} else {
+				log_error("we somehow ran out of free spaces, that should never happen!");
+				exit(1);
+			}
+			if (!closest_free && !closest_free->is_used) {
+				hocis_vec_item_t * next_free = hocis_vec_get_from_ind(v, closest_free->index_next_free);
+				closest_free->index_next_free = index_to_be_freed;
+				item->index_prev_free = index_to_be_freed - i;
+				item->index_next_free = closest_free->index_next_free;
+				next_free->index_prev_free = index_to_be_freed;
+				break;
+			}
 		}
 	}
 
